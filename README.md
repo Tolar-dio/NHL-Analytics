@@ -38,7 +38,7 @@ The **Backfill a past season** workflow (Actions tab) pulls a full past season: 
 
 ## The dashboard (site/)
 
-`site/build.py` turns the data and models into JSON; `site/index.html`, `app.js` and `style.css` are a static page that reads it. The nightly workflow builds and deploys it to GitHub Pages after each data pull. Tabs: Tonight (goal and 2+ point odds with fair prices, goalie switcher), League (team map, standings with luck, goalie saves above expected), Teams, Players (shot maps, Edge tracking), My team (fantasy schedule grid from `site/config.json`), and Trust the model? (backtest calibration).
+`site/build.py` turns the data and models into JSON; `site/index.html`, `app.js` and `style.css` are a static page that reads it. The nightly workflow builds and deploys it to GitHub Pages after each data pull. Tabs: Tonight (goal and 2+ point odds with fair prices, goalie switcher), League (team map, standings with luck, goalie saves above expected), Teams, Players (shot maps, Edge tracking), My team (fantasy schedule grid from `site/config.json`, published only encrypted with the `FANTASY_PASSWORD` repository secret and hidden until unlocked), and Trust the model? (backtest calibration).
 
 To preview locally: `python site/build.py && cd site && python -m http.server`.
 

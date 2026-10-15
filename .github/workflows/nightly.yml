@@ -74,6 +74,8 @@ jobs:
           python analysis/props_data.py 20262027
 
       - name: Build site data
+        env:
+          FANTASY_PASSWORD: ${{ secrets.FANTASY_PASSWORD }}   # encrypts My team; without it that page isn't published
         run: python site/build.py
 
       - name: Write recaps and previews with Claude
@@ -94,9 +96,17 @@ jobs:
             git push -q
           fi
 
+      - name: Stage only the public files
+        run: |
+          # the page, its scripts and the built data; never config.json (roster) or the Python sources
+          mkdir -p _site
+          cp site/index.html site/style.css site/*.js _site/
+          cp -r site/data _site/data
+          rm -f _site/data/fantasy.json
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
       - id: deploy
         uses: actions/deploy-pages@v4

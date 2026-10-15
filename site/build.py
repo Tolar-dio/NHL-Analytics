@@ -10,7 +10,7 @@ Run after the nightly pull and analysis steps:
 Everything here is derived from public NHL data and MoneyPuck shot data
 (credit MoneyPuck.com). No paid or private data goes into this public site.
 """
-import argparse, datetime as dt, glob, gzip, json, os, sys, urllib.request
+import argparse, base64, datetime as dt, glob, gzip, hashlib, json, os, sys, urllib.request
 from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
@@ -30,6 +30,31 @@ HEADERS = {"User-Agent": "nhl-analytics-personal-research/1.0"}
 
 def r(x, n=2):
     return None if x is None or (isinstance(x, float) and np.isnan(x)) else round(float(x), n)
+
+
+FANTASY_SALT = hashlib.sha256(b"ice-sheet-fantasy-v1").digest()[:16]   # fixed, so a browser that unlocked once stays unlocked
+FANTASY_ITER = 600_000
+
+
+def write_fantasy(payload):
+    """The My team page is never published in the clear. With FANTASY_PASSWORD set (a GitHub secret) it is
+    AES-GCM encrypted under a PBKDF2 key and the browser decrypts it after the password is typed; without the
+    secret nothing is written at all, so a missing secret can't leak the page."""
+    for stale in ("fantasy.json", "fantasy.lock.json"):
+        if os.path.exists(os.path.join(OUTD, stale)):
+            os.remove(os.path.join(OUTD, stale))
+    pw = os.environ.get("FANTASY_PASSWORD", "").strip()
+    if not pw:
+        print("  fantasy: no FANTASY_PASSWORD set, My team page not published")
+        return
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    key = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=FANTASY_SALT, iterations=FANTASY_ITER).derive(pw.encode())
+    iv = os.urandom(12)
+    ct = AESGCM(key).encrypt(iv, json.dumps(payload, separators=(",", ":")).encode(), None)
+    b64 = lambda b: base64.b64encode(b).decode()
+    dump("fantasy.lock.json", dict(v=1, iter=FANTASY_ITER, salt=b64(FANTASY_SALT), iv=b64(iv), ct=b64(ct)))
 
 
 def dump(name, obj):
@@ -369,8 +394,8 @@ def main():
         team = plist.team.get(p["id"]) if p["id"] in plist.index else p.get("team")
         roster.append(dict(id=p["id"], slot=p["slot"], team=team, name=names.get(p["id"], p.get("name")),
                            sched={d: team_days.get(team, {}).get(d) for d in week}))
-    dump("fantasy.json", dict(team_name=cfg["fantasy"]["team_name"], league=cfg["fantasy"]["league"],
-                              days=week, roster=roster))
+    write_fantasy(dict(team_name=cfg["fantasy"]["team_name"], league=cfg["fantasy"]["league"],
+                       days=week, roster=roster))
     meta["favorite_team"] = cfg.get("favorite_team", "COL")
     dump("meta.json", meta)
 

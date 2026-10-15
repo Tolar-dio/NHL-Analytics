@@ -418,3 +418,9 @@ a.chip { text-decoration: none; }
 .trend .tres-W { fill: var(--ink); }
 .trend-fig { padding: 10px 12px 8px; }
 #teamTiles { margin-top: 14px; }
+/* My team lock */
+.tabs a[hidden] { display: none; }
+.lock { max-width: 520px; }
+.lock input[type="password"] { font: 500 16px var(--body); color: var(--ink); background: var(--sheet); border: 1px solid var(--hair); border-radius: 6px; padding: 6px 10px; min-height: 40px; flex: 1 1 220px; }
+.chip-solid { background: var(--ink); color: var(--sheet); border-color: var(--ink); min-height: 40px; padding: 4px 18px; }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--blue); text-decoration: underline; cursor: pointer; }

@@ -47,6 +47,7 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 
 - `site/build.py` writes `site/data/*.json` (gitignored); the nightly workflow's `site` job runs the models, builds, and deploys `site/` to GitHub Pages.
 - Fantasy roster lives in `site/config.json` (player IDs + slots). Update it when Tolar makes moves.
+- My team is private: `build.py` writes it only as `data/fantasy.lock.json` (AES-GCM, PBKDF2 key from the `FANTASY_PASSWORD` secret) and writes nothing without the secret. Never publish fantasy data in the clear. The deploy stages only index.html, *.js, style.css and data/ (no config.json or Python).
 - Rink markings in the shot maps are neutral on purpose: red means goal and nothing else.
 - Season constants `CUR`/`PREV` live in `analysis/models.py`; bump them (and backfill) when a new season starts.
 - Game catalogue: `site/games.py` (per-game JSON: shots, xG flow, deserved-to-win via exact Poisson-binomial, goals with NHL clip links, stars, player lines, goalie GSAx) and `site/previews.py` (same-day previews, projected lines from last game's shared ice time). Front end in `site/games.js`.

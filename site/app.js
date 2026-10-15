@@ -574,8 +574,71 @@ function renderPlayers(view, param) {
 }
 
 // ------------------------------------------------------------------ FANTASY
-function renderFantasy(view) {
-  const F = D.fantasy, today = D.tonight.date;
+// My team is published encrypted (see write_fantasy in build.py). The password never leaves the browser:
+// it derives the AES key with PBKDF2, and only that key is remembered on this device after a successful unlock.
+const FKEY = "ice-fantasy-key";
+const b64d = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const b64e = (u8) => btoa(String.fromCharCode(...new Uint8Array(u8)));
+async function fantasyKeyFromPassword(pw, L) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64d(L.salt), iterations: L.iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, true, ["decrypt"]);
+}
+async function fantasyOpen(key, L) {
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(L.iv) }, key, b64d(L.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function showFantasyTab(on) {
+  const a = $('.tabs a[data-tab="fantasy"]');
+  if (a) a.hidden = !on;
+}
+async function renderFantasy(view) {
+  view.innerHTML = `<p class="empty">Opening…</p>`;
+  let L;
+  try { L = await getJSON("data/fantasy.lock.json"); } catch (e) {
+    view.innerHTML = `<section class="zone"><h1>Nothing here</h1><p class="lede">This page isn't published. <a href="#tonight">Back to tonight</a>.</p></section>`;
+    return;
+  }
+  if (!(window.crypto && crypto.subtle)) { view.innerHTML = `<p class="empty">This browser can't unlock the page.</p>`; return; }
+  const saved = store.get(FKEY);
+  if (saved) {
+    try {
+      const key = await crypto.subtle.importKey("raw", b64d(saved), "AES-GCM", false, ["decrypt"]);
+      drawFantasy(view, await fantasyOpen(key, L));
+      showFantasyTab(true);
+      return;
+    } catch (e) { store.set(FKEY, ""); }   // password changed since this device unlocked
+  }
+  showFantasyTab(false);
+  view.innerHTML = `<section class="zone lock">
+      <h1>Private</h1>
+      <p class="lede">This page is locked. Enter the password to open it on this device.</p>
+      <form class="controls" id="unlock" autocomplete="off">
+        <input type="password" id="fpw" aria-label="Password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit" class="chip chip-solid">Unlock</button>
+      </form>
+      <p class="note" id="fmsg" role="status"></p>
+    </section>`;
+  $("#unlock").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const msg = $("#fmsg");
+    msg.textContent = "Checking…";
+    try {
+      const key = await fantasyKeyFromPassword($("#fpw").value, L);
+      const F = await fantasyOpen(key, L);
+      store.set(FKEY, b64e(await crypto.subtle.exportKey("raw", key)));
+      showFantasyTab(true);
+      drawFantasy(view, F);
+    } catch (e) {
+      msg.textContent = "That password didn't work.";
+      $("#fpw").select();
+    }
+  });
+  $("#fpw").focus();
+}
+
+function drawFantasy(view, F) {
+  const today = D.tonight.date;
   const props = Object.fromEntries((D.tonight.props || []).map((p) => [p.id, p]));
   const sk = Object.fromEntries(D.skaters.map((s) => [s.id, s]));
   const days = F.days, wk = days.slice(0, 7);
@@ -612,8 +675,9 @@ function renderFantasy(view) {
           { key: "tonight", label: "Goal chance", nosort: true, fmt: (r) => cellBar(r.tonight, 0.5) },
           { key: "p2", label: "2+ points", nosort: true, fmt: (r) => cellBar(props[r.id].p_2pts, 0.5) },
         ], null, "ft") : `<p class="note">None of your players are in tonight's games.</p>`; })()}
-      <p class="note">The roster lives in site/config.json in the repository. Ask Claude to update it after a trade or waiver move.</p>
+      <p class="note">Unlocked on this device. <button type="button" class="linkish" id="relock">Lock it again</button></p>
     </section>`;
+  $("#relock").addEventListener("click", () => { store.set(FKEY, ""); showFantasyTab(false); location.hash = "#tonight"; });
 }
 
 // ------------------------------------------------------------------ MODEL
@@ -687,7 +751,7 @@ addEventListener("resize", () => {
 });
 async function boot() {
   applyThemeLabel();
-  const files = ["meta", "teams", "goalies", "skaters", "shots", "tonight", "model", "fantasy"];
+  const files = ["meta", "teams", "goalies", "skaters", "shots", "tonight", "model"];
   try {
     const got = await Promise.all(files.map((f) => fetch(`data/${f}.json`, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(f); return r.json(); })));
     files.forEach((f, i) => (D[f] = got[i]));
@@ -697,6 +761,7 @@ async function boot() {
   }
   try { S.goalies = JSON.parse(store.get("goalies:" + D.tonight.date) || "{}"); } catch (e) { S.goalies = {}; }
   $("#freshness").textContent = `Updated ${D.meta.updated} MT with games through ${dateLabel(D.meta.last_game)}`;
+  showFantasyTab(!!store.get(FKEY));
   addEventListener("hashchange", route);
   route();
 }
