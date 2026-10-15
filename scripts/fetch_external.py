@@ -136,15 +136,42 @@ def fetch_edge(season, force=False):
     print(f"Edge: {len(rows)} skaters")
 
 
+# ---------------------------------------------------------------- MoneyPuck season summaries
+
+def fetch_moneypuck_summary(season):
+    """Season-level skater/goalie/team/line tables (all situations splits).
+
+    Saved gzipped to data/external/moneypuck_summary/<season>/<type>.csv.gz.
+    Rewritten only when content changes (write_gz_csv compares bytes).
+    """
+    year = int(season[:4])
+    out = os.path.join(DATA, "external", "moneypuck_summary", season)
+    for kind in ("skaters", "goalies", "teams", "lines"):
+        url = f"https://moneypuck.com/moneypuck/playerData/seasonSummary/{year}/regular/{kind}.csv"
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=120) as r:
+            text = r.read().decode("utf-8")
+        rows = list(csv.reader(io.StringIO(text)))
+        if len(rows) < 2:
+            raise RuntimeError(f"empty {kind} summary")
+        write_gz_csv(os.path.join(out, f"{kind}.csv.gz"), rows[0], rows[1:])
+        print(f"MoneyPuck summary {kind}: {len(rows) - 1} rows")
+        time.sleep(1.0)
+
+
 # ---------------------------------------------------------------- main
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--season", default=current_season(dt.date.today()))
     ap.add_argument("--force-edge", action="store_true")
+    ap.add_argument("--skip-edge", action="store_true")
     a = ap.parse_args()
-    for name, fn in (("MoneyPuck", lambda: fetch_moneypuck(a.season)),
-                     ("Edge", lambda: fetch_edge(a.season, a.force_edge))):
+    jobs = [("MoneyPuck shots", lambda: fetch_moneypuck(a.season)),
+            ("MoneyPuck summaries", lambda: fetch_moneypuck_summary(a.season))]
+    if not a.skip_edge:
+        jobs.append(("Edge", lambda: fetch_edge(a.season, a.force_edge)))
+    for name, fn in jobs:
         try:
             fn()
         except Exception as e:  # one source failing must not block the other

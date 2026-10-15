@@ -28,9 +28,15 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 - NHL Edge: `data/external/edge/<season>/skaters.csv.gz` (flattened) and `skaters_raw.json.gz` (full per-player JSON, includes per-area shot counts and record-game overlays).
 - HTML time-on-ice reports (`toi_TH.htm.gz`, `toi_TV.htm.gz` in a game's raw folder) are the fallback when the shift JSON is empty; `fetch.py` parses them into shifts.csv. Overlapping JSON shifts are merged. Validated: every player-game TOI within 30s of the boxscore.
 
+## Past seasons
+
+- `data/raw/<season>/` and `data/tables/<season>/` hold each season separately; 20252026 is backfilled via `.github/workflows/backfill.yml`.
+- `data/external/moneypuck_summary/<season>/` has MoneyPuck season summaries (skaters, goalies, teams, lines) by situation. Use last season as the prior for this season's shrinkage instead of league average; carry player priors with the player, not the team (rosters change).
+
 ## Analysis scripts
 
 - `analysis/player_flags.py`: our own xG model (logistic, out-of-fold) plus skater and goalie tables. Run first.
 - `analysis/onice.py`: 5v5 on-ice CF/xG/G and relative xGF% per skater.
 - xG source: MoneyPuck's xGoal is primary (AUC 0.78 vs ours 0.73 shot-level; aggregates correlate 0.95+). Ours fills gaps.
 - On-ice attribution: a player is on ice for an event if start_sec < t <= end_sec.
+- `analysis/props_data.py` -> `analysis/props_model.py` (anytime goal, 2+ points) and `analysis/totals.py` (game totals). Both have walk-forward backtests; tonight's slate goes in `analysis/slate.csv`.

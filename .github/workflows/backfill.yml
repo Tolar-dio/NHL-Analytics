@@ -1,0 +1,71 @@
+name: Backfill a past season
+
+# One-time pull of a full past season (regular season + playoffs), plus
+# MoneyPuck shot data and season summaries for it. Downloads month by month
+# and commits after each month, so a timeout or failure never loses progress:
+# just run it again and it picks up where it stopped.
+
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season to backfill, e.g. 20252026"
+        required: true
+        default: "20252026"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nhl-pull          # same group as the nightly job, so they never collide
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      SEASON: ${{ inputs.season }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Download month by month, committing as it goes
+        run: |
+          Y=${SEASON:0:4}
+          for M in "$Y-09" "$Y-10" "$Y-11" "$Y-12" "$((Y+1))-01" "$((Y+1))-02" "$((Y+1))-03" "$((Y+1))-04" "$((Y+1))-05" "$((Y+1))-06"; do
+            START="$M-01"
+            END=$(python -c "import datetime as d,calendar as c; y,m=map(int,'$M'.split('-')); print(d.date(y,m,c.monthrange(y,m)[1]))")
+            echo "=== $START to $END ==="
+            python scripts/fetch.py --season "$SEASON" --start "$START" --end "$END" --skip-tables || true
+            git add data
+            if ! git diff --cached --quiet; then
+              git commit -q -m "Backfill $SEASON: $M"
+              git pull -q --rebase origin main
+              git push -q
+            fi
+          done
+
+      - name: Build tables
+        run: python scripts/fetch.py --season "$SEASON" --tables-only
+
+      - name: MoneyPuck shots and season summaries
+        continue-on-error: true
+        run: python scripts/fetch_external.py --season "$SEASON" --skip-edge
+
+      - name: Commit tables and MoneyPuck data
+        run: |
+          git add data
+          if ! git diff --cached --quiet; then
+            git commit -q -m "Backfill $SEASON: tables and MoneyPuck data"
+            git pull -q --rebase origin main
+            git push -q
+          fi

@@ -105,13 +105,22 @@ def current_season(today):
 
 # ---------------------------------------------------------------- schedule
 
-def finished_games(start, end):
-    """All completed regular-season and playoff games between two dates."""
+def finished_games(start, end, season=None):
+    """All completed regular-season and playoff games between two dates.
+
+    Game IDs start with the season's first year (2025020107 -> 2025-26), so
+    filtering on that keeps a backfill from filing next season's games under
+    the wrong season.
+    """
     games, day = {}, start
     while day <= end:
         sched = get_json(f"{WEB}/schedule/{day.isoformat()}")
         for week in sched.get("gameWeek", []):
+            if not (start.isoformat() <= week.get("date", "") <= end.isoformat()):
+                continue
             for g in week.get("games", []):
+                if season and str(g["id"])[:4] != season[:4]:
+                    continue
                 if g.get("gameType") in GAME_TYPES and g.get("gameState") in FINISHED:
                     games[g["id"]] = {
                         "game_id": g["id"],
@@ -397,12 +406,14 @@ def main():
     ap.add_argument("--start", help="first date to scan (default: Sept 1 of season)")
     ap.add_argument("--end", help="last date to scan (default: today)")
     ap.add_argument("--tables-only", action="store_true")
+    ap.add_argument("--skip-tables", action="store_true", help="download only (backfill chunks)")
     a = ap.parse_args()
 
     if not a.tables_only:
         start = dt.date.fromisoformat(a.start) if a.start else dt.date(int(a.season[:4]), 9, 1)
-        end = dt.date.fromisoformat(a.end) if a.end else today
-        games = finished_games(start, end)
+        season_end = dt.date(int(a.season[4:]), 8, 31)
+        end = min(dt.date.fromisoformat(a.end) if a.end else today, season_end)
+        games = finished_games(start, end, a.season)
         todo = [g for gid, g in sorted(games.items()) if needs_work(a.season, gid)]
         print(f"{len(games)} finished games found, {len(todo)} need downloading")
         for i, g in enumerate(todo, 1):
@@ -412,7 +423,8 @@ def main():
             except RuntimeError as e:
                 print(f"  ! skipped {g['game_id']}: {e}", file=sys.stderr)
 
-    build_tables(a.season)
+    if not a.skip_tables:
+        build_tables(a.season)
 
 
 if __name__ == "__main__":
