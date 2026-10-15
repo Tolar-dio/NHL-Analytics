@@ -13,13 +13,7 @@ const headshot = (url, alt) => url ? `<img class="mug" src="${esc(url)}" alt="${
 const strengthLabel = { ev: "Even strength", pp: "Power play", sh: "Shorthanded", en: "Empty net" };
 
 // ------------------------------------------------------------------ charts
-function fullRinkSVG(shots, away, home) {
-  const marks = shots.map(([x, y, xg, g, isHome, sec, pid, st]) => {
-    const rr = 0.6 + Math.sqrt(xg / 1000) * 3;
-    const who = (D._names && D._names[pid]) || "";
-    const tipTxt = `${g ? "<b>Goal</b>" : "Shot"} by ${esc(who) || (isHome ? home : away)}<br>${(xg / 10).toFixed(1)}% chance, ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} elapsed${st && st !== "EV" ? `, ${st}` : ""}`;
-    return { g, svg: `<circle class="${g ? "goal" : "shot"}" cx="${x}" cy="${-y}" r="${g ? Math.max(rr, 1.3) : rr}" data-tip="${esc(tipTxt)}"></circle>` };
-  }).sort((a, b) => a.g - b.g).map((m) => m.svg);
+function rinkChrome(leftLabel, rightLabel) {
   const half = (s) => `<circle class="circle" cx="${s * 69}" cy="-22" r="15"/><circle class="circle" cx="${s * 69}" cy="22" r="15"/>
     <circle class="dot" cx="${s * 69}" cy="-22" r="0.6"/><circle class="dot" cx="${s * 69}" cy="22" r="0.6"/>
     <circle class="dot" cx="${s * 20}" cy="-22" r="0.6"/><circle class="dot" cx="${s * 20}" cy="22" r="0.6"/>
@@ -27,13 +21,22 @@ function fullRinkSVG(shots, away, home) {
     <path class="crease" d="M${s * 89},-4 L${s * 85.5},-4 A6,6 0 0 ${s > 0 ? 0 : 1} ${s * 85.5},4 L${s * 89},4 Z"/>
     <rect class="net" x="${s > 0 ? 89 : -92.3}" y="-3" width="3.3" height="6" rx="0.8"/>
     <rect class="blueline" x="${s > 0 ? 25 : -26}" y="-42.5" width="1" height="85"/>`;
-  return `<svg class="chart rink" viewBox="-101 -46 202 92" role="img" aria-label="Both teams' shots: ${away} shooting left, ${home} shooting right">
-    <path class="boards" d="M-72,-42.5 L72,-42.5 A28,28 0 0 1 100,-14.5 L100,14.5 A28,28 0 0 1 72,42.5 L-72,42.5 A28,28 0 0 1 -100,14.5 L-100,-14.5 A28,28 0 0 1 -72,-42.5 Z"/>
+  return `<path class="boards" d="M-72,-42.5 L72,-42.5 A28,28 0 0 1 100,-14.5 L100,14.5 A28,28 0 0 1 72,42.5 L-72,42.5 A28,28 0 0 1 -100,14.5 L-100,-14.5 A28,28 0 0 1 -72,-42.5 Z"/>
     <rect class="redline" x="-0.5" y="-42.5" width="1" height="85"/><circle class="circle" cx="0" cy="0" r="15"/>
     ${half(1)}${half(-1)}
-    <text class="zone-label" x="-50" y="-44" text-anchor="middle" style="font-size:3.4px;font-weight:700">${away} shooting this way</text>
-    <text class="zone-label" x="50" y="-44" text-anchor="middle" style="font-size:3.4px;font-weight:700">${home} shooting this way</text>
-    ${marks.join("")}</svg>`;
+    ${leftLabel ? `<text class="zone-label" x="-50" y="-44" text-anchor="middle" style="font-size:3.4px;font-weight:700">${leftLabel}</text>` : ""}
+    ${rightLabel ? `<text class="zone-label" x="50" y="-44" text-anchor="middle" style="font-size:3.4px;font-weight:700">${rightLabel}</text>` : ""}`;
+}
+
+function fullRinkSVG(shots, away, home) {
+  const marks = shots.map(([x, y, xg, g, isHome, sec, pid, st]) => {
+    const rr = 0.6 + Math.sqrt(xg / 1000) * 3;
+    const who = (D._names && D._names[pid]) || "";
+    const tipTxt = `${g ? "<b>Goal</b>" : "Shot"} by ${esc(who) || (isHome ? home : away)}<br>${(xg / 10).toFixed(1)}% chance, ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} elapsed${st && st !== "EV" ? `, ${st}` : ""}`;
+    return { g, svg: `<circle class="${g ? "goal" : "shot"}" cx="${x}" cy="${-y}" r="${g ? Math.max(rr, 1.3) : rr}" data-tip="${esc(tipTxt)}"></circle>` };
+  }).sort((a, b) => a.g - b.g).map((m) => m.svg);
+  return `<svg class="chart rink" viewBox="-101 -46 202 92" role="img" aria-label="Both teams' shots: ${away} shooting left, ${home} shooting right">
+    ${rinkChrome(`${away} shooting this way`, `${home} shooting this way`)}${marks.join("")}</svg>`;
 }
 
 function flowChart(g) {
@@ -104,6 +107,7 @@ async function renderGames(view) {
   const teams = [...new Set(idx.flatMap((x) => [x.away, x.home]))].sort();
   view.innerHTML = `<section class="zone">
       <h1>Every game, replayed</h1>
+      <p class="lede"><a href="#goals">Replay every goal from the latest night</a></p>
       <p class="lede">${idx.length} games so far. "Deserved" replays every shot from the game thousands of times using its expected-goal chance and counts how often the winner still wins. Under 35% means they got away with one.</p>
       <div class="controls">
         <select id="gTeam" aria-label="Team"><option value="all">All teams</option>${teams.map((t) => `<option ${S.gTeam === t ? "selected" : ""}>${t}</option>`).join("")}</select>
@@ -131,7 +135,8 @@ async function renderGame(view, id) {
       ${headshot(x.headshot, x.name)}
       <div><div class="gi-top"><span class="gi-when">${x.ptype === "OT" ? "OT" : ["", "1st", "2nd", "3rd"][x.period] || `P${x.period}`} ${esc(x.t)}</span> <b>${esc(x.name)}</b> <span class="dim">(${x.num})</span> <span class="gi-team">${x.team}</span></div>
         <div class="gi-sub">${x.assists.length ? `from ${x.assists.map((a) => esc(a.name)).join(" and ")}` : "unassisted"}. ${esc(strengthLabel[x.strength] || x.strength)}, ${esc(x.shot || "shot")}${x.xg != null ? `, a ${pct(x.xg)} chance` : ""}. <span class="dim">${g.away} ${x.score.split("-")[0]}, ${g.home} ${x.score.split("-")[1]}</span></div></div>
-      ${x.clip ? `<a class="watch" href="${esc(x.clip)}" target="_blank" rel="noopener">Watch</a>` : ""}</li>`;
+      <span class="gi-acts">${g.seqs && g.seqs[String(x.eid)] ? `<button type="button" class="watch replay" data-replay="${x.eid}">Replay</button>` : ""}
+      ${x.clip ? `<a class="watch" href="${esc(x.clip)}" target="_blank" rel="noopener">Watch</a>` : ""}</span></li>`;
   const pcols = [
     { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.pos}</span>` },
     { key: "gs", label: "Game score", fmt: (r) => num(r.gs, 2) },
@@ -207,6 +212,12 @@ async function renderGame(view, id) {
     }
   };
   drawP();
+  view.querySelectorAll("[data-replay]").forEach((b) => b.addEventListener("click", () => {
+    history.replaceState(null, "", `#game/${g.id}/${b.dataset.replay}`);
+    openTheater(g, b.dataset.replay);
+  }));
+  const deep = location.hash.split("/")[2];
+  if (deep && g.seqs && g.seqs[deep]) openTheater(g, deep);
 }
 
 // ------------------------------------------------------------------ preview page
@@ -284,4 +295,65 @@ async function teamLog(team) {
   const rows = idx.filter((x) => x.away === team || x.home === team);
   return `<section class="zone"><h2>Season log</h2><p class="lede">Every ${team} game, newest first. The bar is how often ${team} wins when the game is replayed from its shots.</p>
     <ul class="game-list">${rows.map((x) => gameRow(x, team)).join("")}</ul></section>`;
+}
+
+// ------------------------------------------------------------------ goals reel: every goal from one night
+async function renderGoals(view, date) {
+  view.innerHTML = `<p class="empty">Loading the night's goals…</p>`;
+  const idx = await getJSON("data/games/index.json");
+  const dates = [...new Set(idx.map((x) => x.date))].sort();
+  const day = dates.includes(date) ? date : dates[dates.length - 1];
+  const di = dates.indexOf(day);
+  const games = await Promise.all(idx.filter((x) => x.date === day).sort((a, b) => a.id - b.id).map((x) => getJSON(`data/games/${x.id}.json`)));
+  const all = [];
+  games.forEach((g) => {
+    const winner = g.h > g.a ? g.home : g.away, loserScore = Math.min(g.a, g.h);
+    let wCount = 0;
+    g.goals.forEach((x) => {
+      const seq = g.seqs && g.seqs[String(x.eid)];
+      if (x.team === winner) wCount++;
+      all.push({ g, x, seq, gwg: x.team === winner && wCount === loserScore + 1 && g.end !== "SO" });
+    });
+  });
+  const playable = all.filter((r) => r.seq && r.x.strength !== "en");
+  const pick = (fn) => playable.length ? playable.reduce((a, b) => (fn(b) < fn(a) ? b : a)) : null;
+  const lowest = pick((r) => r.x.xg ?? 1);
+  const longest = pick((r) => -(r.seq.events.length));
+  const quickest = pick((r) => (r.seq.events[0]?.k === "faceoff" ? r.seq.duration : 999));
+  const card = (label, r, why) => !r ? "" : `<div class="hl"><span class="hl-label">${label}</span>
+      <b>${esc(r.x.name)}</b> <span class="dim">${r.x.team} vs ${r.x.team === r.g.home ? r.g.away : r.g.home}, ${r.x.ptype === "OT" ? "OT" : ["", "1st", "2nd", "3rd"][r.x.period] || ""} ${esc(r.x.t)}</span>
+      <span class="hl-why">${why}</span>
+      <button type="button" class="watch replay" data-g="${r.g.id}" data-e="${r.x.eid}">Replay</button></div>`;
+  const item = (r) => {
+    const x = r.x;
+    return `<li class="goal-item">${headshot(x.headshot, x.name)}
+      <div><div class="gi-top"><span class="gi-when">${x.ptype === "OT" ? "OT" : ["", "1st", "2nd", "3rd"][x.period] || ""} ${esc(x.t)}</span> <b>${esc(x.name)}</b> <span class="dim">(${x.num})</span> <span class="gi-team">${x.team}</span>${r.gwg ? ` <span class="tag">Game winner</span>` : ""}</div>
+        <div class="gi-sub">${x.assists.length ? `from ${x.assists.map((a) => esc(a.name)).join(" and ")}` : "unassisted"}. ${esc(strengthLabel[x.strength] || x.strength)}, ${esc(x.shot || "shot")}${x.xg != null ? `, a ${pct(x.xg)} chance` : ""}${r.seq ? `. ${r.seq.events.length} recorded moments over ${r.seq.duration}s` : ""}.</div></div>
+      <span class="gi-acts">${r.seq ? `<button type="button" class="watch replay" data-g="${r.g.id}" data-e="${x.eid}">Replay</button>` : ""}
+      ${x.clip ? `<a class="watch" href="${esc(x.clip)}" target="_blank" rel="noopener">Watch</a>` : ""}</span></li>`;
+  };
+  view.innerHTML = `
+    <section class="zone">
+      <p class="crumbs"><a href="#games">All games</a></p>
+      <div class="row"><h1>Every goal, ${esc(new Date(day + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))}</h1></div>
+      <div class="controls">
+        ${di > 0 ? `<a class="chip" href="#goals/${dates[di - 1]}">Previous night</a>` : ""}
+        ${di < dates.length - 1 ? `<a class="chip" href="#goals/${dates[di + 1]}">Next night</a>` : ""}
+      </div>
+      <p class="lede">${all.length} goals across ${games.length} game${games.length === 1 ? "" : "s"}. Replay rebuilds each one from the recorded events; Watch opens the official clip.</p>
+      <div class="hl-row">
+        ${card("Lowest-chance goal", lowest, lowest ? `a ${pct(lowest.x.xg)} chance` : "")}
+        ${card("Busiest build-up", longest, longest ? `${longest.seq.events.length} recorded moments over ${longest.seq.duration} seconds` : "")}
+        ${quickest && quickest.seq.duration < 999 ? card("Fastest off a faceoff", quickest, `${quickest.seq.duration} seconds after the draw`) : ""}
+      </div>
+    </section>
+    ${games.map((g) => `<section class="zone"><a class="game-row" href="#game/${g.id}"><span class="gr-date">${g.end !== "REG" ? g.end : "Final"}</span>
+        <span class="gr-score"><span class="${g.a > g.h ? "won" : ""}">${g.away} ${g.a}</span> <span class="dim">at</span> <span class="${g.h > g.a ? "won" : ""}">${g.home} ${g.h}</span></span>
+        <span class="dim">Open the game page</span></a>
+      <ol class="goal-list">${all.filter((r) => r.g === g).map(item).join("") || `<li class="empty">No goals.</li>`}</ol></section>`).join("")}`;
+  view.querySelectorAll("[data-g]").forEach((b) => b.addEventListener("click", () => {
+    const g = games.find((x) => String(x.id) === b.dataset.g);
+    D._names = Object.fromEntries(g.players.map((p) => [p.id, p.name]));
+    openTheater(g, b.dataset.e);
+  }));
 }

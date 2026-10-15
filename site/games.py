@@ -43,11 +43,120 @@ def deserve_to_win(home_ps, away_ps):
     return float(win + 0.5 * tie)
 
 
+SEQ_EVENTS = {"faceoff", "hit", "giveaway", "takeaway", "blocked-shot", "missed-shot", "shot-on-goal", "goal",
+              "penalty", "delayed-penalty"}
+
+
+def _last(n):
+    return str(n).split(" ")[-1] if n and str(n) != "nan" else ""
+
+
+def caption(ev, assists, xg):
+    p1, p2, gl = ev.player1, ev.player2, ev.goalie
+    p1 = p1 if isinstance(p1, str) else ""
+    p2 = p2 if isinstance(p2, str) else ""
+    k = ev.event
+    if k == "faceoff":
+        return f"{p1} wins the faceoff against {_last(p2)}" if p2 else f"{p1} wins the faceoff"
+    if k == "hit":
+        return f"{p1} hits {p2}" if p2 else f"{p1} lands a hit"
+    if k == "giveaway":
+        return f"{p1} gives the puck away"
+    if k == "takeaway":
+        return f"{p1} strips the puck"
+    if k == "blocked-shot":
+        return f"{p1} shoots, blocked by {p2}" if p2 else f"{p1}'s shot is blocked"
+    if k == "missed-shot":
+        why = str(ev.reason).replace("-", " ") if isinstance(ev.reason, str) else "misses"
+        return f"{p1} shoots{f', {why}' if why != 'misses' else ' and misses'}" + (f" ({round(100 * xg)}% chance)" if xg else "")
+    if k == "shot-on-goal":
+        return f"{p1} shoots, saved by {_last(gl)}" + (f" ({round(100 * xg)}% chance)" if xg else "")
+    if k == "goal":
+        a = f", from {' and '.join(assists)}" if assists else ", unassisted"
+        return f"{p1} scores{a}" + (f" ({round(100 * xg)}% chance)" if xg else "")
+    if k == "penalty":
+        what = str(ev.penalty_type).replace("-", " ") if isinstance(ev.penalty_type, str) else "a penalty"
+        return f"{p1} takes a penalty: {what}"
+    if k == "delayed-penalty":
+        return "Delayed penalty signalled, goalie heads for the bench"
+    return k
+
+
+def goal_sequences(gid, e, shifts, goals, home, away, xg_by_event, roster_info):
+    """For each goal (by NHL event id): the recorded events since the faceoff that
+    started the play (capped at the last 60s of a long shift), with coordinates
+    flipped so the scoring team attacks the right-hand net, captions, xG, and
+    the skaters on the ice at every event."""
+    e = e.sort_values("sort_order").reset_index(drop=True)
+    sh = shifts[shifts.game_id == gid].dropna(subset=["player_id"])
+    roster, ridx = [], {}
+    def ri(pid):
+        pid = int(pid)
+        if pid not in ridx:
+            info = roster_info.get(pid, {})
+            ridx[pid] = len(roster)
+            roster.append(dict(id=pid, name=info.get("name", ""), num=info.get("num"), pos=info.get("pos", ""),
+                               team=info.get("team", "")))
+        return ridx[pid]
+    by_eid = {g["eid"]: g for g in goals if g.get("eid") is not None}
+    seqs = {}
+    for i in e.index[e.event == "goal"]:
+        gr = e.loc[i]
+        meta = by_eid.get(int(gr.event_id))
+        if meta is None:
+            continue
+        scorer_team = gr.team
+        per = gr.period
+        same = e[(e.period == per) & (e.index <= i)]
+        fo = same[same.event == "faceoff"]
+        start_i = fo.index.max() if len(fo) else same.index.min()
+        note = None
+        if gr.game_seconds - e.loc[start_i, "game_seconds"] > 75:
+            note = f"Play continued from a faceoff {int((gr.game_seconds - e.loc[start_i, 'game_seconds']) // 60)}:" \
+                   f"{int((gr.game_seconds - e.loc[start_i, 'game_seconds']) % 60):02d} earlier; showing the last minute."
+            start_i = same[same.game_seconds >= gr.game_seconds - 60].index.min()
+        win = e.loc[start_i:i]
+        win = win[win.event.isin(SEQ_EVENTS)]
+        hds = gr.home_defending_side
+        if hds in ("left", "right"):
+            flip = 1 if (scorer_team == home) == (hds == "left") else -1
+        else:
+            flip = 1 if (gr.x or 0) >= 0 else -1
+        psh = sh[sh.period == per]
+        evs, onice = [], []
+        for _, ev in win.iterrows():
+            t = ev.game_seconds - (min(per, 4) - 1) * 1200
+            if ev.event == "faceoff":
+                cur = psh[(psh.start_sec <= t) & (psh.end_sec > t)]
+            else:
+                cur = psh[(psh.start_sec < t) & (psh.end_sec >= t)]
+            mine = [ri(p) for p in cur[cur.team == scorer_team].player_id]
+            theirs = [ri(p) for p in cur[cur.team != scorer_team].player_id]
+            onice.append([mine, theirs])
+            xg = xg_by_event.get(ev.event_id)
+            # second player is on the OTHER side for faceoffs (loser), hits (hittee), blocks (blocker)
+            # and penalties (drawn by); on goals it's the first assist, who has no recorded location
+            second = ev.player2_id if ev.event in ("faceoff", "hit", "blocked-shot", "penalty") else None
+            actors = [ri(p) for p in (ev.player1_id, second) if p is not None and not pd.isna(p)]
+            evs.append(dict(t=int(ev.game_seconds), k=ev.event, s=1 if ev.team == scorer_team else 0,
+                            x=None if pd.isna(ev.x) else int(ev.x * flip), y=None if pd.isna(ev.y) else int(ev.y * flip),
+                            a=actors, xg=r(xg, 3) if xg is not None else None,
+                            c=caption(ev, [a["name"] for a in meta["assists"]] if ev.event == "goal" else None,
+                                      xg if xg is not None and not (isinstance(xg, float) and np.isnan(xg)) else None),
+                            sc=str(ev.situation_code)))
+        shots = [x for x in evs if x["k"] in ("shot-on-goal", "missed-shot", "goal", "blocked-shot") and x["s"] == 1]
+        seqs[str(int(gr.event_id))] = dict(
+            team=scorer_team, period=int(per), note=note, events=evs, onice=onice,
+            duration=int(gr.game_seconds - evs[0]["t"]) if evs else 0,
+            shots=len(shots), xg=r(sum(x["xg"] or 0 for x in shots), 3))
+    return roster, seqs
+
+
 def r(x, n=3):
     return None if x is None or (isinstance(x, float) and np.isnan(x)) else round(float(x), n)
 
 
-def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir):
+def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir, shifts=None, plist=None):
     """ev: events (no shootout); xg_shots: unblocked shots with nx/ny normalised to
     'attacking right' and column xgv; pg/gg: player/goalie per-game tables."""
     os.makedirs(out_dir, exist_ok=True)
@@ -98,6 +207,7 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
                 continue  # the shootout winner is listed with the shootout, not as a goal
             for g in p.get("goals", []):
                 goals.append(dict(
+                    eid=g.get("eventId"),
                     period=pd_.get("number"), ptype=pd_.get("periodType"), t=g.get("timeInPeriod"),
                     team=_nm(g.get("teamAbbrev")), pid=g.get("playerId"),
                     name=f"{_nm(g.get('firstName'))} {_nm(g.get('lastName'))}".strip(),
@@ -166,6 +276,18 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
                                 toi=r(row.toi, 1), sa=sa, ga=int(row.ga), xga=r(row.xga, 2),
                                 gsax=r(row.xga - row.ga, 2), starter=bool(row.starter)))
 
+        roster, seqs = [], {}
+        if shifts is not None and plist is not None and goals:
+            info = {int(pid): dict(name=names.get(pid, ""), num=None if pd.isna(row.number) else int(row.number),
+                                   pos=row.position, team=row.team) for pid, row in plist.iterrows()}
+            for pid, x in extra.items():           # sweater numbers / teams as dressed in this game
+                if pid in info:
+                    info[pid]["num"] = x.get("num")
+            for row in pg_by.get(gid, pd.DataFrame()).itertuples():
+                if int(row.player_id) in info:
+                    info[int(row.player_id)]["team"] = row.team
+            roster, seqs = goal_sequences(gid, e, shifts, goals, home, away, xg_by_event, info)
+
         story = None
         sp = os.path.join(stories_dir, f"{gid}.json")
         if os.path.exists(sp):
@@ -178,7 +300,8 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
                       xg_a=r(xg_a, 2), xg_h=r(xg_h, 2), xg5_a=r(xg5_a, 2), xg5_h=r(xg5_h, 2), cf_a=cf_a, cf_h=cf_h,
                       dtw_home=r(dtw), periods=per, lines=lines, sog_periods=sog_p, team_stats=tstats,
                       goals=goals, shootout=shootout, stars=stars, penalties=penalties, series=series,
-                      shots=shots, players=sorted(players, key=lambda p: -(p["gs"] or 0)), goalies=goalies, story=story)
+                      shots=shots, players=sorted(players, key=lambda p: -(p["gs"] or 0)), goalies=goalies, story=story,
+                      roster=roster, seqs=seqs)
         with open(os.path.join(out_dir, f"{gid}.json"), "w") as f:
             json.dump(detail, f, separators=(",", ":"), allow_nan=False)
 

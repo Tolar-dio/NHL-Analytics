@@ -296,3 +296,82 @@ a.game-row:hover { background: var(--sheet); }
 .form .bar-track { position: relative; }
 .form .bar-track::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--axis); }
 .zone > h2 + .grid-2 { margin-top: 14px; }
+
+/* ---------------------------------------------------------------- replay theater */
+body.theater-open { overflow: hidden; }
+.theater { position: fixed; inset: 0; z-index: 30; background: rgba(10, 19, 29, 0.55); display: grid; place-items: center; padding: 16px; }
+.th-inner { background: var(--ice); width: min(1240px, 100%); max-height: calc(100vh - 32px); overflow: auto; border-radius: 8px; border-top: 3px solid var(--red); padding: 16px 18px 18px; }
+.th-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.th-head h2 { font-size: 30px; }
+.th-head p { margin: 4px 0 0; color: var(--ink-2); }
+.th-close { font: 600 14px var(--body); color: var(--ink-2); background: var(--sheet); border: 1px solid var(--hair); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.th-main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; }
+@media (max-width: 960px) { .th-main { grid-template-columns: minmax(0, 1fr); } }
+.th-stage { min-width: 0; }
+.th-rink { background: var(--sheet); border: 1px solid var(--hair); border-radius: 6px; }
+.th-trail polyline { fill: none; stroke: var(--ink-2); stroke-width: 0.35; stroke-linejoin: round; opacity: 0.45; }
+.th-shotline line { stroke: var(--blue); stroke-width: 0.45; opacity: 0.8; }
+.th-shotline line.is-goal { stroke: var(--red); stroke-width: 0.6; opacity: 1; }
+.th-puck { fill: var(--ink); stroke: var(--sheet); stroke-width: 0.5; }
+.th-chip circle { stroke-width: 0.5; }
+.th-rink .th-chip text { font: 700 2.5px var(--body); }
+.th-chip.own circle { fill: var(--blue); stroke: var(--sheet); }
+.th-chip.own text { fill: var(--sheet); }
+.th-chip.opp circle { fill: var(--sheet); stroke: var(--ink); }
+.th-chip.opp text { fill: var(--ink); }
+.th-chip.past { opacity: 0.35; }
+.th-rink text.th-name { font: 700 3.2px var(--body); fill: var(--ink); paint-order: stroke; stroke: var(--sheet); stroke-width: 0.8px; }
+.th-pulse circle { fill: none; stroke: var(--red); stroke-width: 0.8; }
+.th-pulse .ring { animation: goalring 1.4s ease-out 2; transform-origin: 89.6px 0; transform-box: view-box; }
+.th-pulse .ring-2 { animation-delay: 0.35s; }
+.th-pulse .static { stroke-width: 1.2; }
+@keyframes goalring { from { r: 2; opacity: 1; } to { r: 16; opacity: 0; } }
+.th-caption { min-height: 48px; margin: 10px 0 6px; font-size: 17px; color: var(--ink); }
+.th-caption b { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; margin-right: 6px; }
+.th-caption.is-goal { color: var(--bad-text); font-weight: 600; }
+.th-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.th-btn { font: 600 15px var(--body); color: var(--ink); background: var(--sheet); border: 1px solid var(--hair); border-radius: 6px; padding: 7px 14px; cursor: pointer; min-width: 64px; }
+.th-play { background: var(--ink); color: var(--sheet); border-color: var(--ink); min-width: 84px; }
+.th-clock { font: 700 22px var(--display); font-variant-numeric: tabular-nums; margin-left: 6px; }
+.th-scrub { position: relative; margin: 14px 0 6px; padding-top: 12px; }
+.th-scrub input { width: 100%; accent-color: var(--blue); }
+.th-ticks { position: absolute; left: 8px; right: 8px; top: 0; height: 10px; }
+.th-tick { position: absolute; top: 0; width: 4px; height: 10px; margin-left: -2px; border-radius: 2px; background: var(--axis); cursor: pointer; }
+.th-tick.own { background: var(--blue); }
+.th-tick.is-goal { background: var(--red); width: 6px; margin-left: -3px; }
+.th-side h3 { margin: 4px 0 6px; }
+.th-feed { list-style: none; margin: 0 0 16px; padding: 0; max-height: 300px; overflow: auto; border: 1px solid var(--hair); border-radius: 6px; background: var(--sheet); }
+.th-feed li button { width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--hair); padding: 7px 10px; font: 400 14px/1.35 var(--body); color: var(--ink-2); cursor: pointer; }
+.th-feed li.own button { color: var(--ink); }
+.th-feed li.is-now button { background: var(--crease); color: var(--ink); font-weight: 600; }
+.th-feed li.is-goal button { color: var(--bad-text); font-weight: 600; }
+.th-onice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; }
+.th-onice ul { list-style: none; margin: 6px 0 0; padding: 0; }
+.th-onice li { padding: 3px 0; color: var(--ink-2); }
+.th-onice li.is-actor { color: var(--ink); font-weight: 700; }
+.num { display: inline-block; min-width: 24px; height: 20px; line-height: 20px; text-align: center; border-radius: 10px; font: 700 11px var(--body); margin-right: 6px; }
+.num.own { background: var(--blue); color: var(--sheet); }
+.num.opp { background: var(--sheet); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.gi-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.watch.replay { background: var(--blue); color: var(--sheet); cursor: pointer; font-family: var(--body); }
+.th-stage .note .watch { margin-left: 6px; }
+@media (max-width: 640px) {
+  .theater { padding: 0; }
+  .th-inner { max-height: 100vh; height: 100vh; border-radius: 0; padding: 12px; }
+  .th-head h2 { font-size: 24px; }
+  .th-caption { font-size: 15px; min-height: 42px; }
+  .th-btn { min-width: 0; padding: 7px 10px; }
+}
+.th-puck.is-gap { opacity: 0.25; }
+.th-gap { font-size: 14px; color: var(--muted); margin: -2px 0 6px; font-style: italic; }
+.hl-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 8px; }
+.hl { background: var(--sheet); border: 1px solid var(--hair); border-left: 3px solid var(--red); border-radius: 6px; padding: 12px 14px; display: grid; gap: 4px; justify-items: start; }
+.hl-label { font: 700 18px var(--display); color: var(--ink); }
+.hl-why { font-size: 14px; color: var(--ink-2); }
+@media (max-width: 600px) {
+  .hl-row { gap: 8px; }
+  .hl { grid-template-columns: 1fr auto; column-gap: 12px; padding: 10px 12px; }
+  .hl > :not(.replay) { grid-column: 1; }
+  .hl .replay { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+}
+a.chip { text-decoration: none; }

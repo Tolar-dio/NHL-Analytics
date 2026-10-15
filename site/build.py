@@ -244,7 +244,9 @@ def main():
     # ---- game catalogue (every game this season)
     from games import build_games
     stories = os.path.join(ROOT, "data", "stories", CUR, "recaps")
-    game_index = build_games(CUR, ev, s, cur["pg"], cur["gg"], games, names, os.path.join(OUTD, "games"), stories)
+    shifts_all = pd.read_csv(TBL(CUR, "shifts.csv.gz"))
+    game_index = build_games(CUR, ev, s, cur["pg"], cur["gg"], games, names, os.path.join(OUTD, "games"), stories,
+                             shifts=shifts_all, plist=plist)
     all_shots = s
     s = s[s.nx > 0]
     shots = {}
@@ -306,7 +308,7 @@ def main():
         props = []
     if gm_out:
         from previews import build_previews
-        shifts = pd.read_csv(TBL(CUR, "shifts.csv.gz"))
+        shifts = shifts_all
         posmap = plist.position.map(lambda p: "D" if p == "D" else ("G" if p == "G" else "F"))
         build_previews(slate, props, gm_out, all_shots, cur["tg"], ev, game_index, goalie_rows, pgc, shifts,
                        posmap, names, os.path.join(OUTD, "previews"),

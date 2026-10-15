@@ -577,9 +577,9 @@ function renderModel(view) {
 }
 
 // ------------------------------------------------------------------ router
-const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, league: renderLeague,
+const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, league: renderLeague,
   teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
-const TAB_OF = { game: "games", preview: "tonight" };
+const TAB_OF = { game: "games", goals: "games", preview: "tonight" };
 function route() {
   const [tab, param] = (location.hash.slice(1) || "tonight").split("/");
   const fn = ROUTES[tab] || renderTonight;
@@ -589,7 +589,7 @@ function route() {
   const p = fn(view, param);
   if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">Something failed to load (${esc(e.message)}). Reload to try again.</p>`));
   tip.hidden = true;
-  if (param || tab === "game" || tab === "preview") scrollTo(0, 0);
+  if (param || tab === "game" || tab === "preview" || tab === "goals") scrollTo(0, 0);
 }
 
 function applyThemeLabel() {
