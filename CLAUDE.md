@@ -13,7 +13,7 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 
 - `situation_code` is the NHL's 4-digit code: away goalie, away skaters, home skaters, home goalie. "1551" is 5v5; "1451" is a home power play 5v4; a 0 in a goalie slot means empty net.
 - `x`, `y` are rink coordinates in feet from center ice. Which net a team shoots at flips by period; use `home_defending_side` to normalize before computing shot distance.
-- For goals, player1 is the scorer and player2/player3 the assists; for blocked shots, player2 is the blocker; for faceoffs, player1 won.
+- For goals, player1 is the scorer and player2/player3 the assists; for blocked shots, player1 is the shooter, player2 the blocker, and `team` is the SHOOTING team (verified against boxscores); for faceoffs, player1 won.
 - Shootout events have period 5 and period_type SO; exclude them from shot metrics.
 
 ## Working style
@@ -26,4 +26,11 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 
 - MoneyPuck shots: `data/external/moneypuck/<season>/<game_id>.csv.gz` (their `xGoal` is the benchmark for our own xG model). Credit MoneyPuck.com in anything shown publicly.
 - NHL Edge: `data/external/edge/<season>/skaters.csv.gz` (flattened) and `skaters_raw.json.gz` (full per-player JSON, includes per-area shot counts and record-game overlays).
-- HTML time-on-ice reports (`toi_TH.htm.gz`, `toi_TV.htm.gz` in a game's raw folder) are the fallback when the shift JSON is empty. They still need a parser into shifts.csv.
+- HTML time-on-ice reports (`toi_TH.htm.gz`, `toi_TV.htm.gz` in a game's raw folder) are the fallback when the shift JSON is empty; `fetch.py` parses them into shifts.csv. Overlapping JSON shifts are merged. Validated: every player-game TOI within 30s of the boxscore.
+
+## Analysis scripts
+
+- `analysis/player_flags.py`: our own xG model (logistic, out-of-fold) plus skater and goalie tables. Run first.
+- `analysis/onice.py`: 5v5 on-ice CF/xG/G and relative xGF% per skater.
+- xG source: MoneyPuck's xGoal is primary (AUC 0.78 vs ours 0.73 shot-level; aggregates correlate 0.95+). Ours fills gaps.
+- On-ice attribution: a player is on ice for an event if start_sec < t <= end_sec.

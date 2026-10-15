@@ -18,6 +18,7 @@ import gzip
 import io
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -230,6 +231,61 @@ PLAYER_KEYS = {
 }
 
 
+TOI_HEADING = re.compile(r'class="playerHeading[^"]*"[^>]*>\s*(\d+)\s+([^<]+?)\s*</td>')
+TOI_CELL = re.compile(r"<td[^>]*>(.*?)</td>", re.S)
+PERIOD_NUM = {"OT": 4, "SO": 5}
+
+
+def parse_toi_html(path):
+    """Yield (sweater, name, [(shift_no, period, start, end)]) per player.
+
+    Start/end are elapsed time within the period ("12:34"), matching the
+    JSON shift feed's convention.
+    """
+    with gzip.open(path, "rb") as f:
+        html = f.read().decode("utf-8", "replace")
+    heads = list(TOI_HEADING.finditer(html))
+    for i, m in enumerate(heads):
+        block = html[m.end(): heads[i + 1].start() if i + 1 < len(heads) else len(html)]
+        rows = []
+        for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", block, re.S):
+            cells = [re.sub(r"<[^>]+>|&nbsp;", "", c).strip() for c in TOI_CELL.findall(tr)]
+            # real shift rows show "elapsed / game" times; this skips header
+            # rows and the per-period summary table under each player
+            if len(cells) < 5 or not cells[0].isdigit() or "/" not in cells[2]:
+                continue
+            per = PERIOD_NUM.get(cells[1], cells[1])
+            if not str(per).isdigit():
+                continue
+            start = cells[2].split("/")[0].strip()
+            end = cells[3].split("/")[0].strip()
+            rows.append((int(cells[0]), int(per), start, end))
+        yield m.group(1), m.group(2), rows
+
+
+def merge_overlapping_shifts(rows):
+    """The JSON feed sometimes repeats or overlaps a player's shifts, which
+    would double-count ice time. Merge overlaps within (game, player, period)."""
+    groups = {}
+    for r in rows:
+        groups.setdefault((r[0], r[1], r[4]), []).append(r)
+    out = []
+    for key in sorted(groups, key=lambda k: (k[0], str(k[1]), k[2] or 0)):
+        rs = sorted(groups[key], key=lambda r: (r[8] if r[8] is not None else -1))
+        cur = None
+        for r in rs:
+            if cur and r[8] is not None and cur[9] is not None and r[8] < cur[9]:
+                if r[9] is not None and r[9] > cur[9]:
+                    cur[7], cur[9] = r[7], r[9]
+                continue
+            if cur:
+                out.append(cur)
+            cur = list(r)
+        if cur:
+            out.append(cur)
+    return out
+
+
 def build_tables(season):
     raw = os.path.join(DATA, "raw", season)
     if not os.path.isdir(raw):
@@ -288,6 +344,22 @@ def build_tables(season):
             ])
 
         sh_path = os.path.join(d, "shifts.json.gz")
+        if not os.path.exists(sh_path):
+            # fall back to the HTML time-on-ice reports
+            num_to_pid = {}
+            for p in pbp.get("rosterSpots", []):
+                num_to_pid[(p.get("teamId"), str(p.get("sweaterNumber")))] = p.get("playerId")
+            for code, team in (("TH", home), ("TV", away)):
+                hp = os.path.join(d, f"toi_{code}.htm.gz")
+                if not os.path.exists(hp):
+                    continue
+                for num, pname, rows in parse_toi_html(hp):
+                    pid = num_to_pid.get((team.get("id"), num))
+                    for shift_no, per, start, end in rows:
+                        shift_rows.append([
+                            gid, pid, roster.get(pid, pname), team.get("abbrev"), per,
+                            shift_no, start, end, mmss_to_sec(start), mmss_to_sec(end),
+                        ])
         if os.path.exists(sh_path):
             for s in read_gz_json(sh_path).get("data", []):
                 if s.get("typeCode") not in (517, None):  # 517 = shift; 505 = goal marker
@@ -300,6 +372,7 @@ def build_tables(season):
                     mmss_to_sec(s.get("startTime")), mmss_to_sec(s.get("endTime")),
                 ])
 
+    shift_rows = merge_overlapping_shifts(shift_rows)
     out = os.path.join(DATA, "tables", season)
     write_gz_csv(os.path.join(out, "games.csv.gz"),
                  ["game_id", "date", "game_type", "home", "away", "home_score",
