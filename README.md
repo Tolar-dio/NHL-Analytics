@@ -1,5 +1,7 @@
 # NHL Analytics
 
+**Dashboard:** https://tolar-dio.github.io/NHL-Analytics/ (rebuilt every morning and again mid-afternoon)
+
 Personal NHL analytics project for the 2026-27 season. A GitHub Action pulls every completed game from the NHL's public API each night and stores it here.
 
 ## What's in here
@@ -33,3 +35,9 @@ Data source: the NHL's public API (api-web.nhle.com and api.nhle.com). Preseason
 The **Backfill a past season** workflow (Actions tab) pulls a full past season: every regular-season and playoff game, plus MoneyPuck shot data and season summaries. It saves progress month by month, so if it stops partway, run it again and it resumes. Last season (20252026) takes roughly 1 to 2 hours.
 
 `data/external/moneypuck_summary/<season>/{skaters,goalies,teams,lines}.csv.gz`: MoneyPuck season-level tables, split by situation (all, 5on5, 5on4, 4on5, other). Refreshed nightly for the current season.
+
+## The dashboard (site/)
+
+`site/build.py` turns the data and models into JSON; `site/index.html`, `app.js` and `style.css` are a static page that reads it. The nightly workflow builds and deploys it to GitHub Pages after each data pull. Tabs: Tonight (goal and 2+ point odds with fair prices, goalie switcher), League (team map, standings with luck, goalie saves above expected), Teams, Players (shot maps, Edge tracking), My team (fantasy schedule grid from `site/config.json`), and Trust the model? (backtest calibration).
+
+To preview locally: `python site/build.py && cd site && python -m http.server`.

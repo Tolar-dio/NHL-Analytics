@@ -1,0 +1,617 @@
+/* Ice Sheet front end. Plain JS, no build step. Data comes from data/*.json,
+   rebuilt every morning by site/build.py. */
+"use strict";
+
+const D = {};                       // loaded data
+const S = {                         // UI state
+  game: null, pos: "all", q: "", radar: false, sort: { key: "p_goal", dir: -1 },
+  goalies: {}, tLimit: 40, pSort: { key: "pts", dir: -1 }, pPos: "all", pTeam: "all", pMin: 3, pLimit: 60,
+};
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { v === "" || v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} },
+};
+
+// ------------------------------------------------------------------ number helpers
+const pct = (p, d = 0) => (p == null ? "–" : (100 * p).toFixed(d) + "%");
+const num = (x, d = 1) => (x == null ? "–" : Number(x).toFixed(d));
+const signed = (x, d = 1) => (x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(d));
+function fair(p) {
+  if (!p || p <= 0 || p >= 1) return "–";
+  return p < 0.5 ? "+" + Math.round((100 * (1 - p)) / p) : String(Math.round((-100 * p) / (1 - p)));
+}
+function decimalOdds(s) {
+  const o = parseFloat(String(s).replace(/[^\d.+-]/g, ""));
+  if (!isFinite(o) || Math.abs(o) < 100) return null;
+  return o > 0 ? 1 + o / 100 : 1 + 100 / -o;
+}
+const dateLabel = (iso) => {
+  const d = new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "short" }) + " " + d.getDate();
+};
+const timeMT = (utc) => (utc ? new Date(utc).toLocaleTimeString("en-US", { timeZone: "America/Denver", hour: "numeric", minute: "2-digit" }) + " MT" : "");
+
+// Poisson helpers for client-side recomputation when a goalie is swapped
+function poisPmf(l, n) { const out = [Math.exp(-l)]; for (let k = 1; k <= n; k++) out.push((out[k - 1] * l) / k); return out; }
+function totalDist(la, lb) {
+  const N = 15, a = poisPmf(la, N), b = poisPmf(lb, N), out = new Array(2 * N + 2).fill(0);
+  for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) out[i + j + (i === j ? 1 : 0)] += a[i] * b[j];
+  return out;
+}
+
+// ------------------------------------------------------------------ tooltip
+const tip = $("#tip");
+function showTip(target, x, y) {
+  tip.innerHTML = target.dataset.tip;
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let left = x + 14, top = y + 14;
+  if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+  if (top + r.height > innerHeight - 8) top = y - r.height - 14;
+  tip.style.left = Math.max(8, left) + "px";
+  tip.style.top = Math.max(8, top) + "px";
+}
+document.addEventListener("pointermove", (e) => {
+  const t = e.target.closest?.("[data-tip]");
+  if (t && e.pointerType === "mouse") showTip(t, e.clientX, e.clientY);
+  else if (e.pointerType === "mouse") tip.hidden = true;
+});
+document.addEventListener("click", (e) => {
+  const t = e.target.closest?.("[data-tip]");
+  if (t && !t.closest("a,button")) { const r = t.getBoundingClientRect(); showTip(t, r.left + r.width / 2, r.top); }
+  else tip.hidden = true;
+});
+addEventListener("scroll", () => (tip.hidden = true), { passive: true });
+
+// ------------------------------------------------------------------ SVG building blocks
+const mainW = (max, min = 320) => Math.max(min, Math.min(max, ($("#view").clientWidth || 1000) - 32));
+function ticks(lo, hi, n = 5) {
+  const step0 = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0);
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6));
+  return out;
+}
+
+function rinkSVG(shots, opts = {}) {
+  // half rink in feet: centre red line x=0, blue line x=25, goal line x=89, boards x=100
+  const marks = shots.map(([x, y, xg, g]) => {
+    const rr = (0.7 + Math.sqrt(xg / 1000) * 3.4) * (opts.scale || 1);
+    const tipTxt = `${g ? "<b>Goal</b>" : "Shot"} · ${(xg / 10).toFixed(1)}% chance (xG ${(xg / 1000).toFixed(2)})`;
+    return `<circle class="${g ? "goal" : "shot"}" cx="${x}" cy="${-y}" r="${g ? Math.max(rr, 1.3) : rr}" data-tip="${esc(tipTxt)}"></circle>`;
+  });
+  // goals drawn last so they sit on top
+  marks.sort((a, b) => (a.includes('class="goal"') ? 1 : 0) - (b.includes('class="goal"') ? 1 : 0));
+  return `<svg class="chart rink" viewBox="-1 -43.5 102 87" role="img" aria-label="${esc(opts.label || "Shot map")}">
+    <path class="boards" d="M0,-42.5 L72,-42.5 A28,28 0 0 1 100,-14.5 L100,14.5 A28,28 0 0 1 72,42.5 L0,42.5 Z"/>
+    <rect class="redline" x="-0.5" y="-42.5" width="1" height="85"/>
+    <rect class="blueline" x="25" y="-42.5" width="1" height="85"/>
+    <circle class="dot" cx="20" cy="-22" r="0.6"/><circle class="dot" cx="20" cy="22" r="0.6"/>
+    <text class="zone-label" x="1.5" y="41">Centre line</text><text class="zone-label" x="26.5" y="41">Blue line</text>
+    <circle class="circle" cx="69" cy="-22" r="15"/><circle class="circle" cx="69" cy="22" r="15"/>
+    <circle class="dot" cx="69" cy="-22" r="0.6"/><circle class="dot" cx="69" cy="22" r="0.6"/>
+    <line class="goalline" x1="89" y1="-36.7" x2="89" y2="36.7"/>
+    <path class="crease" d="M89,-4 L85.5,-4 A6,6 0 0 0 85.5,4 L89,4 Z"/>
+    <rect class="net" x="89" y="-3" width="3.3" height="6" rx="0.8"/>
+    ${marks.join("")}
+  </svg>`;
+}
+
+function scatterTeams(teams, fav) {
+  const W = mainW(1000), H = Math.max(440, Math.round(W * 0.56)), m = { l: 52, r: 24, t: 16, b: 48 };
+  const xs = teams.map((t) => t.xgf60), ys = teams.map((t) => t.xga60);
+  const pad = 0.12;
+  const x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+  const X = (v) => m.l + ((v - x0) / (x1 - x0)) * (W - m.l - m.r);
+  const Y = (v) => m.t + ((v - y0) / (y1 - y0)) * (H - m.t - m.b);   // fewer allowed = higher on the chart
+  const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+  const ax = avg(xs), ay = avg(ys);
+  const gx = ticks(x0, x1, 6).map((v) => `<line class="grid" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><text x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${v.toFixed(1)}</text>`);
+  const gy = ticks(y0, y1, 6).map((v) => `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`);
+  // place labels right of the dot, else left, else drop them (tooltip still works)
+  const placed = [], lw = 30, lh = 14;
+  const hit = (b) => placed.some((p) => b.x < p.x + p.w && b.x + b.w > p.x && b.y < p.y + p.h && b.y + b.h > p.y);
+  const order = [...teams].sort((a, b) => (b.team === fav) - (a.team === fav));
+  order.forEach((t) => placed.push({ x: X(t.xgf60) - 5, y: Y(t.xga60) - 5, w: 10, h: 10 }));
+  const labelPos = {};
+  order.forEach((t) => {
+    const cx = X(t.xgf60), cy = Y(t.xga60);
+    for (const [dx, anchor] of [[8, "start"], [-8, "end"]]) {
+      const b = { x: anchor === "start" ? cx + dx : cx + dx - lw, y: cy - lh / 2, w: lw, h: lh };
+      if (!hit(b) && b.x > m.l && b.x + b.w < W) { placed.push(b); labelPos[t.team] = { dx, anchor }; return; }
+    }
+  });
+  const dots = teams.map((t) => {
+    const isFav = t.team === fav, lp = labelPos[t.team];
+    const tipTxt = `<b>${t.team}</b> ${t.w}-${t.l}-${t.otl}, ${t.pts} pts<br>Creates ${t.xgf60.toFixed(2)} xG/60, allows ${t.xga60.toFixed(2)}<br>Expected goal share ${t.xg_pct.toFixed(1)}%`;
+    return `<g data-tip="${esc(tipTxt)}"><circle cx="${X(t.xgf60)}" cy="${Y(t.xga60)}" r="12" fill="transparent"/>
+      <circle cx="${X(t.xgf60)}" cy="${Y(t.xga60)}" r="${isFav ? 6 : 4.5}" fill="${isFav ? "var(--red)" : "var(--blue)"}" stroke="var(--sheet)" stroke-width="2"/>
+      ${lp ? `<text class="lbl" x="${X(t.xgf60) + lp.dx}" y="${Y(t.xga60) + 4}" text-anchor="${lp.anchor}" style="${isFav ? "fill:var(--ink);font-weight:700" : ""}">${t.team}</text>` : ""}</g>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Teams by chances created and allowed per 60 minutes">
+    ${gx.join("")}${gy.join("")}
+    <line class="axis" x1="${X(ax)}" x2="${X(ax)}" y1="${m.t}" y2="${H - m.b}"/>
+    <line class="axis" x1="${m.l}" x2="${W - m.r}" y1="${Y(ay)}" y2="${Y(ay)}"/>
+    <text x="${W - m.r}" y="${m.t + 12}" text-anchor="end" class="lbl">Outchancing opponents</text>
+    <text x="${m.l + 6}" y="${H - m.b - 8}" class="lbl">Getting outchanced</text>
+    ${dots.join("")}
+    <text x="${(m.l + W - m.r) / 2}" y="${H - 6}" text-anchor="middle">Expected goals created per 60 minutes</text>
+    <text transform="translate(12 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">Expected goals allowed per 60 (fewer is higher)</text>
+  </svg>`;
+}
+
+function divergingBars(rows, valueKey, labelFn, tipFn) {
+  const W = mainW(900), rowH = 24, m = { l: W < 500 ? 150 : 200, r: 44, t: 6 }, H = m.t + rows.length * rowH + 22;
+  const maxAbs = Math.max(...rows.map((r) => Math.abs(r[valueKey])), 1);
+  const X = (v) => m.l + ((v + maxAbs) / (2 * maxAbs)) * (W - m.l - m.r);
+  const bars = rows.map((r, i) => {
+    const v = r[valueKey], y = m.t + i * rowH, x0 = X(0), x1 = X(v);
+    const left = Math.min(x0, x1), w = Math.max(Math.abs(x1 - x0), 1.5);
+    const col = v >= 0 ? "var(--blue)" : "var(--red)";
+    const rx = Math.min(4, w / 2);
+    return `<g data-tip="${esc(tipFn(r))}"><rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text x="${m.l - 8}" y="${y + 15}" text-anchor="end" class="lbl">${esc(W < 500 ? labelFn(r).replace(/^(\S)\S*\s/, "$1. ") : labelFn(r))}</text>
+      <rect x="${left}" y="${y + 5}" width="${w}" height="12" rx="${rx}" fill="${col}"/>
+      <text x="${v >= 0 ? x1 + 6 : x1 - 6}" y="${y + 15}" text-anchor="${v >= 0 ? "start" : "end"}">${signed(v)}</text></g>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Goals saved above expected by goalie">
+    <line class="axis" x1="${X(0)}" x2="${X(0)}" y1="0" y2="${H - 18}"/>${bars.join("")}
+    <text x="${X(0)}" y="${H - 2}" text-anchor="middle">0 = exactly as many goals as the shots deserved</text></svg>`;
+}
+
+function calibrationChart(cal, label) {
+  const W = mainW(520), H = Math.round(W * 0.78), m = { l: 52, r: 16, t: 12, b: 44 };
+  const top = Math.ceil(Math.max(...cal.map((c) => Math.max(c.pred, c.act))) * 10) / 10 + 0.05;
+  const X = (v) => m.l + (v / top) * (W - m.l - m.r), Y = (v) => H - m.b - (v / top) * (H - m.t - m.b);
+  const t = ticks(0, top, 4);
+  const grid = t.map((v) => `<line class="grid" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/>
+    <text x="${X(v)}" y="${H - m.b + 15}" text-anchor="middle">${Math.round(v * 100)}%</text><text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`);
+  const nMax = Math.max(...cal.map((c) => c.n));
+  const pts = cal.map((c) => `<g data-tip="${esc(`Model said ${pct(c.pred, 1)}, it happened ${pct(c.act, 1)}<br>${c.n.toLocaleString()} player-games`)}">
+    <circle cx="${X(c.pred)}" cy="${Y(c.act)}" r="${4 + 6 * Math.sqrt(c.n / nMax)}" fill="var(--blue)" stroke="var(--sheet)" stroke-width="2"/></g>`);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${grid.join("")}
+    <line class="axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(top)}" y2="${Y(top)}"/>
+    ${pts.join("")}
+    <text x="${(m.l + W - m.r) / 2}" y="${H - 6}" text-anchor="middle">What the model said</text>
+    <text transform="translate(11 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">What happened</text></svg>`;
+}
+
+const cellBar = (p, max = 0.5) => `<span class="cellbar"><span>${pct(p)}</span><span class="bar-track"><span class="bar-fill" style="width:${Math.min(100, (100 * p) / max)}%"></span></span></span>`;
+function divCell(v, scale, digits = 1) {
+  if (v == null) return `<span class="dim">–</span>`;
+  const w = Math.min(50, (Math.abs(v) / scale) * 50);
+  const style = v >= 0 ? `left:50%;width:${w}%;background:var(--blue)` : `right:50%;width:${w}%;background:var(--red)`;
+  return `<span class="div-cell"><span class="${v >= 0 ? "pos" : "neg"}">${signed(v, digits)}</span><span class="div-track"><span style="${style}"></span></span></span>`;
+}
+
+// sortable table: cols = [{key, label, fmt(row), num:true, nosort}]
+function table(rows, cols, sort, id) {
+  const head = cols.map((c) => `<th data-key="${c.key}" class="${c.nosort ? "nosort" : ""} ${c.cls || ""}" ${sort && sort.key === c.key ? `aria-sort="${sort.dir < 0 ? "descending" : "ascending"}"` : ""} scope="col">${c.label}</th>`).join("");
+  const body = rows.map((r) => `<tr data-id="${r.id ?? ""}">${cols.map((c) => `<td class="${c.cls || ""}">${c.fmt ? c.fmt(r) : esc(r[c.key] ?? "–")}</td>`).join("")}</tr>`).join("");
+  return `<div class="table-wrap"><table id="${id}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function sortRows(rows, sort) {
+  return [...rows].sort((a, b) => {
+    const va = a[sort.key], vb = b[sort.key];
+    if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1;
+    return (typeof va === "string" ? va.localeCompare(vb) : va - vb) * sort.dir;
+  });
+}
+function bindSort(root, sort, rerender) {
+  $$("th[data-key]:not(.nosort)", root).forEach((th) => th.addEventListener("click", () => {
+    const k = th.dataset.key;
+    if (sort.key === k) sort.dir *= -1; else { sort.key = k; sort.dir = -1; }
+    rerender();
+  }));
+}
+const ordinal = (n) => n + ((n % 100 >= 11 && n % 100 <= 13) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th"));
+const playerLink = (id, name) => `<a class="who" href="#players/${id}">${esc(name)}</a>`;
+
+// ------------------------------------------------------------------ TONIGHT
+function goalieFor(game, side) {
+  const pick = S.goalies[game.id]?.[side] ?? game[side + "_goalie"];
+  const opts = game[side + "_goalies"] || [];
+  return opts.find((o) => o.id === pick) || opts[0] || { factor: 1, name: "Unknown" };
+}
+function liveGame(game) {
+  // recompute team expected goals and totals for the chosen goalies
+  const dfltA = (game.away_goalies || []).find((o) => o.id === game.away_goalie)?.factor || 1;
+  const dfltH = (game.home_goalies || []).find((o) => o.id === game.home_goalie)?.factor || 1;
+  const ga = goalieFor(game, "away"), gh = goalieFor(game, "home");
+  const away_xg = game.away_xg * (gh.factor / dfltH), home_xg = game.home_xg * (ga.factor / dfltA);
+  const dist = totalDist(away_xg, home_xg);
+  let tot = 0, o55 = 0, o65 = 0;
+  dist.forEach((p, k) => { tot += p * k; if (k >= 6) o55 += p; if (k >= 7) o65 += p; });
+  return { ...game, away_xg, home_xg, total: tot, o55, o65, ga, gh };
+}
+function liveProps() {
+  const games = Object.fromEntries(D.tonight.games.map((g) => [g.id, liveGame(g)]));
+  return D.tonight.props.map((p) => {
+    const g = games[p.game]; if (!g) return p;
+    const oppGoalie = p.team === g.away ? g.gh : g.ga;
+    const k = oppGoalie.factor / (p.g_f || 1);
+    const lg = p.lam_g * k, lp = p.lam_p * k;
+    return { ...p, p_goal: 1 - Math.exp(-lg), p_2pts: 1 - Math.exp(-lp) * (1 + lp) };
+  });
+}
+
+function renderTonight(view) {
+  const T = D.tonight;
+  if (!T.games.length) {
+    view.innerHTML = `<section class="zone"><h1>No games on ${esc(T.date)}</h1><p class="lede">The next slate shows up here the morning of game day.</p></section>`;
+    return;
+  }
+  const games = T.games.map(liveGame);
+  const maxXg = Math.max(...games.flatMap((g) => [g.away_xg, g.home_xg]), 3.5);
+  const gameCard = (g) => {
+    const side = (abbr, xg, key) => {
+      const opts = g[key + "_goalies"] || [], chosen = goalieFor(g, key);
+      return `<div class="side"><span class="abbr">${abbr}</span>
+        <span class="bar-track" data-tip="${esc(`${abbr} expected goals tonight: ${xg.toFixed(2)}`)}"><span class="bar-fill" style="width:${(100 * xg) / maxXg}%"></span></span>
+        <span class="xg">${xg.toFixed(2)}</span></div>
+        <label class="goalie"><select data-game="${g.id}" data-side="${key}" aria-label="${abbr} goalie">
+          ${opts.map((o) => `<option value="${o.id}" ${o.id === chosen.id ? "selected" : ""}>${esc(o.name)} (${o.starts} start${o.starts === 1 ? "" : "s"})</option>`).join("")}
+        </select></label>`;
+    };
+    return `<article class="game ${S.game === g.id ? "is-picked" : ""}">
+      <div class="game-time"><span>${timeMT(g.start)}</span><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></div>
+      ${side(g.away, g.away_xg, "away")}${side(g.home, g.home_xg, "home")}
+      <div class="game-foot" data-tip="${esc("Game totals did not beat a league-average guess in last season's backtest. Context only.")}">Projected total ${g.total.toFixed(1)} goals, over 5.5 ${pct(g.o55)} (context only)</div>
+    </article>`;
+  };
+  view.innerHTML = `
+    <section class="zone">
+      <h1>${esc(dateLabel(T.date))}: ${games.length} games</h1>
+      <p class="lede">Bars show each team's expected goals tonight. Goalies are projected from recent starts, so switch any of them to the confirmed starter and every number on this page updates.</p>
+      <div class="slate">${games.map(gameCard).join("")}</div>
+    </section>
+    <section class="zone">
+      <h2>Who scores, who stacks points</h2>
+      <p class="lede">Chance of at least one goal and of two or more points, with the fair price for each. Type your book's odds to see the expected return; positive means the book is paying more than the model thinks it should.</p>
+      <div class="controls">
+        <input type="search" id="q" placeholder="Find a player" value="${esc(S.q)}" aria-label="Find a player">
+        <div class="chips" role="group" aria-label="Position">
+          ${["all", "F", "D"].map((p) => `<button type="button" class="chip" data-pos="${p}" aria-pressed="${S.pos === p}">${p === "all" ? "All skaters" : p === "F" ? "Forwards" : "Defense"}</button>`).join("")}
+        </div>
+        <label class="check"><input type="checkbox" id="radar" ${S.radar ? "checked" : ""}> Under the radar only</label>
+      </div>
+      <div id="propsTable"></div>
+      <p class="note">Under the radar marks players getting real chances whose goal totals lag behind them, outside the night's top dozen favourites. ${esc(T.goalie_note)}</p>
+    </section>`;
+
+  const drawTable = () => {
+    let rows = liveProps();
+    if (S.game) rows = rows.filter((r) => r.game === S.game);
+    if (S.pos !== "all") rows = rows.filter((r) => r.pos === S.pos);
+    if (S.radar) rows = rows.filter((r) => r.radar);
+    if (S.q) rows = rows.filter((r) => r.name.toLowerCase().includes(S.q.toLowerCase()));
+    const all = sortRows(rows, S.sort);
+    rows = all.slice(0, S.game || S.q || S.radar ? 400 : S.tLimit);
+    const oddsKey = (id) => `odds:${T.date}:${id}`;
+    const evCell = (r) => {
+      const d = decimalOdds(store.get(oddsKey(r.id)) || "");
+      if (!d) return `<span class="dim">–</span>`;
+      const ev = r.p_goal * d - 1;
+      return `<span class="${ev >= 0 ? "pos" : "neg"}">${signed(100 * ev, 0)}%</span>`;
+    };
+    const cols = [
+      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}` },
+      { key: "pos", label: "Pos", cls: "hide-sm" },
+      { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
+      { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" },
+      { key: "p_goal", label: "Goal chance", fmt: (r) => cellBar(r.p_goal, 0.5) },
+      { key: "fair_g", label: "Fair odds", nosort: true, fmt: (r) => fair(r.p_goal) },
+      { key: "odds", label: "Your odds", nosort: true, fmt: (r) => `<input class="odds-in" inputmode="text" data-id="${r.id}" placeholder="odds" value="${esc(store.get(oddsKey(r.id)) || "")}" aria-label="Book odds for ${esc(r.name)} to score">` },
+      { key: "ev", label: "Return", nosort: true, fmt: evCell, cls: "ev" },
+      { key: "p_2pts", label: "2+ points", fmt: (r) => cellBar(r.p_2pts, 0.5) },
+      { key: "fair_2", label: "Fair odds", nosort: true, fmt: (r) => fair(r.p_2pts) },
+    ];
+    $("#propsTable").innerHTML = (rows.length ? table(rows, cols, S.sort, "props") : `<p class="empty">No skaters match. Clear the search or switch filters.</p>`) +
+      (all.length > rows.length ? `<div class="controls" style="margin-top:10px"><button type="button" class="chip" id="tMore">Show ${Math.min(40, all.length - rows.length)} more of ${all.length}</button></div>` : "");
+    $("#tMore")?.addEventListener("click", () => { S.tLimit += 40; drawTable(); });
+    bindSort($("#propsTable"), S.sort, drawTable);
+    $$(".odds-in", view).forEach((inp) => inp.addEventListener("input", () => {
+      store.set(oddsKey(inp.dataset.id), inp.value.trim());
+      const r = rows.find((x) => String(x.id) === inp.dataset.id);
+      inp.closest("tr").querySelector(".ev").innerHTML = evCell(r);
+    }));
+  };
+  drawTable();
+
+  $("#q").addEventListener("input", (e) => { S.q = e.target.value; drawTable(); });
+  $("#radar").addEventListener("change", (e) => { S.radar = e.target.checked; drawTable(); });
+  $$("[data-pos]", view).forEach((b) => b.addEventListener("click", () => { S.pos = b.dataset.pos; renderTonight(view); }));
+  $$("[data-pick]", view).forEach((b) => b.addEventListener("click", () => { const id = +b.dataset.pick; S.game = S.game === id ? null : id; renderTonight(view); }));
+  $$("select[data-game]", view).forEach((sel) => sel.addEventListener("change", () => {
+    (S.goalies[sel.dataset.game] ||= {})[sel.dataset.side] = +sel.value;
+    store.set("goalies:" + T.date, JSON.stringify(S.goalies));
+    renderTonight(view);
+  }));
+}
+
+// ------------------------------------------------------------------ LEAGUE
+function renderLeague(view) {
+  const teams = D.teams, fav = D.meta.favorite_team;
+  const goalies = D.goalies.filter((g) => g.sa >= 60).sort((a, b) => b.gsax - a.gsax);
+  const sorted = sortRows(teams.map((t) => ({ ...t, id: t.team })), S.lSort ||= { key: "pts", dir: -1 });
+  view.innerHTML = `
+    <section class="zone">
+      <h1>Who's actually good</h1>
+      <p class="lede">Every team placed by the quality of chances it creates and allows, per 60 minutes. Up and to the right is where you want to be. ${fav} is in red.</p>
+      <div class="figure">${scatterTeams(teams, fav)}</div>
+    </section>
+    <section class="zone">
+      <h2>Standings, with the luck shown</h2>
+      <p class="lede">Finishing compares goals scored to the chances behind them. Goaltending compares goals allowed to the chances against, so positive means the goalie is stealing. Both swing hard early and tend to drift back toward zero.</p>
+      <div id="standings"></div>
+    </section>
+    <section class="zone">
+      <h2>Goalies: saves above expected</h2>
+      <p class="lede">Goals the shots deserved minus goals actually allowed. Goalies who have faced at least 60 unblocked shots.</p>
+      <div class="figure">${divergingBars(goalies, "gsax", (g) => `${g.name} ${g.team}`,
+        (g) => `<b>${esc(g.name)}</b> ${g.team}<br>${g.gp} GP, ${pct(g.sv_pct, 1)} save rate<br>Allowed ${g.ga} on ${num(g.xga, 1)} expected${g.prev_gsax != null ? `<br>Last season ${signed(g.prev_gsax)}` : ""}`)}</div>
+    </section>`;
+  const draw = () => {
+    const rows = sortRows(teams.map((t) => ({ ...t, id: t.team, rec: `${t.w}-${t.l}-${t.otl}`, gaLuck: t.xga - t.ga })), S.lSort);
+    $("#standings").innerHTML = table(rows, [
+      { key: "team", label: "Team", fmt: (r) => `<a class="who" href="#teams/${r.team}">${r.team}</a>` },
+      { key: "gp", label: "GP" }, { key: "rec", label: "Record", nosort: true }, { key: "pts", label: "Pts" },
+      { key: "xg_pct", label: "xG share", fmt: (r) => pct(r.xg_pct / 100, 1) },
+      { key: "gf", label: "GF" }, { key: "ga", label: "GA" },
+      { key: "g_minus_xg", label: "Finishing", fmt: (r) => divCell(r.g_minus_xg, 8) },
+      { key: "gaLuck", label: "Goaltending", fmt: (r) => divCell(r.gaLuck, 8) },
+    ], S.lSort, "standings-t");
+    bindSort($("#standings"), S.lSort, draw);
+  };
+  draw();
+}
+
+// ------------------------------------------------------------------ TEAMS
+function skaterCols() {
+  return [
+    { key: "name", label: "Player", fmt: (r) => playerLink(r.id, r.name) },
+    { key: "pos", label: "Pos" }, { key: "gp", label: "GP" },
+    { key: "toi_pg", label: "TOI", fmt: (r) => num(r.toi_pg, 1) },
+    { key: "g", label: "G" }, { key: "a", label: "A" }, { key: "pts", label: "P" },
+    { key: "ixg", label: "xG", fmt: (r) => num(r.ixg, 1) },
+    { key: "g_minus_xg", label: "G − xG", fmt: (r) => divCell(r.g_minus_xg, 4) },
+    { key: "xgf5", label: "5v5 xG share", fmt: (r) => (r.xgf5 == null ? "–" : pct(r.xgf5 / 100)) },
+    { key: "rel5", label: "Team better with him", fmt: (r) => divCell(r.rel5, 30) },
+  ];
+}
+function renderTeams(view, param) {
+  const fav = D.meta.favorite_team;
+  const team = (param || fav).toUpperCase();
+  const t = D.teams.find((x) => x.team === team);
+  const abbrs = D.teams.map((x) => x.team).sort();
+  const sk = D.skaters.filter((s) => s.team === team);
+  const shots = sk.flatMap((s) => D.shots[s.id] || []);
+  const gl = D.goalies.filter((g) => g.team === team);
+  const rank = [...D.teams].sort((a, b) => b.pts - a.pts || a.gp - b.gp).findIndex((x) => x.team === team) + 1;
+  const finishing = t ? t.g_minus_xg : 0, keeping = t ? t.xga - t.ga : 0;
+  const story = !t ? "" : [
+    `${team} is getting ${pct(t.xg_pct / 100)} of the expected goals in its games.`,
+    Math.abs(finishing) >= 3 ? `Its shooters are ${finishing > 0 ? "running hot" : "running cold"}: ${signed(finishing)} goals against what their chances deserved.` : `Its finishing is close to what the chances deserve.`,
+    Math.abs(keeping) >= 3 ? `Its goaltending is ${keeping > 0 ? "stealing goals" : "leaking goals"} (${signed(keeping)}).` : `Its goaltending is close to expected.`,
+  ].join(" ");
+  S.tSort ||= { key: "pts", dir: -1 };
+  view.innerHTML = `
+    <section class="zone">
+      <div class="controls"><label for="teamPick" class="check">Team</label>
+        <select id="teamPick">${abbrs.map((a) => `<option ${a === team ? "selected" : ""}>${a}</option>`).join("")}</select></div>
+      <h1>${team}${t ? `: ${t.w}-${t.l}-${t.otl}, ${t.pts} points` : ""}</h1>
+      <p class="lede">${t ? `${ordinal(rank)} in the league by points. ` : ""}${story}</p>
+    </section>
+    <section class="zone grid-2">
+      <div class="figure"><h3>Every unblocked shot this season</h3><p class="note">Bigger dots were better chances. Red dots went in.</p>
+        ${rinkSVG(shots, { label: `${team} shot map`, scale: 0.7 })}
+        <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
+      <div><h3>Goalies</h3>
+        ${gl.length ? table(gl.map((g) => ({ ...g })), [
+          { key: "name", label: "Goalie", nosort: true, fmt: (g) => esc(g.name) },
+          { key: "gp", label: "GP", nosort: true }, { key: "sv_pct", label: "Save rate", nosort: true, fmt: (g) => pct(g.sv_pct, 1) },
+          { key: "gsax", label: "Saves above expected", nosort: true, fmt: (g) => divCell(g.gsax, 8) },
+        ], null, "tg") : `<p class="empty">No goalie data yet.</p>`}
+      </div>
+    </section>
+    <section class="zone"><h2>Skaters</h2><p class="lede">"Team better with him" is how much larger a share of 5v5 expected goals the team gets with this player on the ice than without him.</p><div id="teamSk"></div></section>`;
+  const draw = () => { $("#teamSk").innerHTML = table(sortRows(sk, S.tSort), skaterCols(), S.tSort, "tsk"); bindSort($("#teamSk"), S.tSort, draw); };
+  draw();
+  $("#teamPick").addEventListener("change", (e) => (location.hash = "#teams/" + e.target.value));
+}
+
+// ------------------------------------------------------------------ PLAYERS
+function verdictFor(p) {
+  const bits = [];
+  if (p.g_minus_xg >= 2) bits.push(`He has scored ${signed(p.g_minus_xg)} more goals than his chances usually produce, so expect fewer to go in.`);
+  else if (p.g_minus_xg <= -1.5) bits.push(`He has ${signed(p.g_minus_xg)} fewer goals than his chances deserve, so goals should come if the chances keep coming.`);
+  if (p.oi_luck >= 4) bits.push(`His team has outscored expectations by ${signed(p.oi_luck)} goals while he's on the ice, which tends not to last.`);
+  if (p.oi_luck <= -4) bits.push(`His team has been unlucky with him on the ice (${signed(p.oi_luck)} goals against expectation).`);
+  if (p.rel5 != null && Math.abs(p.rel5) >= 10) bits.push(`At 5v5 his team gets ${signed(p.rel5, 0)} points more of the expected goal share with him on the ice than without him.`);
+  return bits.length ? bits.join(" ") : "Nothing unusual yet: his results line up with his underlying play.";
+}
+function renderPlayers(view, param) {
+  const byPts = [...D.skaters].sort((a, b) => b.pts - a.pts);
+  const id = param ? +param : (byPts.find((s) => s.team === D.meta.favorite_team) || byPts[0]).id;
+  const p = D.skaters.find((s) => s.id === id) || byPts[0];
+  const shots = D.shots[p.id] || [];
+  const tile = (v, label, sub) => `<div class="stat"><b>${v}</b><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}</div>`;
+  const meter = (label, pctl, val) => pctl == null ? "" : `<div class="meter"><span>${label}</span><span class="bar-track" data-tip="${esc(`${Math.round(100 * pctl)}th percentile in the league`)}"><span class="bar-fill" style="width:${100 * pctl}%"></span></span><span class="val">${val}</span></div>`;
+  const last = p.p_gp ? `Last season${p.p_team && p.p_team !== p.team ? ` with ${p.p_team}` : ""}: ${p.p_g} G, ${p.p_pts} P in ${p.p_gp} GP` : "No NHL games last season";
+  view.innerHTML = `
+    <section class="zone">
+      <div class="controls"><input type="search" id="pq" placeholder="Search any skater" aria-label="Search any skater" autocomplete="off"></div>
+      <ul class="suggest" id="sugg" hidden></ul>
+      <div class="card-head"><span class="num">${p.num ?? ""}</span><div><h1>${esc(p.name)}</h1>
+        <div class="meta">${p.team}, ${p.pos === "D" ? "defense" : "forward"}, ${p.gp} games, ${num(p.toi_pg, 1)} minutes a night</div></div></div>
+      <div class="stat-row">
+        ${tile(p.g, "Goals", `${num(p.ixg, 1)} expected`)}${tile(p.a, "Assists")}${tile(p.pts, "Points", `${p.ppp} on the power play`)}
+        ${tile(signed(p.g_minus_xg), "Goals vs chances", p.g_minus_xg >= 0 ? "scoring above" : "scoring below")}
+        ${tile(p.xgf5 == null ? "–" : pct(p.xgf5 / 100), "5v5 xG share", p.rel5 == null ? "" : `${signed(p.rel5, 0)} vs without him`)}
+        ${tile(p.sog, "Shots", `${p.hits} hits, ${p.blk} blocks`)}
+      </div>
+      <p class="verdict">${esc(verdictFor(p))}</p>
+    </section>
+    <section class="zone grid-2">
+      <div class="figure"><h3>Shot map</h3><p class="note">${shots.length} unblocked shots this season. Bigger dots were better chances; red went in.</p>
+        ${rinkSVG(shots, { label: `${p.name} shot map` })}
+        <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
+      <div>
+        <h3>What the model believes</h3>
+        <p class="note">${esc(last)}.</p>
+        ${meter("Shooting threat", Math.min(1, (p.m_ixg60 || 0) / 1.6), `${num(p.m_ixg60, 2)} xG/60`)}
+        ${meter("This season", Math.min(1, (p.ixg60 || 0) / 1.6), `${num(p.ixg60, 2)} xG/60`)}
+        ${meter("Last season", p.p_ixg60 == null ? null : Math.min(1, p.p_ixg60 / 1.6), `${num(p.p_ixg60, 2)} xG/60`)}
+        <p class="note">The top bar is the blend the prop odds use: this season pulled toward last season and his role, because a dozen games is too few to trust on its own.</p>
+        <h3 style="margin-top:22px">Skating and shooting, tracked</h3>
+        ${p.max_speed_pctile == null ? `<p class="note">No NHL Edge tracking for him yet.</p>` : `
+          ${meter("Top speed", p.max_speed_pctile, `${num(p.max_speed_mph, 1)} mph`)}
+          ${meter("20+ mph bursts", p.bursts_pctile, `${p.bursts_20mph}`)}
+          ${meter("Hardest shot", p.top_shot_pctile, `${num(p.top_shot_mph, 1)} mph`)}
+          ${meter("Distance skated", p.distance_pctile, `${Math.round(100 * p.distance_pctile)}th pct`)}
+          <p class="note">Bars show his percentile among all NHL skaters this season.</p>`}
+      </div>
+    </section>
+    <section class="zone"><h2>Every skater</h2>
+      <div class="controls">
+        <div class="chips" role="group" aria-label="Position">${["all", "F", "D"].map((x) => `<button type="button" class="chip" data-ppos="${x}" aria-pressed="${S.pPos === x}">${x === "all" ? "All" : x === "F" ? "Forwards" : "Defense"}</button>`).join("")}</div>
+        <select id="pTeam" aria-label="Team"><option value="all">All teams</option>${D.teams.map((t) => t.team).sort().map((a) => `<option ${S.pTeam === a ? "selected" : ""}>${a}</option>`).join("")}</select>
+        <label class="check">Min games <input type="text" id="pMin" value="${S.pMin}" style="width:48px" inputmode="numeric"></label>
+      </div>
+      <div id="allSk"></div><div class="controls" style="margin-top:10px"><button type="button" class="chip" id="more">Show more</button></div>
+    </section>`;
+
+  const draw = () => {
+    let rows = D.skaters.filter((s) => s.gp >= S.pMin && (S.pPos === "all" || s.pos === S.pPos) && (S.pTeam === "all" || s.team === S.pTeam));
+    rows = sortRows(rows, S.pSort).slice(0, S.pLimit);
+    const cols = skaterCols(); cols.splice(1, 0, { key: "team", label: "Team" });
+    $("#allSk").innerHTML = table(rows, cols, S.pSort, "allsk");
+    bindSort($("#allSk"), S.pSort, draw);
+  };
+  draw();
+  $("#more").addEventListener("click", () => { S.pLimit += 100; draw(); });
+  $$("[data-ppos]", view).forEach((b) => b.addEventListener("click", () => { S.pPos = b.dataset.ppos; $$("[data-ppos]", view).forEach((x) => x.setAttribute("aria-pressed", x === b)); draw(); }));
+  $("#pTeam").addEventListener("change", (e) => { S.pTeam = e.target.value; draw(); });
+  $("#pMin").addEventListener("input", (e) => { S.pMin = +e.target.value || 0; draw(); });
+  const q = $("#pq"), sugg = $("#sugg");
+  q.addEventListener("input", () => {
+    const t = q.value.trim().toLowerCase();
+    if (t.length < 2) { sugg.hidden = true; return; }
+    const hits = D.skaters.filter((s) => s.name.toLowerCase().includes(t)).slice(0, 8);
+    sugg.innerHTML = hits.map((s) => `<li><button type="button" data-go="${s.id}">${esc(s.name)} <span class="dim">${s.team}</span></button></li>`).join("") || `<li><button type="button" disabled>No skater by that name has played this season</button></li>`;
+    sugg.hidden = false;
+    $$("[data-go]", sugg).forEach((b) => b.addEventListener("click", () => (location.hash = "#players/" + b.dataset.go)));
+  });
+  q.addEventListener("keydown", (e) => { if (e.key === "Enter") $("[data-go]", sugg)?.click(); });
+}
+
+// ------------------------------------------------------------------ FANTASY
+function renderFantasy(view) {
+  const F = D.fantasy, today = D.tonight.date;
+  const props = Object.fromEntries((D.tonight.props || []).map((p) => [p.id, p]));
+  const sk = Object.fromEntries(D.skaters.map((s) => [s.id, s]));
+  const days = F.days, wk = days.slice(0, 7);
+  const rows = F.roster.map((r) => {
+    const s = sk[r.id] || {};
+    return { ...r, gp: s.gp, pts: s.pts, g: s.g, ixg: s.ixg, gmx: s.g_minus_xg, luck: s.oi_luck, rel5: s.rel5,
+             games7: wk.filter((d) => r.sched[d]).length, tonight: props[r.id]?.p_goal };
+  });
+  const perDay = days.map((d) => rows.filter((r) => r.slot !== "G" && r.sched[d]).length);
+  const head = `<tr><th class="nosort">Player</th>${days.map((d) => `<th class="nosort ${d === today ? "today" : ""}">${dateLabel(d)}</th>`).join("")}<th class="nosort">Next 7</th></tr>`;
+  const body = rows.map((r) => `<tr><td><span class="slot">${r.slot}</span>${playerLink(r.id, r.name || "")}<span class="sub">${r.team || ""}</span></td>
+     ${days.map((d) => `<td class="${r.sched[d] ? "game-day" : "off"} ${d === today ? "today" : ""}">${r.sched[d] ? esc(r.sched[d]) : "·"}</td>`).join("")}<td>${r.games7}</td></tr>`).join("");
+  const foot = `<tr><td><b>Skaters playing</b></td>${perDay.map((n, i) => `<td class="${days[i] === today ? "today" : ""}"><b>${n}</b></td>`).join("")}<td></td></tr>`;
+  const sells = rows.filter((r) => r.slot !== "G" && ((r.gmx ?? 0) >= 2 || (r.luck ?? 0) >= 4));
+  const buys = rows.filter((r) => r.slot !== "G" && (r.gmx ?? 0) <= -1.2);
+  const flag = (r, why) => `<li>${playerLink(r.id, r.name)}: ${why}</li>`;
+  view.innerHTML = `
+    <section class="zone">
+      <h1>${esc(F.team_name)}</h1>
+      <p class="lede">${esc(F.league)} roster, the next ten days of games, and who's running lucky. The bottom row counts how many of your skaters play each day, so days with more games than lineup spots are where bench players need to slide in.</p>
+      <div class="table-wrap"><table class="sched"><thead>${head}</thead><tbody>${body}${foot}</tbody></table></div>
+    </section>
+    <section class="zone grid-2">
+      <div><h3>Running hot, sell before it cools</h3>
+        ${sells.length ? `<ul>${sells.map((r) => flag(r, `${signed(r.gmx)} goals vs chances, on-ice luck ${signed(r.luck)}`)).join("")}</ul>` : `<p class="note">Nobody on your roster is far above their underlying numbers.</p>`}</div>
+      <div><h3>Due for goals, hold or buy</h3>
+        ${buys.length ? `<ul>${buys.map((r) => flag(r, `${r.g} goals on ${num(r.ixg, 1)} expected`)).join("")}</ul>` : `<p class="note">Nobody is far below their chances yet.</p>`}</div>
+    </section>
+    <section class="zone"><h2>Tonight's odds for your guys</h2>
+      ${(() => { const t = rows.filter((r) => r.tonight != null).sort((a, b) => b.tonight - a.tonight);
+        return t.length ? table(t, [
+          { key: "name", label: "Player", nosort: true, fmt: (r) => playerLink(r.id, r.name) },
+          { key: "slot", label: "Slot", nosort: true },
+          { key: "tonight", label: "Goal chance", nosort: true, fmt: (r) => cellBar(r.tonight, 0.5) },
+          { key: "p2", label: "2+ points", nosort: true, fmt: (r) => cellBar(props[r.id].p_2pts, 0.5) },
+        ], null, "ft") : `<p class="note">None of your players are in tonight's games.</p>`; })()}
+      <p class="note">The roster lives in site/config.json in the repository. Ask Claude to update it after a trade or waiver move.</p>
+    </section>`;
+}
+
+// ------------------------------------------------------------------ MODEL
+function renderModel(view) {
+  const M = D.model, ts = M.this_season;
+  view.innerHTML = `
+    <section class="zone">
+      <h1>Can you trust these odds?</h1>
+      <p class="lede">The model was replayed across all of ${esc(M.season)} the honest way: every night predicted using only games played before it. Here is what that showed.</p>
+      <div class="grid-3">
+        <div><div class="bignum">${M.goal.pred.toLocaleString()}</div><p>goal scorers predicted across ${M.player_games.toLocaleString()} player-games. ${M.goal.act.toLocaleString()} actually scored.</p></div>
+        <div><div class="bignum">${M.pts.pred.toLocaleString()}</div><p>two-point games predicted. ${M.pts.act.toLocaleString()} actually happened.</p></div>
+        <div><div class="bignum">${M.totals.corr.toFixed(2)}</div><p>correlation between projected and actual game totals over ${M.games.toLocaleString()} games. That is essentially no signal, so totals here are context only.</p></div>
+      </div>
+    </section>
+    <section class="zone grid-2">
+      <div class="figure narrow"><h3>Goal chances</h3><p class="note">Each dot groups player-games by what the model said. On the line means the model was right on average. Bigger dots hold more games.</p>${calibrationChart(M.goal.cal, "Goal probability calibration")}</div>
+      <div class="figure narrow"><h3>Two or more points</h3><p class="note">Same check for multi-point games.</p>${calibrationChart(M.pts.cal, "Two point probability calibration")}</div>
+    </section>
+    <section class="zone">
+      <h2>What this does and doesn't prove</h2>
+      <p class="lede">It beats a naive guess (league scoring rates times ice time) in every month of last season. It has not been tested against sportsbook prices, which are much sharper than a naive guess. The only real test is logging the model's price next to the closing line for a few weeks.</p>
+      ${ts ? `<p class="lede">This season so far: ${ts.goal_pred} scorers predicted and ${ts.goal_actual} actual across ${ts.player_games.toLocaleString()} player-games.</p>` : ""}
+    </section>`;
+}
+
+// ------------------------------------------------------------------ router
+const ROUTES = { tonight: renderTonight, league: renderLeague, teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
+function route() {
+  const [tab, param] = (location.hash.slice(1) || "tonight").split("/");
+  const fn = ROUTES[tab] || renderTonight;
+  $$(".tabs a").forEach((a) => (a.dataset.tab === (ROUTES[tab] ? tab : "tonight") ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
+  const view = $("#view");
+  fn(view, param);
+  tip.hidden = true;
+  if (param) scrollTo(0, 0);
+}
+
+function applyThemeLabel() {
+  const dark = document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  $("#themeToggle").textContent = dark ? "Light" : "Dark";
+}
+$("#themeToggle").addEventListener("click", () => {
+  const dark = $("#themeToggle").textContent === "Dark";
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  store.set("ice-theme", dark ? "dark" : "light");
+  applyThemeLabel();
+});
+
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (D.meta && !document.activeElement?.matches("input,select")) route(); }, 250); });
+async function boot() {
+  applyThemeLabel();
+  const files = ["meta", "teams", "goalies", "skaters", "shots", "tonight", "model", "fantasy"];
+  try {
+    const got = await Promise.all(files.map((f) => fetch(`data/${f}.json`, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(f); return r.json(); })));
+    files.forEach((f, i) => (D[f] = got[i]));
+  } catch (e) {
+    $("#view").innerHTML = `<p class="empty">The data files didn't load (${esc(e.message)}). The nightly build may still be running; reload in a few minutes.</p>`;
+    return;
+  }
+  try { S.goalies = JSON.parse(store.get("goalies:" + D.tonight.date) || "{}"); } catch (e) { S.goalies = {}; }
+  $("#freshness").textContent = `Updated ${D.meta.updated} MT with games through ${dateLabel(D.meta.last_game)}`;
+  addEventListener("hashchange", route);
+  route();
+}
+boot();

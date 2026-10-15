@@ -42,3 +42,10 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 - `analysis/props_data.py <season>` builds per-game tables into `analysis/output/<season>/`; run it for both seasons before modeling.
 - `analysis/models.py`: anytime goal, 2+ points, and game totals, with last-season priors that follow the player. Modes: `season-backtest 20252026`, `prior-backtest`, `tonight` (reads `analysis/slate.csv`).
 - Backtest results (2025-26, 1,241 games, 44k player-games, walk-forward): goal and 2+ point probabilities are well calibrated and beat a naive baseline every month. Game totals do NOT beat league average (corr 0.08, RMSE 2.288 vs 2.290): treat totals as context, never as a betting edge.
+
+## Dashboard
+
+- `site/build.py` writes `site/data/*.json` (gitignored); the nightly workflow's `site` job runs the models, builds, and deploys `site/` to GitHub Pages.
+- Fantasy roster lives in `site/config.json` (player IDs + slots). Update it when Tolar makes moves.
+- Rink markings in the shot maps are neutral on purpose: red means goal and nothing else.
+- Season constants `CUR`/`PREV` live in `analysis/models.py`; bump them (and backfill) when a new season starts.

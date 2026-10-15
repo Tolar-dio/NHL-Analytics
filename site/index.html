@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ice Sheet</title>
+<meta name="description" content="Nightly NHL analytics: tonight's goal and point odds, team and goalie process stats, player shot maps, and a fantasy roster planner.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>
+  try { const t = localStorage.getItem("ice-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="#tonight">Ice Sheet</a>
+    <p class="freshness" id="freshness">Loading the latest data</p>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch light or dark theme">Dark</button>
+  </div>
+  <nav class="tabs" aria-label="Sections">
+    <a href="#tonight" data-tab="tonight">Tonight</a>
+    <a href="#league" data-tab="league">League</a>
+    <a href="#teams" data-tab="teams">Teams</a>
+    <a href="#players" data-tab="players">Players</a>
+    <a href="#fantasy" data-tab="fantasy">My team</a>
+    <a href="#model" data-tab="model">Trust the model?</a>
+  </nav>
+</header>
+
+<main id="view" tabindex="-1"></main>
+
+<footer class="colophon">
+  <p>Shot data and expected goals courtesy of <a href="https://moneypuck.com">MoneyPuck.com</a>. Game, shift and tracking data from the NHL. Rebuilt every morning from <a href="https://github.com/Tolar-dio/NHL-Analytics">Tolar-dio/NHL-Analytics</a>.</p>
+  <p>Probabilities are model estimates, not advice. Early-season numbers lean heavily on last season.</p>
+</footer>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
