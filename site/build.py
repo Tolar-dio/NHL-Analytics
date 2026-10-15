@@ -18,6 +18,7 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "analysis"))
 import models as M  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 SITE = os.path.join(ROOT, "site")
 OUTD = os.path.join(SITE, "data")
@@ -164,7 +165,8 @@ def main():
 
     # ---- teams and goalies
     dump("teams.json", standings(games, cur["tg"]))
-    dump("goalies.json", goalies(cur["gg"], ev, names, prev["gg"]))
+    goalie_rows = goalies(cur["gg"], ev, names, prev["gg"])
+    dump("goalies.json", goalie_rows)
 
     # ---- skaters: this season (all situations, MoneyPuck xG)
     pg = cur["pg"][cur["pg"].game_type == "regular"]
@@ -231,6 +233,19 @@ def main():
     s = s.merge(mp[["game_id", "game_seconds", "player1_id", "xGoal"]], on=["game_id", "game_seconds", "player1_id"],
                 how="left")
     s["xgv"] = s.xGoal.fillna(s.xg).fillna(0.05)
+    # strength state from the shooter's side (EN = into an empty net, EA = shooter's goalie pulled)
+    ih = s.team == s.home_team
+    own_sk = np.where(ih, s.sc.str[2], s.sc.str[1]).astype(int)
+    opp_sk = np.where(ih, s.sc.str[1], s.sc.str[2]).astype(int)
+    own_g = np.where(ih, s.sc.str[3], s.sc.str[0]) == "1"
+    opp_g = np.where(ih, s.sc.str[0], s.sc.str[3]) == "1"
+    s["state"] = np.select([~opp_g, ~own_g, own_sk > opp_sk, own_sk < opp_sk], ["EN", "EA", "PP", "SH"], "EV")
+
+    # ---- game catalogue (every game this season)
+    from games import build_games
+    stories = os.path.join(ROOT, "data", "stories", CUR, "recaps")
+    game_index = build_games(CUR, ev, s, cur["pg"], cur["gg"], games, names, os.path.join(OUTD, "games"), stories)
+    all_shots = s
     s = s[s.nx > 0]
     shots = {}
     for pid, grp in s.groupby("player1_id"):
@@ -289,6 +304,13 @@ def main():
                             "pp_share", "p_goal", "p_2pts", "lam_g", "lam_p", "g_f", "radar"])
     else:
         props = []
+    if gm_out:
+        from previews import build_previews
+        shifts = pd.read_csv(TBL(CUR, "shifts.csv.gz"))
+        posmap = plist.position.map(lambda p: "D" if p == "D" else ("G" if p == "G" else "F"))
+        build_previews(slate, props, gm_out, all_shots, cur["tg"], ev, game_index, goalie_rows, pgc, shifts,
+                       posmap, names, os.path.join(OUTD, "previews"),
+                       os.path.join(ROOT, "data", "stories", CUR, "previews", str(today)), str(today))
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props,
                               goalie_note="Projected goalies = most starts in each team's last five games. "
                                           "Check confirmations before betting."))

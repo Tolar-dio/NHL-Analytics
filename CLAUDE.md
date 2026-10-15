@@ -49,3 +49,7 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 - Fantasy roster lives in `site/config.json` (player IDs + slots). Update it when Tolar makes moves.
 - Rink markings in the shot maps are neutral on purpose: red means goal and nothing else.
 - Season constants `CUR`/`PREV` live in `analysis/models.py`; bump them (and backfill) when a new season starts.
+- Game catalogue: `site/games.py` (per-game JSON: shots, xG flow, deserved-to-win via exact Poisson-binomial, goals with NHL clip links, stars, player lines, goalie GSAx) and `site/previews.py` (same-day previews, projected lines from last game's shared ice time). Front end in `site/games.js`.
+- `scripts/fetch.py` also saves each game's gamecenter `landing` and `right-rail` (current season only) and re-checks for 3 days until highlight clips post.
+- `scripts/write_stories.py` writes recaps/previews with the Claude API (secret ANTHROPIC_API_KEY, model claude-sonnet-5-5), cached in `data/stories/` so each game is written once. House style: no em dashes, facts from the JSON only.
+- NHL goal-tracking replays (wsr.nhle.com sprites) are restricted to NHL.com; do not spoof headers to fetch them. Link to official clips, don't embed or rehost video.

@@ -256,7 +256,7 @@ function renderTonight(view) {
         </select></label>`;
     };
     return `<article class="game ${S.game === g.id ? "is-picked" : ""}">
-      <div class="game-time"><span>${timeMT(g.start)}</span><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></div>
+      <div class="game-time"><span>${timeMT(g.start)}</span><span class="row" style="gap:12px"><a class="preview-link" href="#preview/${g.id}">Preview</a><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></span></div>
       ${side(g.away, g.away_xg, "away")}${side(g.home, g.home_xg, "home")}
       <div class="game-foot" data-tip="${esc("Game totals did not beat a league-average guess in last season's backtest. Context only.")}">Projected total ${g.total.toFixed(1)} goals, over 5.5 ${pct(g.o55)} (context only)</div>
     </article>`;
@@ -419,6 +419,8 @@ function renderTeams(view, param) {
     <section class="zone"><h2>Skaters</h2><p class="lede">"Team better with him" is how much larger a share of 5v5 expected goals the team gets with this player on the ice than without him.</p><div id="teamSk"></div></section>`;
   const draw = () => { $("#teamSk").innerHTML = table(sortRows(sk, S.tSort), skaterCols(), S.tSort, "tsk"); bindSort($("#teamSk"), S.tSort, draw); };
   draw();
+  const here = location.hash;
+  teamLog(team).then((html) => { if (location.hash === here) view.insertAdjacentHTML("beforeend", html); }).catch(() => {});
   $("#teamPick").addEventListener("change", (e) => (location.hash = "#teams/" + e.target.value));
 }
 
@@ -575,15 +577,19 @@ function renderModel(view) {
 }
 
 // ------------------------------------------------------------------ router
-const ROUTES = { tonight: renderTonight, league: renderLeague, teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
+const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, league: renderLeague,
+  teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
+const TAB_OF = { game: "games", preview: "tonight" };
 function route() {
   const [tab, param] = (location.hash.slice(1) || "tonight").split("/");
   const fn = ROUTES[tab] || renderTonight;
-  $$(".tabs a").forEach((a) => (a.dataset.tab === (ROUTES[tab] ? tab : "tonight") ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
+  const active = TAB_OF[tab] || (ROUTES[tab] ? tab : "tonight");
+  $$(".tabs a").forEach((a) => (a.dataset.tab === active ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   const view = $("#view");
-  fn(view, param);
+  const p = fn(view, param);
+  if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">Something failed to load (${esc(e.message)}). Reload to try again.</p>`));
   tip.hidden = true;
-  if (param) scrollTo(0, 0);
+  if (param || tab === "game" || tab === "preview") scrollTo(0, 0);
 }
 
 function applyThemeLabel() {

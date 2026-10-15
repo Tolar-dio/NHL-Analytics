@@ -41,3 +41,7 @@ The **Backfill a past season** workflow (Actions tab) pulls a full past season: 
 `site/build.py` turns the data and models into JSON; `site/index.html`, `app.js` and `style.css` are a static page that reads it. The nightly workflow builds and deploys it to GitHub Pages after each data pull. Tabs: Tonight (goal and 2+ point odds with fair prices, goalie switcher), League (team map, standings with luck, goalie saves above expected), Teams, Players (shot maps, Edge tracking), My team (fantasy schedule grid from `site/config.json`), and Trust the model? (backtest calibration).
 
 To preview locally: `python site/build.py && cd site && python -m http.server`.
+
+### Game catalogue and previews
+
+Every game this season gets a page (Games tab): a written recap, a "deserved to win" replay of every shot, an expected-goals flow chart, both teams' shot maps, each goal with a link to its official NHL highlight, three stars, and player-by-player numbers. Tonight's games each get a preview page. Recaps and previews are written by Claude in the nightly run (needs the `ANTHROPIC_API_KEY` repository secret) and saved under `data/stories/` so each game is only written once.

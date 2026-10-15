@@ -138,7 +138,7 @@ def game_dir(season, gid):
     return os.path.join(DATA, "raw", season, str(gid))
 
 
-def download_game(season, gid, game_date):
+def download_game(season, gid, game_date, want_detail=False):
     d = game_dir(season, gid)
     status_path = os.path.join(d, "status.json")
     status = json.load(open(status_path)) if os.path.exists(status_path) else {}
@@ -179,9 +179,38 @@ def download_game(season, gid, game_date):
                 status["shifts"] = "missing"
         time.sleep(1.0)
 
+    if want_detail and not status.get("detail"):
+        fetch_detail(gid, game_date, d, status)
+
     os.makedirs(d, exist_ok=True)
     with open(status_path, "w") as f:
         json.dump(status, f)
+
+
+DETAIL_RETRY_DAYS = 3  # highlight clips post a few hours after the game; keep checking this long
+
+
+def fetch_detail(gid, game_date, d, status):
+    """Gamecenter landing (goals with highlight clips, three stars) and right-rail
+    (3-minute recap / condensed game video IDs, season series, linescore).
+
+    Marked done once every goal has a highlight clip, or after DETAIL_RETRY_DAYS.
+    """
+    try:
+        landing = get_json(f"{WEB}/gamecenter/{gid}/landing", tries=2)
+        time.sleep(0.4)
+        rail = get_json(f"{WEB}/gamecenter/{gid}/right-rail", tries=2)
+        time.sleep(0.4)
+    except RuntimeError as e:
+        print(f"  ! detail unavailable for {gid}: {e}", file=sys.stderr)
+        return
+    write_gz_json(os.path.join(d, "landing.json.gz"), landing)
+    write_gz_json(os.path.join(d, "rightrail.json.gz"), rail)
+    goals = [g for per in (landing.get("summary") or {}).get("scoring", []) for g in per.get("goals", [])]
+    clips_ready = all(g.get("highlightClip") for g in goals) and \
+        bool((rail.get("gameVideo") or {}).get("threeMinRecap"))
+    age = (dt.date.today() - dt.date.fromisoformat(game_date)).days
+    status["detail"] = bool(clips_ready or age > DETAIL_RETRY_DAYS)
 
 
 def save_toi_html(season, gid, d):
@@ -207,12 +236,13 @@ def save_toi_html(season, gid, d):
     return ok
 
 
-def needs_work(season, gid):
+def needs_work(season, gid, want_detail=False):
     p = os.path.join(game_dir(season, gid), "status.json")
     if not os.path.exists(p):
         return True
     s = json.load(open(p))
-    return not (s.get("pbp") and s.get("boxscore") and (s.get("shifts") or s.get("shifts_html")))
+    core = s.get("pbp") and s.get("boxscore") and (s.get("shifts") or s.get("shifts_html"))
+    return not core or (want_detail and not s.get("detail"))
 
 
 # ---------------------------------------------------------------- flat tables
@@ -414,12 +444,13 @@ def main():
         season_end = dt.date(int(a.season[4:]), 8, 31)
         end = min(dt.date.fromisoformat(a.end) if a.end else today, season_end)
         games = finished_games(start, end, a.season)
-        todo = [g for gid, g in sorted(games.items()) if needs_work(a.season, gid)]
+        detail = a.season == current_season(today)   # game-page detail only for the live season
+        todo = [g for gid, g in sorted(games.items()) if needs_work(a.season, gid, detail)]
         print(f"{len(games)} finished games found, {len(todo)} need downloading")
         for i, g in enumerate(todo, 1):
             print(f"[{i}/{len(todo)}] {g['game_id']} ({g['date']})")
             try:
-                download_game(a.season, g["game_id"], g["date"])
+                download_game(a.season, g["game_id"], g["date"], detail)
             except RuntimeError as e:
                 print(f"  ! skipped {g['game_id']}: {e}", file=sys.stderr)
 

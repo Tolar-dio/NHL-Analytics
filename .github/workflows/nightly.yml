@@ -76,6 +76,24 @@ jobs:
       - name: Build site data
         run: python site/build.py
 
+      - name: Write recaps and previews with Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          STORY_MODEL: claude-sonnet-5-5
+          STORY_MAX: "130"          # spending cap per run; a normal night writes 10-30
+        run: python scripts/write_stories.py
+
+      - name: Save new stories to the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/stories || true
+          if ! git diff --cached --quiet; then
+            git commit -q -m "Stories through $(date -u +%Y-%m-%d)"
+            git pull -q --rebase origin main
+            git push -q
+          fi
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
