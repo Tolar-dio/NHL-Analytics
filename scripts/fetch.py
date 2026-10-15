@@ -31,7 +31,8 @@ STATS = "https://api.nhle.com/stats/rest/en"
 
 FINISHED = {"OFF", "FINAL"}
 GAME_TYPES = {2: "regular", 3: "playoffs"}  # preseason (1) is skipped
-SHIFT_RETRY_DAYS = 7  # shift charts sometimes post late; keep retrying this long
+SHIFT_RETRY_DAYS = 7    # shift charts sometimes post late; keep retrying this long
+SHIFT_MIN_ATTEMPTS = 5  # ...and never give up before this many separate tries
 
 HEADERS = {"User-Agent": "nhl-analytics-personal-research/1.0"}
 
@@ -152,10 +153,14 @@ def download_game(season, gid, game_date):
                 status["shifts"] = True
         except RuntimeError as e:
             print(f"  ! shifts unavailable for {gid}: {e}", file=sys.stderr)
-        age = (dt.date.today() - dt.date.fromisoformat(game_date)).days
-        if not status.get("shifts") and age > SHIFT_RETRY_DAYS:
-            status["shifts"] = "missing"  # stop retrying
-        time.sleep(0.3)
+        if not status.get("shifts"):
+            status["shift_attempts"] = status.get("shift_attempts", 0) + 1
+            age = (dt.date.today() - dt.date.fromisoformat(game_date)).days
+            # give up only after a week AND several separate tries, so one bad
+            # run (rate limiting, API hiccup) can't permanently drop a game
+            if age > SHIFT_RETRY_DAYS and status["shift_attempts"] >= SHIFT_MIN_ATTEMPTS:
+                status["shifts"] = "missing"
+        time.sleep(1.0)
 
     os.makedirs(d, exist_ok=True)
     with open(status_path, "w") as f:
