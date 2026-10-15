@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   backfill:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: ubuntu-latest moves to 26 on Oct 19
     timeout-minutes: 340
     env:
       SEASON: ${{ inputs.season }}
