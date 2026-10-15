@@ -153,7 +153,14 @@ def download_game(season, gid, game_date):
                 status["shifts"] = True
         except RuntimeError as e:
             print(f"  ! shifts unavailable for {gid}: {e}", file=sys.stderr)
-        if not status.get("shifts"):
+        # The JSON shift feed is empty for many games. Fall back to the NHL's
+        # official HTML time-on-ice reports (home TH / visitor TV), saved raw
+        # so they can be parsed into the shifts table.
+        if not status.get("shifts") and not status.get("shifts_html"):
+            got = save_toi_html(season, gid, d)
+            if got:
+                status["shifts_html"] = True
+        if not status.get("shifts") and not status.get("shifts_html"):
             status["shift_attempts"] = status.get("shift_attempts", 0) + 1
             age = (dt.date.today() - dt.date.fromisoformat(game_date)).days
             # give up only after a week AND several separate tries, so one bad
@@ -167,12 +174,35 @@ def download_game(season, gid, game_date):
         json.dump(status, f)
 
 
+def save_toi_html(season, gid, d):
+    """Download home (TH) and visitor (TV) HTML time-on-ice reports."""
+    num = str(gid)[4:]  # 2026020006 -> 020006
+    ok = True
+    for code in ("TH", "TV"):
+        url = f"https://www.nhl.com/scores/htmlreports/{season}/{code}{num}.HTM"
+        try:
+            req = urllib.request.Request(url, headers=HEADERS)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                html = r.read()
+            if len(html) < 5000:  # an error page, not a report
+                ok = False
+                continue
+            os.makedirs(d, exist_ok=True)
+            with gzip.open(os.path.join(d, f"toi_{code}.htm.gz"), "wb") as f:
+                f.write(html)
+        except (urllib.error.URLError, TimeoutError) as e:
+            print(f"  ! {code} report unavailable for {gid}: {e}", file=sys.stderr)
+            ok = False
+        time.sleep(1.0)
+    return ok
+
+
 def needs_work(season, gid):
     p = os.path.join(game_dir(season, gid), "status.json")
     if not os.path.exists(p):
         return True
     s = json.load(open(p))
-    return not (s.get("pbp") and s.get("boxscore") and s.get("shifts"))
+    return not (s.get("pbp") and s.get("boxscore") and (s.get("shifts") or s.get("shifts_html")))
 
 
 # ---------------------------------------------------------------- flat tables
