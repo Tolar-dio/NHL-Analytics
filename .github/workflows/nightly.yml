@@ -1,0 +1,39 @@
+name: Nightly NHL pull
+
+on:
+  schedule:
+    - cron: "17 10 * * *"   # 10:17 UTC = 4:17 AM Denver (MDT), after every game ends
+  workflow_dispatch:         # adds a "Run workflow" button for manual runs and backfills
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nhl-pull
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download finished games and rebuild tables
+        run: python scripts/fetch.py
+
+      - name: Commit new data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "No new data."
+          else
+            git commit -m "Data through $(date -u +%Y-%m-%d)"
+            git push
+          fi
