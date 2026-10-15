@@ -37,7 +37,9 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; touch-action: manipulation; } /* no double-tap zoom; pinch still works */
+/* iPhones zoom the whole page when you tap into a field with text under 16px, and stay zoomed */
+@media (pointer: coarse) { input, select, textarea { font-size: 16px !important; } }
 body {
   margin: 0; background: var(--ice); color: var(--ink);
   font: 400 16px/1.5 var(--body);
@@ -167,10 +169,12 @@ td .sub { color: var(--muted); font-size: 12px; margin-left: 6px; }
 .rink .goal { fill: var(--red); stroke: var(--sheet); stroke-width: 0.45; }
 
 /* ---------------------------------------------------------------- player card */
-.card-head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 18px; margin-bottom: 14px; }
-.card-head .num { font: 800 64px/0.85 var(--display); color: var(--blue); }
+.card-head { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 16px; margin-bottom: 18px; }
+.card-head .num { font: 800 64px/1 var(--display); color: var(--blue); min-width: 0; }
+.card-head .num:empty { display: none; }
+.card-head .num:empty + div { grid-column: 1 / -1; }
 .card-head .meta { color: var(--ink-2); }
-.stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0; border: 1px solid var(--hair); border-radius: 6px; background: var(--sheet); }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 0; border: 1px solid var(--hair); border-radius: 6px; background: var(--sheet); }
 .stat { padding: 10px 12px; border-right: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
 .stat b { display: block; font: 700 26px/1.1 var(--display); }
 .stat span { font-size: 13px; color: var(--muted); }

@@ -580,7 +580,9 @@ function renderModel(view) {
 const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, league: renderLeague,
   teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
 const TAB_OF = { game: "games", goals: "games", preview: "tonight" };
-function route() {
+function route(e) {
+  const rerender = e === "resize";
+  const keepY = scrollY;
   const [tab, param] = (location.hash.slice(1) || "tonight").split("/");
   const fn = ROUTES[tab] || renderTonight;
   const active = TAB_OF[tab] || (ROUTES[tab] ? tab : "tonight");
@@ -589,7 +591,10 @@ function route() {
   const p = fn(view, param);
   if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">Something failed to load (${esc(e.message)}). Reload to try again.</p>`));
   tip.hidden = true;
-  if (param || tab === "game" || tab === "preview" || tab === "goals") scrollTo(0, 0);
+  if (rerender) {
+    // Same page at a new width: put the reader back where they were once the async render settles.
+    Promise.resolve(p).then(() => requestAnimationFrame(() => scrollTo(0, keepY)));
+  } else if (param || tab === "game" || tab === "preview" || tab === "goals") scrollTo(0, 0);
 }
 
 function applyThemeLabel() {
@@ -604,7 +609,18 @@ $("#themeToggle").addEventListener("click", () => {
   applyThemeLabel();
 });
 
-let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (D.meta && !document.activeElement?.matches("input,select")) route(); }, 250); });
+// Charts are drawn at the container's width, so redraw when the WIDTH changes (rotation, desktop window resize).
+// Phone browsers fire "resize" whenever the address bar slides in or out while scrolling; that only changes
+// the height, and redrawing on it is what kept throwing phones back to the top of the page.
+let rz, lastW = innerWidth;
+addEventListener("resize", () => {
+  clearTimeout(rz);
+  rz = setTimeout(() => {
+    if (innerWidth === lastW || !D.meta || document.activeElement?.matches("input,select")) return;
+    lastW = innerWidth;
+    route("resize");
+  }, 250);
+});
 async function boot() {
   applyThemeLabel();
   const files = ["meta", "teams", "goalies", "skaters", "shots", "tonight", "model", "fantasy"];
