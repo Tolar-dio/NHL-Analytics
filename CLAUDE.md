@@ -39,4 +39,6 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 - `analysis/onice.py`: 5v5 on-ice CF/xG/G and relative xGF% per skater.
 - xG source: MoneyPuck's xGoal is primary (AUC 0.78 vs ours 0.73 shot-level; aggregates correlate 0.95+). Ours fills gaps.
 - On-ice attribution: a player is on ice for an event if start_sec < t <= end_sec.
-- `analysis/props_data.py` -> `analysis/props_model.py` (anytime goal, 2+ points) and `analysis/totals.py` (game totals). Both have walk-forward backtests; tonight's slate goes in `analysis/slate.csv`.
+- `analysis/props_data.py <season>` builds per-game tables into `analysis/output/<season>/`; run it for both seasons before modeling.
+- `analysis/models.py`: anytime goal, 2+ points, and game totals, with last-season priors that follow the player. Modes: `season-backtest 20252026`, `prior-backtest`, `tonight` (reads `analysis/slate.csv`).
+- Backtest results (2025-26, 1,241 games, 44k player-games, walk-forward): goal and 2+ point probabilities are well calibrated and beat a naive baseline every month. Game totals do NOT beat league average (corr 0.08, RMSE 2.288 vs 2.290): treat totals as context, never as a betting edge.

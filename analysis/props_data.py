@@ -1,6 +1,6 @@
 """Per-game building blocks for prop models.
 
-Builds three tables in analysis/output/:
+Builds three tables in analysis/output/<season>/  (usage: python analysis/props_data.py 20252026):
   player_games.csv  one row per skater per game: TOI, individual xG/goals/assists,
                     on-ice (all situations) xGF/xGA/GF/GA, on-ice PP xGF, team PP xGF
   team_games.csv    one row per team per game: xGF, xGA, GF, GA, PP xGF
@@ -10,18 +10,19 @@ xG source: MoneyPuck xGoal where the shot matches (credit MoneyPuck.com),
 our own model otherwise (run analysis/player_flags.py first).
 Shootouts excluded. Empty-net shots and goals are kept for skaters.
 """
-import glob, gzip, json, os
+import glob, gzip, json, os, sys
 import numpy as np
 import pandas as pd
 
-SEASON = "20262027"
+SEASON = sys.argv[1] if len(sys.argv) > 1 else "20262027"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 T = os.path.join(ROOT, "data", "tables", SEASON)
-OUT = os.path.join(ROOT, "analysis", "output")
+OUT = os.path.join(ROOT, "analysis", "output", SEASON)
 os.makedirs(OUT, exist_ok=True)
 
 games = pd.read_csv(os.path.join(T, "games.csv.gz"))
 date_of = games.set_index("game_id").date
+type_of = games.set_index("game_id").game_type
 
 ev = pd.read_csv(os.path.join(T, "events.csv.gz"))
 ev = ev[(ev.period_type != "SO") & ev.situation_code.notna()].copy()
@@ -42,8 +43,12 @@ s["unblocked"] = s.event != "blocked-shot"
 s["period_sec"] = s.game_seconds - (s.period.clip(upper=4) - 1) * 1200
 
 # ---- xG: MoneyPuck first, ours as fallback
-ours = pd.read_csv(os.path.join(OUT, "shots_with_xg.csv.gz"), usecols=["game_id", "event_id", "xg"])
-s = s.merge(ours, on=["game_id", "event_id"], how="left")
+ours_path = os.path.join(ROOT, "analysis", "output", "shots_with_xg.csv.gz")
+if SEASON == "20262027" and os.path.exists(ours_path):
+    ours = pd.read_csv(ours_path, usecols=["game_id", "event_id", "xg"])
+    s = s.merge(ours, on=["game_id", "event_id"], how="left")
+else:
+    s["xg"] = np.nan
 mp = pd.concat([pd.read_csv(f, usecols=["game_id", "time", "shooterPlayerId", "xGoal", "period"])
                 for f in glob.glob(os.path.join(ROOT, "data", "external", "moneypuck", SEASON, "*.csv.gz"))])
 mp = mp[mp.period <= 4]
@@ -123,6 +128,7 @@ gtoi = box[box.pos == "G"].groupby(["game_id", "team"]).toi.sum().clip(lower=60)
 tg = tg.merge(gtoi.reset_index(), on=["game_id", "team"], how="left")
 tg["toi"] = tg.toi.fillna(60)
 tg["date"] = tg.game_id.map(date_of)
+tg["game_type"] = tg.game_id.map(type_of)
 tg.to_csv(os.path.join(OUT, "team_games.csv"), index=False)
 
 # ---- goalie-game (non-empty-net shots only)
@@ -133,6 +139,7 @@ gb = box[box.pos == "G"].copy()
 gb["starter"] = gb.groupby(["game_id", "team"]).toi.rank(ascending=False, method="first") == 1
 gg = gb.merge(gg, on=["game_id", "player_id"], how="left").fillna({"xga": 0, "ga": 0})
 gg["date"] = gg.game_id.map(date_of)
+gg["game_type"] = gg.game_id.map(type_of)
 gg.to_csv(os.path.join(OUT, "goalie_games.csv"), index=False)
 
 # ---- player-game
@@ -144,6 +151,7 @@ pg = pg.merge(tg[["game_id", "team", "pp_xgf"]].rename(columns={"pp_xgf": "team_
               on=["game_id", "team"], how="left")
 pg = pg.merge(tg[["game_id", "team", "opp"]], on=["game_id", "team"], how="left")
 pg["date"] = pg.game_id.map(date_of)
+pg["game_type"] = pg.game_id.map(type_of)
 pg.to_csv(os.path.join(OUT, "player_games.csv"), index=False)
 
 # sanity checks
