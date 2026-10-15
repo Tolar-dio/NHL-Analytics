@@ -386,7 +386,8 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
         story = None
         sp = os.path.join(stories_dir, f"{gid}.json")
         if os.path.exists(sp):
-            story = json.load(open(sp)).get("text")
+            d = json.load(open(sp))
+            story = d.get("text") if d.get("v", 1) >= 2 else None   # v1 stories had swapped team stats; see write_stories.STORY_VERSION
 
         winner = home if gm.home_score > gm.away_score else away
         w_deserve = dtw if winner == home else 1 - dtw

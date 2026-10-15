@@ -152,7 +152,8 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
         story = None
         sp = os.path.join(stories_dir, f"{g['id']}.json")
         if os.path.exists(sp):
-            story = json.load(open(sp)).get("text")
+            d = json.load(open(sp))
+            story = d.get("text") if d.get("v", 1) >= 2 else None   # v1 stories had swapped team stats; see write_stories.STORY_VERSION
         gcards = {away: goalie_card(g["away_goalie"]), home: goalie_card(g["home_goalie"])}
         detail = dict(id=g["id"], date=today, start=g["start"], away=away, home=home,
                       away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],

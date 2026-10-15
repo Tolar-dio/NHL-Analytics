@@ -22,10 +22,15 @@ SEASON = "20262027"
 MODEL = os.environ.get("STORY_MODEL", "claude-sonnet-5-5")
 MAX_STORIES = int(os.environ.get("STORY_MAX", "60"))
 
+STORY_VERSION = 2   # bump to rewrite every cached story on the next run (v2: labelled fact sheets after v1 swapped teams)
+
 STYLE = """House style, follow exactly:
 - Plain, vivid sportswriting for one die-hard fan who knows hockey and analytics. No hype words, no cliches, no exclamation marks.
 - Never use em dashes or en dashes. Use commas, periods or parentheses.
-- Use ONLY facts in the JSON. Do not invent quotes, injuries, attendance, streaks, records, standings, history, or anything else not present. If something isn't in the data, leave it out.
+- Use ONLY facts in the JSON. Do not invent quotes, injuries, attendance, streaks, records, standings, history, line combinations, or anything else not present. If something isn't in the data, leave it out.
+- Never count, add, subtract or convert anything yourself. Quote numbers exactly as the JSON gives them, and when the JSON gives a summary (a record, a count, a total), use the summary instead of tallying a list.
+- Every team number is labelled with its team abbreviation. Check the label before you attribute a number to a team or its goalie.
+- Keep events in the order they happened. Goals are listed in time order; don't describe an earlier goal as a response to a later one.
 - Tell the story of the game, and when you cite a number, say why it matters (what it reveals about how the game was really played).
 - "Expected goals" means the quality of chances; "deserved to win" is the share of simulated replays of every shot that the team wins. Use them to separate how the game was played from how it ended.
 - Use full player names the first time, last names after. Write team abbreviations as given.
@@ -37,7 +42,7 @@ JSON facts:
 """
 
 PREVIEW_TASK = """Write a preview of tonight's NHL game in 3 short paragraphs, 160 to 220 words total.
-Cover how the teams compare in chance creation and prevention, special teams, the goalie matchup (this season and last), recent form, and one or two players the model likes tonight (use the probabilities as given). Projected goalies may change; say "projected" when naming them.
+Cover how the teams compare in chance creation and prevention, special teams, the goalie matchup (this season and last), recent form (use each team's last_five summary), and one or two players the model likes tonight (use the probabilities as given). Projected goalies may change; say "projected" when naming them.
 JSON facts:
 """
 
@@ -47,8 +52,20 @@ def _score(g, s):
     return f'{g["away"]} {a}, {g["home"]} {h}'
 
 
+def _mmss(minutes):
+    if minutes is None:
+        return None
+    sec = int(round(minutes * 60))
+    return f"{sec // 60}:{sec % 60:02d}"
+
+
+def _sv(x):
+    return None if x is None else f"{x:.3f}".lstrip("0")    # ".934", the way save percentage is written
+
+
 def tidy(o):
-    """Round floats so the writer quotes 2.15, not 2.145 (shares and percents keep one decimal)."""
+    """Round floats to 2 places so the writer quotes 2.15, not 2.145. Anything that needs more
+    precision (save percentage) is passed as a preformatted string."""
     if isinstance(o, float):
         return round(o, 2)
     if isinstance(o, dict):
@@ -58,8 +75,19 @@ def tidy(o):
     return o
 
 
+def _by_team(g, pair):
+    """NHL team stats come as [away, home]; label them so the writer can't swap teams."""
+    return None if not pair else {g["away"]: pair[0], g["home"]: pair[1]}
+
+
+TEAM_STAT_NAMES = {"sog": "shots_on_goal", "powerPlay": "power_play_goals_for_chances", "pim": "penalty_minutes",
+                   "hits": "hits", "blockedShots": "blocked_shots", "giveaways": "giveaways", "takeaways": "takeaways",
+                   "faceoffWins": "faceoffs_won_of_total"}
+
+
 def recap_facts(g):
     players = [p for p in g["players"]][:8]
+    ts = g.get("team_stats") or {}
     return tidy(dict(
         date=g["date"], venue=g.get("venue"), away=g["away"], home=g["home"],
         final=f'{g["away"]} {g["a"]}, {g["home"]} {g["h"]}', decided_in=g["end"],
@@ -68,29 +96,73 @@ def recap_facts(g):
         shot_attempts={g["away"]: g["cf_a"], g["home"]: g["cf_h"]},
         deserved_to_win_pct={g["home"]: round(100 * g["dtw_home"]), g["away"]: round(100 * (1 - g["dtw_home"]))},
         expected_goals_by_period=[{"period": x["p"], g["away"]: x["xg_a"], g["home"]: x["xg_h"]} for x in g["periods"]],
-        goals=[dict(period=x["period"], time=x["t"], team=x["team"], scorer=x["name"],
-                    assists=[a["name"] for a in x["assists"]], strength=x["strength"], shot_type=x["shot"],
-                    score_after=_score(g, x["score"]),
-                    chance_of_scoring_pct=None if x["xg"] is None else round(100 * x["xg"])) for x in g["goals"]],
-        shootout=g["shootout"] or None,
+        goals_in_time_order=[dict(period=x["period"], time=x["t"], team=x["team"], scorer=x["name"],
+                                  assists=[a["name"] for a in x["assists"]], strength=x["strength"], shot_type=x["shot"],
+                                  score_after=_score(g, x["score"]),
+                                  chance_of_scoring_pct=None if x["xg"] is None else round(100 * x["xg"]))
+                             for x in g["goals"]],
+        shootout_in_order=[dict(round=i // 2 + 1, team=x["team"], shooter=x["name"],
+                                result="scored" if x["result"] == "goal" else "stopped") for i, x in enumerate(g["shootout"])] or None,
         three_stars=[{k: s[k] for k in ("star", "name", "team", "g", "a")} for s in g["stars"]],
-        goalies=[{k: x[k] for k in ("name", "team", "sa", "ga", "xga", "gsax")} | {"saves_above_expected": x["gsax"]}
+        goalies=[dict(name=x["name"], team=x["team"], shots_faced=x["sa"], goals_allowed=x["ga"], saves=x["sa"] - x["ga"],
+                      expected_goals_against=x["xga"], goals_saved_above_expected=x["gsax"])
                  for x in g["goalies"] if x["toi"] and x["toi"] > 5],
-        top_performers=[{k: p[k] for k in ("name", "team", "pos", "toi", "g", "a", "sog", "ixg", "xgf", "xga")}
+        top_performers=[dict(name=p["name"], team=p["team"], pos=p["pos"], ice_time=_mmss(p["toi"]), goals=p["g"],
+                             assists=p["a"], shots_on_goal=p["sog"], own_expected_goals=p["ixg"],
+                             on_ice_expected_goals_for=p["xgf"], on_ice_expected_goals_against=p["xga"])
                         for p in players],
-        team_stats=g.get("team_stats"),
-        earlier_meetings_this_season=[x for x in g["series"] if x["date"] < g["date"] and x["a"] is not None],
+        team_stats={TEAM_STAT_NAMES.get(k, k): _by_team(g, v) for k, v in ts.items()
+                    if k in TEAM_STAT_NAMES},
+        data_notes=g.get("notes") or None,
+        earlier_meetings_this_season=[dict(date=x["date"], final=f'{x["away"]} {x["a"]}, {x["home"]} {x["h"]}', decided_in=x["end"])
+                                      for x in g["series"] if x["date"] < g["date"] and x["a"] is not None],
     ))
+
+
+def _last_five(t):
+    games = []
+    for x in t["last5"]:
+        res = "W" if x["gf"] > x["ga"] else ("OTL" if x["end"] != "REG" else "L")
+        games.append(dict(date=x["date"], opponent=x["opp"], where="home" if x["home"] else "away", result=res,
+                          score=f'{x["gf"]}-{x["ga"]}', decided_in=x["end"], share_of_expected_goals_pct=round(100 * x["xg_share"]),
+                          won_the_chance_battle=x["xg_share"] > 0.5))
+    w = sum(g["result"] == "W" for g in games)
+    otl = sum(g["result"] == "OTL" for g in games)
+    return dict(record=f"{w}-{len(games) - w - otl}-{otl}", games=len(games),
+                games_with_more_expected_goals=sum(g["won_the_chance_battle"] for g in games),
+                average_share_of_expected_goals_pct=round(sum(g["share_of_expected_goals_pct"] for g in games) / max(len(games), 1)),
+                games_newest_last=games)
+
+
+def _team_card(t):
+    return dict(games_played=t["gp"], expected_goals_for_per_60=t["xgf60"], expected_goals_against_per_60=t["xga60"],
+                five_on_five_share_of_expected_goals_pct=None if t["xg5_share"] is None else round(100 * t["xg5_share"]),
+                goals_for_per_game=t["gf_pg"], goals_against_per_game=t["ga_pg"],
+                power_play_expected_goals_per_game=t["pp_xg_pg"], penalty_kill_expected_goals_allowed_per_game=t["pk_xga_pg"],
+                penalties_taken_per_game=t["pen_taken_pg"], penalties_drawn_per_game=t["pen_drawn_pg"],
+                rest_days_before_tonight=t.get("rest_days"), last_game_date=t.get("last_date"), last_five=_last_five(t))
+
+
+def _goalie_card(x):
+    if not x:
+        return None
+    return dict(name=x["name"], games_this_season=x["gp"], save_pct_this_season=_sv(x["sv_pct"]),
+                goals_saved_above_expected_this_season=x["gsax"],
+                games_last_season=None if x["prev_gp"] is None else int(x["prev_gp"]),
+                goals_saved_above_expected_last_season=x["prev_gsax"])
 
 
 def preview_facts(p):
     return tidy(dict(date=p["date"], away=p["away"], home=p["home"],
-                model_expected_goals_tonight={p["away"]: p["away_xg"], p["home"]: p["home_xg"]},
-                teams=p["teams"], projected_goalies=p["goalies"],
-                season_series=[x for x in p["series"] if x["a"] is not None],
-                players_model_likes={t: dict(score_a_goal=[{"name": x["name"], "prob": round(x["p_goal"], 2)} for x in v["goal"]],
-                                             two_plus_points=[{"name": x["name"], "prob": round(x["p_2pts"], 2)} for x in v["pts"]])
-                                     for t, v in p["props"].items()}))
+                     model_expected_goals_tonight={p["away"]: p["away_xg"], p["home"]: p["home_xg"]},
+                     teams={t: _team_card(p["teams"][t]) for t in (p["away"], p["home"])},
+                     projected_goalies={t: _goalie_card(p["goalies"].get(t)) for t in (p["away"], p["home"])},
+                     earlier_meetings_this_season=[dict(date=x["date"], final=f'{x["away"]} {x["a"]}, {x["home"]} {x["h"]}', decided_in=x["end"])
+                                                   for x in p["series"] if x["a"] is not None],
+                     data_notes=p.get("notes") or None,
+                     players_model_likes={t: dict(score_a_goal=[{"name": x["name"], "pct": round(100 * x["p_goal"])} for x in v["goal"]],
+                                                  two_plus_points=[{"name": x["name"], "pct": round(100 * x["p_2pts"])} for x in v["pts"]])
+                                          for t, v in p["props"].items()}))
 
 
 def clean(text):
@@ -128,7 +200,8 @@ def cached(path):
     if not os.path.exists(path):
         return False
     try:
-        return finished(json.load(open(path)).get("text"))
+        d = json.load(open(path))
+        return d.get("v", 1) >= STORY_VERSION and finished(d.get("text"))
     except Exception:
         return False
 
@@ -177,7 +250,7 @@ def main(client=None):
                 break
             continue
         fails[0] = 0
-        json.dump(dict(text=text, model=MODEL, written=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')), open(out, "w"))
+        json.dump(dict(text=text, v=STORY_VERSION, model=MODEL, written=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')), open(out, "w"))
         p["story"] = text
         json.dump(p, open(path, "w"), separators=(",", ":"))
         budget -= 1
@@ -206,7 +279,7 @@ def main(client=None):
                 break
             continue
         fails[0] = 0
-        json.dump(dict(text=text, model=MODEL, written=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')), open(out, "w"))
+        json.dump(dict(text=text, v=STORY_VERSION, model=MODEL, written=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')), open(out, "w"))
         g["story"] = text
         json.dump(g, open(gpath, "w"), separators=(",", ":"))
         row["has_story"], row["blurb"] = True, text.split(". ")[0] + "."
