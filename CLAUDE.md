@@ -21,3 +21,9 @@ This is Tolar's NHL analytics repository. The goal is league-wide analysis: team
 - Separate process from results. Flag small samples explicitly; single-game line stats are noise.
 - Tag confidence: [Certain], [Likely], [Guessing].
 - Any betting or wager tracking belongs in a separate private repository, not here (this one is public).
+
+## Supplementary data
+
+- MoneyPuck shots: `data/external/moneypuck/<season>/<game_id>.csv.gz` (their `xGoal` is the benchmark for our own xG model). Credit MoneyPuck.com in anything shown publicly.
+- NHL Edge: `data/external/edge/<season>/skaters.csv.gz` (flattened) and `skaters_raw.json.gz` (full per-player JSON, includes per-area shot counts and record-game overlays).
+- HTML time-on-ice reports (`toi_TH.htm.gz`, `toi_TV.htm.gz` in a game's raw folder) are the fallback when the shift JSON is empty. They still need a parser into shifts.csv.

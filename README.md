@@ -21,3 +21,9 @@ Personal NHL analytics project for the 2026-27 season. A GitHub Action pulls eve
 The workflow runs automatically at about 4:17 AM Denver time. To run it by hand (for example, the first backfill), go to the **Actions** tab, choose **Nightly NHL pull**, and press **Run workflow**.
 
 Data source: the NHL's public API (api-web.nhle.com and api.nhle.com). Preseason games are skipped.
+
+## Supplementary sources
+
+`scripts/fetch_external.py` runs after the main pull:
+- `data/external/moneypuck/<season>/<game_id>.csv.gz`: MoneyPuck's shot data, one file per game, including their expected goals (`xGoal`) and shot features. **Shot data courtesy of [MoneyPuck.com](https://moneypuck.com)**, used under their free non-commercial terms.
+- `data/external/edge/<season>/skaters.csv.gz`: NHL Edge tracking per skater (top skating speed, 20+ mph bursts, distance, top shot speed, zone time, shots by danger area). Refreshed weekly.

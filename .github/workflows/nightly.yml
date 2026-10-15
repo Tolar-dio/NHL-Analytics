@@ -26,6 +26,10 @@ jobs:
       - name: Download finished games and rebuild tables
         run: python scripts/fetch.py
 
+      - name: Download MoneyPuck shots and NHL Edge tracking
+        continue-on-error: true
+        run: python scripts/fetch_external.py
+
       - name: Commit new data
         run: |
           git config user.name "github-actions[bot]"
