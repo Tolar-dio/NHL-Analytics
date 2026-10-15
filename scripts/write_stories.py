@@ -101,9 +101,24 @@ def main(client=None):
             print("No ANTHROPIC_API_KEY set; skipping stories.")
             return
         import anthropic
-        client = anthropic.Anthropic()
+        # Pasted secrets often carry a trailing newline or space; httpx then refuses the header and the SDK
+        # reports it as a vague "Connection error." Strip it.
+        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"].strip())
     budget = MAX_STORIES
     used_in = used_out = 0
+    fails = [0]
+    stop = False
+
+    def failed(kind, gid, e):
+        """Log one failure with its real cause; give up after 3 in a row so a bad key doesn't burn the run."""
+        cause = f" (cause: {e.__cause__!r})" if getattr(e, "__cause__", None) else ""
+        print(f"  ! {kind} {gid} failed: {e!r}{cause}", file=sys.stderr)
+        fails[0] += 1
+        if type(e).__name__ in ("AuthenticationError", "PermissionDeniedError", "NotFoundError") or fails[0] >= 3:
+            print("::warning::Stopping stories: the API is refusing every request. Check the ANTHROPIC_API_KEY secret "
+                  "and STORY_MODEL.", file=sys.stderr)
+            return True
+        return False
 
     # previews first: they're only useful today
     tonight = json.load(open(os.path.join(SITE_DATA, "tonight.json")))
@@ -119,8 +134,11 @@ def main(client=None):
         try:
             text, usage = write(client, PREVIEW_TASK, preview_facts(p))
         except Exception as e:  # one failure must not sink the run
-            print(f"  ! preview {p['id']} failed: {e!r}", file=sys.stderr)
+            if failed("preview", p["id"], e):
+                stop = True
+                break
             continue
+        fails[0] = 0
         json.dump(dict(text=text, model=MODEL, written=dt.datetime.utcnow().isoformat()), open(out, "w"))
         p["story"] = text
         json.dump(p, open(path, "w"), separators=(",", ":"))
@@ -136,7 +154,7 @@ def main(client=None):
     index = json.load(open(idx_path))
     changed = False
     for row in index:
-        if budget <= 0:
+        if budget <= 0 or stop:
             break
         out = os.path.join(rdir, f"{row['id']}.json")
         if os.path.exists(out):
@@ -146,8 +164,10 @@ def main(client=None):
         try:
             text, usage = write(client, RECAP_TASK, recap_facts(g))
         except Exception as e:
-            print(f"  ! recap {row['id']} failed: {e!r}", file=sys.stderr)
+            if failed("recap", row["id"], e):
+                break
             continue
+        fails[0] = 0
         json.dump(dict(text=text, model=MODEL, written=dt.datetime.utcnow().isoformat()), open(out, "w"))
         g["story"] = text
         json.dump(g, open(gpath, "w"), separators=(",", ":"))
