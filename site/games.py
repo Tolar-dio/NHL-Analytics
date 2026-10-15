@@ -5,7 +5,7 @@ site/data/games/<game_id>.json (everything a game page draws). Called from
 site/build.py; reads the per-game tables from analysis/props_data.py and the
 raw NHL landing / right-rail files (goal clips, stars, linescore, series).
 """
-import glob, gzip, json, os
+import glob, gzip, json, os, re
 import numpy as np
 import pandas as pd
 
@@ -110,13 +110,21 @@ def goal_sequences(gid, e, shifts, goals, home, away, xg_by_event, roster_info):
         same = e[(e.period == per) & (e.index <= i)]
         fo = same[same.event == "faceoff"]
         start_i = fo.index.max() if len(fo) else same.index.min()
+        pool = e.loc[start_i:i]
+        pool = pool[pool.event.isin(SEQ_EVENTS)]
         note = None
-        if gr.game_seconds - e.loc[start_i, "game_seconds"] > 75:
-            note = f"Play continued from a faceoff {int((gr.game_seconds - e.loc[start_i, 'game_seconds']) // 60)}:" \
-                   f"{int((gr.game_seconds - e.loc[start_i, 'game_seconds']) % 60):02d} earlier; showing the last minute."
-            start_i = same[same.game_seconds >= gr.game_seconds - 60].index.min()
-        win = e.loc[start_i:i]
-        win = win[win.event.isin(SEQ_EVENTS)]
+        since = int(gr.game_seconds - e.loc[start_i, "game_seconds"])
+        if since > 75:
+            # long shift: show the last minute, but never fewer than the last 4 recorded moments,
+            # so a goal after a quiet stretch still shows how play got there
+            win = pool[pool.game_seconds >= gr.game_seconds - 60]
+            if len(win) < 4:
+                win = pool.iloc[-4:]
+            span = int(gr.game_seconds - win.game_seconds.min())
+            shown = "the last minute" if span <= 60 else f"the last {span // 60}:{span % 60:02d}"
+            note = f"Play continued from a faceoff {since // 60}:{since % 60:02d} earlier; showing {shown}."
+        else:
+            win = pool
         hds = gr.home_defending_side
         if hds in ("left", "right"):
             flip = 1 if (scorer_team == home) == (hds == "left") else -1
@@ -150,6 +158,93 @@ def goal_sequences(gid, e, shifts, goals, home, away, xg_by_event, roster_info):
             duration=int(gr.game_seconds - evs[0]["t"]) if evs else 0,
             shots=len(shots), xg=r(sum(x["xg"] or 0 for x in shots), 3))
     return roster, seqs
+
+
+PERIOD_WORD = {1: "first", 2: "second", 3: "third", 4: "overtime"}
+
+
+def _in_period(p):
+    p = int(p)
+    return "in overtime" if p >= 4 else f"in the {PERIOD_WORD[p]} period"
+
+
+def _pct(x):
+    return f"{round(100 * x)}%" if x >= 0.01 else "under 1%"
+
+
+def game_notes(s, goals, goalies, tstats, home, away, names, final_h, final_a):
+    """Up to six plain sentences on what decided the game, built only from the data.
+    They sit at the top of every game page, so it reads well even before (or without) a written recap."""
+    notes = []
+    s = s[s.state != "EN"] if len(s) else s
+    # 1. the period one team owned
+    if len(s):
+        per = s.groupby(["period", "team"]).xgv.sum().unstack(fill_value=0.0)
+        if home in per and away in per:
+            gap = (per[home] - per[away])
+            p = gap.abs().idxmax()
+            if abs(gap[p]) >= 0.5:
+                t, o = (home, away) if gap[p] > 0 else (away, home)
+                notes.append(f"{t} owned {'overtime' if int(p) >= 4 else 'the ' + PERIOD_WORD[int(p)] + ' period'}, out-chancing {o} "
+                             f"{per.loc[p, t]:.2f} to {per.loc[p, o]:.2f} in expected goals.")
+    # 2. the best chance that didn't go in
+    if len(s):
+        miss = s[s.event != "goal"].sort_values("xgv", ascending=False).head(1)
+        for row in miss.itertuples():
+            if row.xgv >= 0.15:
+                who = names.get(row.player1_id, "") or row.team
+                how = f"stopped by {names.get(row.goalie_id, 'the goalie')}" if row.event == "shot-on-goal" and not pd.isna(row.goalie_id) \
+                    else "off target" if row.event == "missed-shot" else "kept out"
+                notes.append(f"Best chance that didn't go in: {who} ({row.team}), a {_pct(row.xgv)} look "
+                             f"{_in_period(row.period)}, {how}.")
+    # 3. the least likely goal
+    real = [g for g in goals if g.get("xg") is not None and g.get("strength") != "en"]
+    if real:
+        lo = min(real, key=lambda g: g["xg"])
+        if lo["xg"] < 0.06:
+            notes.append(f"Least likely goal: {lo['name']} ({lo['team']}) scored on a {_pct(lo['xg'])} chance "
+                         f"{_in_period(lo['period'])}.")
+    # 4. comeback
+    if goals:
+        lead_h = 0
+        worst = {home: 0, away: 0}
+        for g in goals:
+            a_, h_ = (int(v) for v in g["score"].split("-"))
+            worst[home] = min(worst[home], h_ - a_)
+            worst[away] = min(worst[away], a_ - h_)
+        winner = home if final_h > final_a else away
+        if worst[winner] <= -2:
+            notes.append(f"{winner} came back from {-worst[winner]} goals down.")
+    # 5. goaltending swing
+    gk = [x for x in goalies if (x.get("toi") or 0) >= 20 and x.get("gsax") is not None]
+    if gk:
+        x = max(gk, key=lambda x: abs(x["gsax"]))
+        if abs(x["gsax"]) >= 0.9:
+            notes.append(f"{x['name']} ({x['team']}) " + (f"saved {x['gsax']:.1f} goals more than his {x['sa']} shots against deserved."
+                         if x["gsax"] > 0 else f"allowed {-x['gsax']:.1f} goals more than his {x['sa']} shots against deserved."))
+    # 6. special teams
+    pp = tstats.get("powerPlay") if tstats else None
+    if pp and len(s):
+        parts = []
+        for t, val in ((away, pp[0]), (home, pp[1])):
+            try:
+                got, opp = (int(v) for v in str(val).split("/"))
+            except ValueError:
+                continue
+            if opp:
+                xg = s[(s.team == t) & (s.state == "PP")].xgv.sum()
+                parts.append(f"{t} {got} for {opp} ({xg:.2f} expected goals)")
+        if parts:
+            notes.append("Power plays: " + "; ".join(parts) + ".")
+    return notes[:6]
+
+
+CLIP_RE = re.compile(r"^https://(www\.)?nhl\.com/video/[a-z0-9-]+-\d{6,}$")
+
+
+def _clip(url):
+    """NHL sometimes publishes a bare 'https://nhl.com/video/' before the clip is ready; treat that as no clip."""
+    return url if url and CLIP_RE.match(url) else None
 
 
 def r(x, n=3):
@@ -216,7 +311,7 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
                                   num=a.get("assistsToDate")) for a in g.get("assists", [])],
                     strength=g.get("strength"), shot=g.get("shotType"), mod=g.get("goalModifier"),
                     score=f"{g.get('awayScore')}-{g.get('homeScore')}",
-                    xg=r(xg_by_event.get(g.get("eventId"))), clip=g.get("highlightClipSharingUrl")))
+                    xg=r(xg_by_event.get(g.get("eventId"))), clip=_clip(g.get("highlightClipSharingUrl"))))
         shootout = [dict(team=_nm(x.get("teamAbbrev")), pid=x.get("playerId"),
                          name=f"{_nm(x.get('firstName'))} {_nm(x.get('lastName'))}".strip(), result=x.get("result"),
                          shot=x.get("shotType"))
@@ -295,13 +390,14 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
 
         winner = home if gm.home_score > gm.away_score else away
         w_deserve = dtw if winner == home else 1 - dtw
+        notes = game_notes(s, goals, goalies, tstats, home, away, names, int(gm.home_score), int(gm.away_score))
         detail = dict(id=gid, date=gm.date, away=away, home=home, a=int(gm.away_score), h=int(gm.home_score),
                       end=gm.decided_in, venue=gm.venue, gamecenter=gc_link,
                       xg_a=r(xg_a, 2), xg_h=r(xg_h, 2), xg5_a=r(xg5_a, 2), xg5_h=r(xg5_h, 2), cf_a=cf_a, cf_h=cf_h,
                       dtw_home=r(dtw), periods=per, lines=lines, sog_periods=sog_p, team_stats=tstats,
                       goals=goals, shootout=shootout, stars=stars, penalties=penalties, series=series,
                       shots=shots, players=sorted(players, key=lambda p: -(p["gs"] or 0)), goalies=goalies, story=story,
-                      roster=roster, seqs=seqs)
+                      notes=notes, roster=roster, seqs=seqs)
         with open(os.path.join(out_dir, f"{gid}.json"), "w") as f:
             json.dump(detail, f, separators=(",", ":"), allow_nan=False)
 
@@ -311,7 +407,7 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
                           winner=winner, w_deserve=r(w_deserve), chaos=r(xg_a + xg_h, 2),
                           goals=int(gm.away_score + gm.home_score), star=top["name"] if top else None,
                           has_story=bool(story),
-                          blurb=(story.split(". ")[0] + ".") if story else None))
+                          blurb=(story.split(". ")[0].rstrip(".") + ".") if story else (notes[0] if notes else None)))
     index.sort(key=lambda x: (x["date"], x["id"]), reverse=True)
     with open(os.path.join(out_dir, "index.json"), "w") as f:
         json.dump(index, f, separators=(",", ":"), allow_nan=False)

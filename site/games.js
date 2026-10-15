@@ -11,6 +11,52 @@ const endTag = (e) => (e && e !== "REG" ? ` <span class="end">${e}</span>` : "")
 const shortDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 const headshot = (url, alt) => url ? `<img class="mug" src="${esc(url)}" alt="${esc(alt)}" loading="lazy" width="40" height="40">` : `<span class="mug mug-empty" aria-hidden="true"></span>`;
 const strengthLabel = { ev: "Even strength", pp: "Power play", sh: "Shorthanded", en: "Empty net" };
+const PER = (p, type) => (type === "SO" ? "SO" : type === "OT" || p > 3 ? "OT" : ["", "1st", "2nd", "3rd"][p]);
+const PEN_NAMES = {
+  "delaying-game-puck-over-glass": "delay of game (puck over glass)", "delaying-game-unsuccessful-challenge": "delay of game (failed challenge)",
+  "delaying-game-face-off-violation": "delay of game (faceoff)", "too-many-men-on-the-ice": "too many men",
+  "interference-goalkeeper": "goalie interference", "high-sticking-double-minor": "high-sticking (double minor)",
+  "roughing-removing-opponents-helmet": "roughing (removing a helmet)", "illegal-check-to-head": "illegal check to the head",
+};
+const penName = (k) => PEN_NAMES[k] || (k || "penalty").replace(/^ps-/, "penalty shot: ").replace(/-/g, " ");
+
+// Period-by-period box: goals, shots on goal and expected goals for both teams
+function linescore(g) {
+  const cols = (g.lines || []).map((x) => ({ p: x.p, type: x.type, label: PER(x.p, x.type) }));
+  if (!cols.length) return "";
+  const sog = Object.fromEntries((g.sog_periods || []).map((x) => [x.p, x]));
+  const xg = Object.fromEntries((g.periods || []).map((x) => [x.p, x]));
+  const byP = Object.fromEntries(g.lines.map((x) => [x.p, x]));
+  const cell = (v) => `<td>${v ?? ""}</td>`;
+  const row = (label, team, side, get, total, cls = "") => `<tr class="${cls}">${label}<th scope="row">${team}</th>${cols.map((c) => cell(get(c, side))).join("")}<td class="tot">${total}</td></tr>`;
+  const sum = (arr) => arr.reduce((a, b) => a + (b || 0), 0);
+  const sogTot = (side) => sum((g.sog_periods || []).map((x) => x[side]));
+  const goalWin = g.h > g.a ? "h" : "a";
+  return `<div class="table-wrap ls-wrap"><table class="linescore">
+    <thead><tr><th></th><th></th>${cols.map((c) => `<th>${c.label}</th>`).join("")}<th class="tot">Total</th></tr></thead>
+    <tbody>
+      ${row(`<th rowspan="2" class="grp">Goals</th>`, g.away, "a", (c) => byP[c.p]?.a, g.a, goalWin === "a" ? "won" : "")}
+      ${row("", g.home, "h", (c) => byP[c.p]?.h, g.h, goalWin === "h" ? "won" : "")}
+      ${row(`<th rowspan="2" class="grp">Shots</th>`, g.away, "a", (c) => (c.type === "SO" ? "" : sog[c.p]?.a), sogTot("a"), "brk")}
+      ${row("", g.home, "h", (c) => (c.type === "SO" ? "" : sog[c.p]?.h), sogTot("h"))}
+      ${row(`<th rowspan="2" class="grp">xG</th>`, g.away, "a", (c) => (xg[c.p] ? num(xg[c.p].xg_a, 2) : ""), num(g.xg_a, 2), "brk")}
+      ${row("", g.home, "h", (c) => (xg[c.p] ? num(xg[c.p].xg_h, 2) : ""), num(g.xg_h, 2))}
+    </tbody></table></div>`;
+}
+
+function shootoutTable(g) {
+  const A = g.shootout.filter((x) => x.team === g.away), H = g.shootout.filter((x) => x.team === g.home);
+  const n = Math.max(A.length, H.length);
+  const cell = (x) => !x ? "<td></td>" : `<td><b>${esc(x.name)}</b> <span class="${x.result === "goal" ? "goal-word" : "dim"}">${x.result === "goal" ? "scored" : "stopped"}</span></td>`;
+  return `<div class="table-wrap"><table class="so-table"><thead><tr><th>Round</th><th>${g.away}</th><th>${g.home}</th></tr></thead><tbody>
+    ${Array.from({ length: n }, (_, i) => `<tr><td>${i + 1}</td>${cell(A[i])}${cell(H[i])}</tr>`).join("")}</tbody></table></div>`;
+}
+
+function penaltyList(g) {
+  if (!g.penalties || !g.penalties.length) return `<p class="note">No penalties.</p>`;
+  return `<ol class="pen-list">${g.penalties.map((x) => `<li><span class="gi-when">${PER(x.period)} ${esc(x.t || "")}</span>
+    <b>${esc(x.who || "Bench")}</b> <span class="gi-team">${x.team}</span> <span class="dim">${esc(penName(x.what))}, ${x.dur} min</span></li>`).join("")}</ol>`;
+}
 
 // ------------------------------------------------------------------ charts
 function rinkChrome(leftLabel, rightLabel) {
@@ -154,7 +200,9 @@ async function renderGame(view, id) {
       <h1>${g.away} ${g.a}, ${g.home} ${g.h}${g.end !== "REG" ? ` (${g.end})` : ""}</h1>
       <p class="lede">${esc(new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))} at ${esc(g.venue)}. <a href="${esc(g.gamecenter)}" target="_blank" rel="noopener">Watch the recap and condensed game on NHL.com</a></p>
       <div class="game-open">
-        <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>` : `<p class="note">The written recap arrives with the next nightly build.</p>`}</div>
+        <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>` : ""}
+          ${g.notes && g.notes.length ? `<h3 class="kicker">What decided it</h3><ul class="notes">${g.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
+          <h3 class="kicker">By period</h3>${linescore(g)}</div>
         <div>
           <div class="deserve" data-tip="${esc("Every shot replayed thousands of times using its chance of going in; ties split evenly")}">
             <div class="bignum">${pct(dtwW)}</div>
@@ -181,7 +229,7 @@ async function renderGame(view, id) {
     </section>
     <section class="zone grid-2">
       <div><h2>Goals</h2><ol class="goal-list">${g.goals.map(goalItem).join("") || `<li class="empty">No goals.</li>`}</ol>
-        ${so ? `<h3 style="margin-top:16px">Shootout</h3><ol class="so-list">${g.shootout.map((x) => `<li><b>${esc(x.name)}</b> ${x.team}: ${x.result === "goal" ? `<span class="goal-word">scored</span>` : esc(x.result)}</li>`).join("")}</ol>` : ""}
+        ${so ? `<h3 style="margin-top:18px">Shootout</h3>${shootoutTable(g)}` : ""}
       </div>
       <div><h2>Three stars</h2><ol class="stars">${g.stars.map((s) => `<li>${headshot(s.headshot, s.name)}<div><b>${esc(s.name)}</b> ${s.team}<div class="dim">${s.pos === "G" ? (s.sv != null ? `${pct(s.sv, 1)} saves` : "goalie") : `${s.g} G, ${s.a} A`}</div></div></li>`).join("")}</ol>
         <h3 style="margin-top:18px">Goalies</h3>
@@ -189,7 +237,8 @@ async function renderGame(view, id) {
           { key: "name", label: "Goalie", nosort: true, fmt: (x) => `${esc(x.name)}<span class="sub">${x.team}</span>` },
           { key: "sa", label: "Shots", nosort: true }, { key: "ga", label: "GA", nosort: true },
           { key: "gsax", label: "Saves above expected", nosort: true, fmt: (x) => divCell(x.gsax, 3, 2) },
-        ], null, "gg")}</div>
+        ], null, "gg")}
+        <h3 style="margin-top:18px">Penalties</h3>${penaltyList(g)}</div>
     </section>
     <section class="zone">
       <h2>Every shot</h2>
@@ -241,51 +290,65 @@ async function renderPreview(view, id) {
     return `<li><a href="#game/${x.id}" data-tip="${esc(`${x.home ? "vs" : "at"} ${x.opp}, ${x.gf}-${x.ga}${x.end !== "REG" ? " " + x.end : ""}<br>Got ${pct(x.xg_share)} of the expected goals`)}">
       <b class="res res-${res}">${res}</b><span class="bar-track"><span class="bar-fill" style="width:${100 * x.xg_share}%"></span></span><span class="dim">${x.home ? "vs" : "@"} ${x.opp}</span></a></li>`;
   }).join("")}</ol>`;
-  const goalieCard = (gc, team) => !gc ? `<p class="note">No projected goalie for ${team}.</p>` :
-    `<div class="gcard"><b>${esc(gc.name)}</b> <span class="dim">${team}, projected</span>
+  const goalieCard = (gc, team) => !gc ? `<div class="gcard"><h3>${team}</h3><p class="note">No projected goalie yet.</p></div>` :
+    `<div class="gcard"><h3>${team}</h3><b>${esc(gc.name)}</b> <span class="dim">projected</span>
       <div>This season: ${gc.gp} games, ${pct(gc.sv_pct, 1)} save rate, ${signed(gc.gsax)} saves above expected</div>
       <div class="dim">Last season: ${gc.prev_gp ? `${gc.prev_gp} games, ${signed(gc.prev_gsax)} saves above expected` : "no NHL games"}</div></div>`;
   const lines = (t) => {
     const L = p.lines[t];
-    return `<div><h3>${t}</h3><ol class="lines">${(L.F || []).map((u) => `<li>${u.map((x) => playerLink(x.id, x.name)).join(", ")}</li>`).join("")}</ol>
-      <ol class="lines">${(L.D || []).map((u) => `<li>${u.map((x) => playerLink(x.id, x.name)).join(", ")}</li>`).join("")}</ol></div>`;
+    const unit = (u, tag) => `<li><span class="ln-tag">${tag}</span>${u.map((x) => playerLink(x.id, x.name)).join(", ")}</li>`;
+    const extra = [...(L.F_extra || []), ...(L.D_extra || [])];
+    return `<div><h3>${t}</h3>
+      <ol class="lines">${(L.F || []).map((u, i) => unit(u, `L${i + 1}`)).join("")}</ol>
+      <ol class="lines">${(L.D || []).map((u, i) => unit(u, `D${i + 1}`)).join("")}</ol>
+      ${extra.length ? `<p class="note">Also dressed: ${extra.map((x) => playerLink(x.id, x.name)).join(", ")}</p>` : ""}</div>`;
   };
-  const props = (t) => `<div><h3>${t}</h3><ul class="plist">${p.props[t].goal.map((x) => `<li>${playerLink(x.id, x.name)} <span class="dim">to score</span> <b>${pct(x.p_goal)}</b> <span class="dim">fair ${fair(x.p_goal)}</span></li>`).join("")}
-      ${p.props[t].pts.map((x) => `<li>${playerLink(x.id, x.name)} <span class="dim">2+ points</span> <b>${pct(x.p_2pts)}</b> <span class="dim">fair ${fair(x.p_2pts)}</span></li>`).join("")}</ul></div>`;
+  const props = (t) => table([...p.props[t].goal.map((x) => ({ ...x, what: "Goal", pr: x.p_goal })), ...p.props[t].pts.map((x) => ({ ...x, what: "2+ points", pr: x.p_2pts }))], [
+    { key: "name", label: t, nosort: true, fmt: (x) => playerLink(x.id, x.name) },
+    { key: "what", label: "Market", nosort: true },
+    { key: "pr", label: "Chance", nosort: true, fmt: (x) => cellBar(x.pr, 0.6) },
+    { key: "fair", label: "Fair odds", nosort: true, fmt: (x) => fair(x.pr) },
+  ], null, "pp" + t);
   const rest = (t) => t.rest_days == null ? "–" : t.rest_days <= 0 ? "Back-to-back" : `${t.rest_days} day${t.rest_days === 1 ? "" : "s"}`;
   const series = p.series.filter((x) => x.a != null);
+  const xgBar = (t, v) => `<div class="xgbar"><b>${t}</b><span class="bar-track"><span class="bar-fill" style="width:${Math.min(100, (100 * v) / 4.5)}%"></span></span><span>${num(v, 2)}</span></div>`;
   view.innerHTML = `
     <section class="zone">
       <p class="crumbs"><a href="#tonight">Tonight</a></p>
       <h1>${p.away} at ${p.home}</h1>
-      <p class="lede">${timeMT(p.start)}. The model expects ${p.away} ${num(p.away_xg, 2)} and ${p.home} ${num(p.home_xg, 2)} goals with the projected goalies.</p>
-      ${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>` : `<p class="note">The written preview arrives with the next build.</p>`}
-    </section>
-    <section class="zone">
-      <h2>Tale of the tape</h2>
-      <p class="lede">This season, all situations unless noted. The better side of each row is marked.</p>
-      <div class="vs-grid">
-        <div class="vs vs-head"><span>${p.away}</span><b></b><span>${p.home}</span></div>
-        ${row("Chances created per 60", A.xgf60, H.xgf60, f2, true, "Expected goals per 60 minutes")}
-        ${row("Chances allowed per 60", A.xga60, H.xga60, f2, false)}
-        ${row("Even-strength chance share", A.xg5_share, H.xg5_share, fp)}
-        ${row("Power play chances per game", A.pp_xg_pg, H.pp_xg_pg, f2)}
-        ${row("Penalty kill chances allowed per game", A.pk_xga_pg, H.pk_xga_pg, f2, false)}
-        ${row("Penalties taken per game", A.pen_taken_pg, H.pen_taken_pg, f2, false)}
-        ${row("Goals per game", A.gf_pg, H.gf_pg, f2)}
-        ${row("Goals allowed per game", A.ga_pg, H.ga_pg, f2, false)}
-        <div class="vs"><span>${rest(A)}</span><b>Rest</b><span>${rest(H)}</span></div>
+      <p class="lede">${timeMT(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "unknown"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "unknown"}.</p>
+      <div class="game-open">
+        <div>${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>` : ""}
+          ${p.notes && p.notes.length ? `<h3 class="kicker">Where it tilts</h3><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}</div>
+        <div>
+          <h3 class="kicker">Model's expected goals tonight</h3>
+          ${xgBar(p.away, p.away_xg)}${xgBar(p.home, p.home_xg)}
+          <p class="note">Total ${num(p.total, 1)}. Totals haven't beaten a league-average guess in testing, so read this as context, not a pick.</p>
+          <h3 class="kicker">Tale of the tape</h3>
+          <div class="vs-grid">
+            <div class="vs vs-head"><span>${p.away}</span><b></b><span>${p.home}</span></div>
+            ${row("Chances created per 60", A.xgf60, H.xgf60, f2, true, "Expected goals per 60 minutes, all situations")}
+            ${row("Chances allowed per 60", A.xga60, H.xga60, f2, false)}
+            ${row("5v5 chance share", A.xg5_share, H.xg5_share, fp)}
+            ${row("Power play xG per game", A.pp_xg_pg, H.pp_xg_pg, f2)}
+            ${row("Penalty kill xG allowed per game", A.pk_xga_pg, H.pk_xga_pg, f2, false)}
+            ${row("Penalties taken per game", A.pen_taken_pg, H.pen_taken_pg, f2, false)}
+            ${row("Goals per game", A.gf_pg, H.gf_pg, f2)}
+            ${row("Goals allowed per game", A.ga_pg, H.ga_pg, f2, false)}
+            <div class="vs"><span>${rest(A)}</span><b>Rest</b><span>${rest(H)}</span></div>
+          </div>
+          <p class="note">The better side of each row is in bold.</p>
+        </div>
       </div>
     </section>
-    <section class="zone grid-2">
-      <div><h2>Last five</h2><p class="note">Bars show each game's share of expected goals. Tap one to open that game.</p>
-        <h3 style="margin-top:12px">${p.away}</h3>${form(A)}<h3 style="margin-top:12px">${p.home}</h3>${form(H)}</div>
-      <div><h2>In net</h2>${goalieCard(p.goalies[p.away], p.away)}${goalieCard(p.goalies[p.home], p.home)}
-        <p class="note">Projected from recent starts. Switch goalies on the Tonight page to reprice everything.</p></div>
-    </section>
+    <section class="zone"><h2>In net</h2><p class="lede">Projected from recent starts. Switch goalies on the Tonight page to reprice every number.</p>
+      <div class="grid-2">${goalieCard(p.goalies[p.away], p.away)}${goalieCard(p.goalies[p.home], p.home)}</div></section>
+    <section class="zone"><h2>Last five</h2><p class="lede">Each bar is that game's share of expected goals; past the middle tick means they out-chanced the other team. Tap a game to open it.</p>
+      <div class="grid-2"><div><h3>${p.away}</h3>${form(A)}</div><div><h3>${p.home}</h3>${form(H)}</div></div></section>
     <section class="zone"><h2>Lines from their last game</h2><p class="lede">Grouped by who shared the most ice time. Coaches shuffle, so treat these as likely, not certain.</p>
       <div class="grid-2">${lines(p.away)}${lines(p.home)}</div></section>
-    <section class="zone"><h2>Who the model likes</h2><div class="grid-2">${props(p.away)}${props(p.home)}</div></section>
+    <section class="zone"><h2>Who the model likes</h2><p class="lede">Each team's likeliest scorers and two-point players, with the fair odds the model would set. Full list with your own odds on the Tonight page.</p>
+      <div class="grid-2"><div>${props(p.away)}</div><div>${props(p.home)}</div></div></section>
     ${series.length ? `<section class="zone"><h2>Earlier this season</h2><ul class="game-list">${series.map((x) => `<li><a class="game-row" href="#game/${x.id}"><span class="gr-date">${shortDate(x.date)}</span><span class="gr-score">${x.away} ${x.a} <span class="dim">at</span> ${x.home} ${x.h}${endTag(x.end)}</span><span class="dim">${x.h > x.a ? x.home : x.away} deserved ${pct(x.h > x.a ? x.dtw_home : 1 - x.dtw_home)}</span></a></li>`).join("")}</ul></section>` : ""}`;
 }
 

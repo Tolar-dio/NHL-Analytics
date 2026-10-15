@@ -72,7 +72,58 @@ def projected_lines(team, pg, shifts, pos, names):
             left -= set(unit)
             units.append([dict(id=int(i), name=names.get(i, "")) for i in unit])
         out[grp] = units
+        # 11F/7D nights and the like: whoever didn't fit a full unit still dressed
+        out[grp + "_extra"] = [dict(id=int(i), name=names.get(i, "")) for i in sorted(left, key=lambda i: -toi.get(i, 0))]
     return out
+
+
+def preview_notes(away, home, prof, goalies, series):
+    """Plain sentences on where this matchup tilts, from the data only (shown above or without a written preview)."""
+    A, H = prof[away], prof[home]
+    notes = []
+    if A.get("xg5_share") is not None and H.get("xg5_share") is not None:
+        a, h = A["xg5_share"], H["xg5_share"]
+        lead = away if a > h else home
+        verdict = (f"{lead} has controlled more of the play." if abs(a - h) >= 0.05 else
+                   "Both have been outchanced more often than not." if max(a, h) < 0.5 else
+                   "There isn't much between them.")
+        notes.append(f"At five on five, {away} has taken {round(100 * a)}% of the expected goals in its games and "
+                     f"{home} {round(100 * h)}%. {verdict}")
+    # special teams mismatch: each power play against the other side's kill
+    for pp_team, pk_team in ((away, home), (home, away)):
+        pp, pk = prof[pp_team].get("pp_xg_pg"), prof[pk_team].get("pk_xga_pg")
+        if pp is not None and pk is not None and pp >= 0.75 and pk >= 0.75:
+            notes.append(f"{pp_team}'s power play creates {pp:.2f} expected goals a game and {pk_team}'s penalty kill "
+                         f"allows {pk:.2f}. That's the special-teams matchup to watch.")
+    taken = max((away, home), key=lambda t: prof[t].get("pen_taken_pg") or 0)
+    if (prof[taken].get("pen_taken_pg") or 0) >= 4:
+        notes.append(f"{taken} has taken {prof[taken]['pen_taken_pg']:.1f} penalties a game, which keeps handing the other side power plays.")
+    # goalie edge
+    ga, gh = goalies.get(away), goalies.get(home)
+    if ga and gh and ga.get("gsax") is not None and gh.get("gsax") is not None:
+        notes.append(f"In net: {ga['name']} ({away}) is at {ga['gsax']:+.1f} saves above expected this season, "
+                     f"{gh['name']} ({home}) at {gh['gsax']:+.1f}.")
+    # rest
+    for t in (away, home):
+        if prof[t].get("rest_days") is not None and prof[t]["rest_days"] <= 0:
+            notes.append(f"{t} is on the second night of a back-to-back.")
+    # form: last five by chance share, not just results
+    for t in (away, home):
+        l5 = prof[t]["last5"]
+        if len(l5) >= 3:
+            w = sum(1 for x in l5 if x["gf"] > x["ga"])
+            otl = sum(1 for x in l5 if x["gf"] < x["ga"] and x["end"] != "REG")
+            share = sum(x["xg_share"] for x in l5) / len(l5)
+            notes.append(f"{t} is {w}-{len(l5) - w - otl}-{otl} in its last {len(l5)}, "
+                         f"with {round(100 * share)}% of the expected goals in those games.")
+    played = [x for x in series if x.get("a") is not None]
+    if played:
+        x = played[-1]
+        win = x["home"] if x["h"] > x["a"] else x["away"]
+        notes.append(f"They met on {dt.date.fromisoformat(x['date']).strftime('%b %-d')}: {x['away']} {x['a']}, {x['home']} {x['h']}"
+                     f"{'' if x['end'] == 'REG' else ' (' + x['end'] + ')'}, a game {win} deserved "
+                     f"{round(100 * (x['dtw_home'] if win == x['home'] else 1 - x['dtw_home']))}% of the time.")
+    return notes[:7]
 
 
 def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, shifts, pos, names, out_dir, stories_dir, today):
@@ -102,10 +153,11 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
         sp = os.path.join(stories_dir, f"{g['id']}.json")
         if os.path.exists(sp):
             story = json.load(open(sp)).get("text")
+        gcards = {away: goalie_card(g["away_goalie"]), home: goalie_card(g["home_goalie"])}
         detail = dict(id=g["id"], date=today, start=g["start"], away=away, home=home,
                       away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
-                      teams=prof, series=series,
-                      goalies={away: goalie_card(g["away_goalie"]), home: goalie_card(g["home_goalie"])},
+                      teams=prof, series=series, notes=preview_notes(away, home, prof, gcards, series),
+                      goalies=gcards,
                       lines={t: projected_lines(t, pg, shifts, pos, names) for t in (away, home)},
                       props=key, story=story)
         with open(os.path.join(out_dir, f"{g['id']}.json"), "w") as f:

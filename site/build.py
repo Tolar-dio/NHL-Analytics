@@ -247,6 +247,26 @@ def main():
     shifts_all = pd.read_csv(TBL(CUR, "shifts.csv.gz"))
     game_index = build_games(CUR, ev, s, cur["pg"], cur["gg"], games, names, os.path.join(OUTD, "games"), stories,
                              shifts=shifts_all, plist=plist)
+    # ---- per-player game logs (one small file each, loaded when a player page opens)
+    plog = os.path.join(OUTD, "players")
+    os.makedirs(plog, exist_ok=True)
+    gh = games.set_index("game_id")
+    for pid, grp in cur["pg"].groupby("player_id"):
+        rows = []
+        for x in grp.sort_values(["date", "game_id"]).itertuples():
+            if x.game_id not in gh.index:
+                continue
+            gm = gh.loc[x.game_id]
+            home = gm.home == x.team
+            gf_, ga_ = (int(gm.home_score), int(gm.away_score)) if home else (int(gm.away_score), int(gm.home_score))
+            rows.append(dict(id=int(x.game_id), date=x.date, opp=x.opp, home=bool(home),
+                             res="W" if gf_ > ga_ else ("OTL" if gm.decided_in != "REG" else "L"), gf=gf_, ga=ga_,
+                             toi=r(x.toi, 1), g=int(x.g), a=int(x.a), sog=int(x.sog), ixg=r(x.ixg, 2),
+                             xgf=r(x.xgf, 2), xga=r(x.xga, 2)))
+        with open(os.path.join(plog, f"{int(pid)}.json"), "w") as f:
+            json.dump(rows, f, separators=(",", ":"))
+    print(f"  players/: {cur['pg'].player_id.nunique()} game logs")
+
     all_shots = s
     s = s[s.nx > 0]
     shots = {}
@@ -313,6 +333,10 @@ def main():
         build_previews(slate, props, gm_out, all_shots, cur["tg"], ev, game_index, goalie_rows, pgc, shifts,
                        posmap, names, os.path.join(OUTD, "previews"),
                        os.path.join(ROOT, "data", "stories", CUR, "previews", str(today)), str(today))
+    # ---- per-team profile (special teams, penalties, 5v5 share) for the Teams page
+    from previews import team_profile
+    dump("team_profiles.json", {t: {k: v for k, v in team_profile(t, all_shots, cur["tg"], ev, game_index).items() if k != "last5"}
+                                for t in sorted(set(cur["tg"].team))})
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props,
                               goalie_note="Projected goalies = most starts in each team's last five games. "
                                           "Check confirmations before betting."))

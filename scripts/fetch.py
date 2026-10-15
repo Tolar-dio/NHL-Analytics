@@ -187,7 +187,8 @@ def download_game(season, gid, game_date, want_detail=False):
         json.dump(status, f)
 
 
-DETAIL_RETRY_DAYS = 3  # highlight clips post a few hours after the game; keep checking this long
+DETAIL_RETRY_DAYS = 7  # highlight clips post a few hours after the game, a few take days; keep checking this long
+CLIP_URL = re.compile(r"^https://(www\.)?nhl\.com/video/[a-z0-9-]+-\d{6,}$")
 
 
 def fetch_detail(gid, game_date, d, status):
@@ -207,7 +208,8 @@ def fetch_detail(gid, game_date, d, status):
     write_gz_json(os.path.join(d, "landing.json.gz"), landing)
     write_gz_json(os.path.join(d, "rightrail.json.gz"), rail)
     goals = [g for per in (landing.get("summary") or {}).get("scoring", []) for g in per.get("goals", [])]
-    clips_ready = all(g.get("highlightClip") for g in goals) and \
+    # the NHL sometimes posts a bare "https://nhl.com/video/" first, so check the shareable URL, not just the ID
+    clips_ready = all(CLIP_URL.match(g.get("highlightClipSharingUrl") or "") for g in goals) and \
         bool((rail.get("gameVideo") or {}).get("threeMinRecap"))
     age = (dt.date.today() - dt.date.fromisoformat(game_date)).days
     status["detail"] = bool(clips_ready or age > DETAIL_RETRY_DAYS)
