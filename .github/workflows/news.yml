@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "41 * * * *"     # hourly; GitHub often starts scheduled runs late, which is fine for news
   workflow_dispatch:
+  # GitHub often starts the hourly schedule hours late, so also refresh right after every nightly run
+  workflow_run:
+    workflows: ["Nightly NHL pull"]
+    types: [completed]
 
 permissions:
   contents: write
