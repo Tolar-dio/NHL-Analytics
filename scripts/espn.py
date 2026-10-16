@@ -86,9 +86,11 @@ def load_history():
         return {}
 
 
-def update_history(current, now=None):
+def update_history(current, now=None, write=True):
     """Fold the current report into the history. Each entry keeps its latest status and when it was last
-    listed; a player missing from today's report keeps his old entry, which is how a return shows up."""
+    listed; a player missing from today's report keeps his old entry, which is how a return shows up.
+    Only the hourly news job writes the file (write=True); the site build folds in memory, because a
+    changed tracked file in the build's checkout makes its later `git pull --rebase` refuse to run."""
     now = now or dt.datetime.now(dt.timezone.utc)
     stamp = now.isoformat(timespec="minutes")
     h = load_history()
@@ -100,6 +102,8 @@ def update_history(current, now=None):
         h[x["key"]] = e
     cutoff = now - dt.timedelta(days=KEEP_DAYS)
     h = {k: v for k, v in h.items() if dt.datetime.fromisoformat(v["last"]) >= cutoff}
+    if not write:
+        return h
     os.makedirs(os.path.dirname(HIST), exist_ok=True)
     with open(HIST, "w") as f:
         json.dump(h, f, separators=(",", ":"), sort_keys=True)

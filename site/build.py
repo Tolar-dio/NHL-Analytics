@@ -111,7 +111,7 @@ def expected_lineups(teams, pgc, prev_pg, gg_cur, gg_prev, names, today):
     ok = False
     try:
         cur_inj = espn.injuries()
-        hist = espn.update_history(cur_inj)
+        hist = espn.update_history(cur_inj, write=False)   # the news job owns data/injuries
         back = espn.returning(hist, cur_inj)
         ok = True
     except Exception as e:

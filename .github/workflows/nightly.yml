@@ -94,6 +94,8 @@ jobs:
           for p in data/stories data/archive; do if [ -e "$p" ]; then git add "$p"; fi; done
           if ! git diff --cached --quiet; then
             git commit -q -m "Stories and pre-game archive $(date -u +%Y-%m-%d)"
+            # anything else the build touched in tracked files is not ours to commit; drop it so the rebase can run
+            git checkout -- .
             git pull -q --rebase origin main
             git push -q
           fi
