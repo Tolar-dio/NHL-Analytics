@@ -473,7 +473,12 @@ function renderTeams(view, param) {
     ].join("") : "";
     $("#teamTrend").innerHTML = trendChart(team, idx);
   }).catch(() => {});
-  teamNews(team).then((html) => { const el = $("#teamNews"); if (location.hash === here && el) el.outerHTML = html || ""; }).catch(() => {});
+  teamNews(team).then((r) => {
+    const el = $("#teamNews");
+    if (location.hash !== here || !el) return;
+    el.outerHTML = r ? r.html : "";
+    const blk = view.querySelector(".media-block"); if (r && blk) bindMedia(blk, r.listen);
+  }).catch(() => {});
   teamLog(team).then((html) => { if (location.hash === here) view.insertAdjacentHTML("beforeend", html); }).catch(() => {});
   $("#teamPick").addEventListener("change", (e) => (location.hash = "#teams/" + e.target.value));
 }
@@ -532,6 +537,7 @@ function renderPlayers(view, param) {
     </section>
     <section class="zone"><h2>Game by game</h2><p class="lede">Every game this season, newest first. xG is his own shots' chances; on-ice ± is chances for minus against while he was out there. Tap a game to open it.</p>
       <div id="pLog"><p class="note">Loading his games…</p></div></section>
+    <div id="pMedia"></div>
     <section class="zone"><h2>Every skater</h2>
       <div class="controls">
         <div class="chips" role="group" aria-label="Position">${["all", "F", "D"].map((x) => `<button type="button" class="chip" data-ppos="${x}" aria-pressed="${S.pPos === x}">${x === "all" ? "All" : x === "F" ? "Forwards" : "Defense"}</button>`).join("")}</div>
@@ -567,6 +573,12 @@ function renderPlayers(view, param) {
       { key: "pm", label: "On-ice xG ±", nosort: true, fmt: (x) => divCell(x.pm, 1.5, 2), cls: "hide-sm" },
     ], null, "plog") : `<p class="note">No games yet this season.</p>`;
   }).catch(() => { const el = $("#pLog"); if (el) el.innerHTML = `<p class="note">Game log unavailable.</p>`; });
+  relatedMedia(null, p.id, `${p.name} in the news`).then((r) => {
+    const el = $("#pMedia");
+    if (location.hash !== here || !el) return;
+    el.outerHTML = r ? r.html : "";
+    const blk = view.querySelector(".media-block"); if (r && blk) bindMedia(blk, r.listen);
+  }).catch(() => {});
   const q = $("#pq"), sugg = $("#sugg");
   q.addEventListener("input", () => {
     const t = q.value.trim().toLowerCase();

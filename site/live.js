@@ -322,54 +322,173 @@ async function renderLive(view, id) {
   draw();
 }
 
-// ------------------------------------------------------------------ news
+// ------------------------------------------------------------------ news, reads, listening, watching
+// data/news/index.json is written hourly by scripts/write_news.py (stories grouped across outlets,
+// worth-reading pieces, podcast episodes, videos, NHL highlight ids per game). ESPN headlines newer
+// than that file are merged in live.
 const ago = (iso) => {
   const m = Math.round((Date.now() - new Date(iso)) / 60000);
   return m < 60 ? `${Math.max(1, m)} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
-async function takes() {
-  try { const r = await fetch(NEWS_INDEX, { cache: "no-cache" }); if (!r.ok) return {}; const d = await r.json(); return Object.fromEntries((d.items || []).map((x) => [String(x.id), x])); }
-  catch (e) { return {}; }
+const mins = (s) => (s ? `${Math.round(s / 60)} min` : "");
+let NEWS = null;
+async function newsIndex() {
+  if (NEWS && Date.now() - NEWS.at < 5 * 60000) return NEWS.d;
+  try { const r = await fetch(NEWS_INDEX, { cache: "no-cache" }); NEWS = { at: Date.now(), d: r.ok ? await r.json() : {} }; }
+  catch (e) { NEWS = { at: Date.now(), d: {} }; }
+  const d = NEWS.d;
+  if (d.items && !d.stories)   // older single-source format
+    d.stories = d.items.map((x) => ({ id: String(x.id), ids: [String(x.id)], title: x.headline, desc: x.description, published: x.published,
+      latest: x.published, teams: x.teams || [], players: x.players || [], take: x.take, items: [{ source: "ESPN", title: x.headline, link: x.link, published: x.published }] }));
+  for (const k of ["stories", "reads", "listen", "watch"]) d[k] ||= [];
+  d.highlights ||= {};
+  return d;
 }
-function newsItem(a, take) {
-  const teams = (a.categories || []).filter((c) => c.type === "team").map((c) => ESPN_TEAM[c.teamId]).filter(Boolean);
-  const link = a.links?.web?.href;
+const tagged = (x, team, pid) => (!team || (x.teams || []).includes(team)) && (!pid || (x.players || []).some((p) => p.id === pid));
+const teamChips = (teams) => (teams || []).length ? ` · ${teams.slice(0, 3).join(", ")}` : "";
+
+function storyCard(st) {
+  // one link per outlet (an outlet often files a news brief and a follow-up on the same story); its latest piece
+  const byOutlet = new Map();
+  for (const i of st.items) byOutlet.set(i.source, i);
+  const outlets = [...byOutlet.values()].map((i) => `<a href="${esc(i.link || "#")}" target="_blank" rel="noopener">${esc(i.source)}${i.paywalled ? `<span class="sub" title="Subscription">sub</span>` : ""}</a>`);
+  const first = st.take ? st.take.split(/\n\s*\n/)[0] : "";
   return `<article class="news-item">
-    <div class="ni-meta">${ago(a.published)}${teams.length ? ` · ${[...new Set(teams)].join(", ")}` : ""}</div>
-    <h3>${take ? `<a href="#news/${a.id}">${esc(a.headline)}</a>` : esc(a.headline)}</h3>
-    ${a.description ? `<p class="ni-desc">${esc(a.description)}</p>` : ""}
-    ${take ? `<p class="ni-take"><b>Our take:</b> ${esc(take.take.split(/(?<=\.)\s/)[0])} <a href="#news/${a.id}">Read it</a></p>` : ""}
-    ${link ? `<a class="ni-src" href="${esc(link)}" target="_blank" rel="noopener">Full story on ESPN</a>` : ""}
+    <div class="ni-meta">${ago(st.latest || st.published)}${teamChips(st.teams)}</div>
+    <h3>${st.take ? `<a href="#news/${esc(st.id)}">${esc(st.title)}</a>` : esc(st.title)}</h3>
+    ${st.desc ? `<p class="ni-desc">${esc(st.desc)}</p>` : ""}
+    ${st.take ? `<div class="ni-take"><b>Our take.</b> ${esc(first)} <a href="#news/${esc(st.id)}">Read it</a></div>` : ""}
+    <div class="ni-src">${outlets.length > 1 ? `Covered by ${outlets.length} outlets:` : st.items.length > 1 ? `${st.items.length} reports:` : "Report:"} ${outlets.join(" · ")}</div>
   </article>`;
 }
+function readCard(r) {
+  return `<article class="read-item">
+    <div class="ni-meta">${esc(r.source)}${r.kind === "newsletter" ? " newsletter" : ""}${r.author && r.author !== r.source ? ` · ${esc(r.author)}` : ""} · ${ago(r.published)}${teamChips(r.teams)}${r.paywalled ? " · subscription" : ""}</div>
+    <h3><a href="${esc(r.link || "#")}" target="_blank" rel="noopener">${esc(r.title)}</a></h3>
+    ${r.desc ? `<p class="ni-desc">${esc(r.desc)}</p>` : ""}
+  </article>`;
+}
+function listenCard(e, i) {
+  return `<article class="listen-item">
+    ${e.image ? `<img class="pod-art" src="${esc(e.image)}" alt="" loading="lazy" width="56" height="56">` : `<span class="pod-art"></span>`}
+    <div>
+      <div class="ni-meta">${esc(e.show)} · ${ago(e.published)}${e.duration ? ` · ${mins(e.duration)}` : ""}${teamChips(e.teams)}</div>
+      <h3>${esc(e.title)}</h3>
+      ${e.desc ? `<p class="ni-desc">${esc(e.desc)}</p>` : ""}
+      <div class="pod-actions"><button type="button" class="chip chip-solid" data-play="${i}">Play</button>
+        ${e.apple ? `<a href="${esc(e.apple)}" target="_blank" rel="noopener">Apple Podcasts</a>` : ""}${e.link && e.link !== e.apple ? ` <a href="${esc(e.link)}" target="_blank" rel="noopener">Episode page</a>` : ""}</div>
+      <div class="pod-player" id="pod${i}"></div>
+    </div>
+  </article>`;
+}
+// YouTube's own player, loaded only when tapped (thumbnail until then)
+function videoCard(v) {
+  return `<article class="watch-item">
+    <button type="button" class="yt" data-yt="${esc(v.id)}" aria-label="Play ${esc(v.title)}">
+      <img src="https://i.ytimg.com/vi/${esc(v.id)}/mqdefault.jpg" alt="" loading="lazy" width="320" height="180"><span class="yt-play" aria-hidden="true"></span></button>
+    <div class="ni-meta">${esc(v.channel)} · ${ago(v.published)}${teamChips(v.teams)}</div>
+    <h3>${esc(v.title)}</h3>
+  </article>`;
+}
+function bindMedia(root, listen) {
+  root.querySelectorAll("[data-play]").forEach((b) => b.addEventListener("click", () => {
+    const e = listen[+b.dataset.play], box = root.querySelector(`#pod${b.dataset.play}`);
+    if (!box.innerHTML) box.innerHTML = `<audio controls autoplay preload="none" src="${esc(e.audio)}"></audio>`;
+    b.remove();
+  }));
+  root.querySelectorAll("[data-yt]").forEach((b) => b.addEventListener("click", () => {
+    b.outerHTML = `<div class="yt-frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.yt)}?autoplay=1&rel=0" title="YouTube video"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+  }));
+}
+async function liveEspnStories(d) {
+  // ESPN headlines that arrived after the hourly index was written
+  const known = new Set(d.stories.flatMap((s) => s.ids || [s.id]));
+  const since = d.updated ? new Date(d.updated) : 0;
+  try {
+    const a = await espn("news?limit=15");
+    return (a.articles || []).filter((x) => x.type === "HeadlineNews" && !known.has(String(x.id)) && new Date(x.published) > since)
+      .map((x) => ({ id: String(x.id), ids: [String(x.id)], title: x.headline, desc: x.description, published: x.published, latest: x.published,
+        teams: (x.categories || []).filter((c) => c.type === "team" && /~l:90~/.test(c.uid || "")).map((c) => ESPN_TEAM[c.teamId]).filter(Boolean),
+        players: [], items: [{ source: "ESPN", title: x.headline, link: x.links?.web?.href, published: x.published }] }));
+  } catch (e) { return []; }
+}
+
 async function renderNews(view, id) {
   view.innerHTML = `<p class="empty">Loading the latest…</p>`;
   if (id) return renderTake(view, id);
-  const [d, T] = await Promise.all([espn("news?limit=40").catch(() => ({ articles: [] })), takes()]);
-  const arts = (d.articles || []).filter((a) => a.type === "HeadlineNews" || a.type === "Story");
-  view.innerHTML = `<section class="zone">
-      <h1>News</h1>
-      <p class="lede">The latest NHL headlines from ESPN. When a story involves players or teams we track, Claude writes a short take on what our numbers say about it, usually within a couple of hours.</p>
-      <div class="news-list">${arts.map((a) => newsItem(a, T[String(a.id)])).join("") || `<p class="empty">No headlines right now.</p>`}</div>
-    </section>`;
+  const d = await newsIndex();
+  const fresh = await liveEspnStories(d);
+  S.nTeam ||= "all";
+  const draw = () => {
+    const team = S.nTeam === "all" ? null : S.nTeam;
+    const stories = [...fresh, ...d.stories].filter((x) => tagged(x, team)).slice(0, team ? 30 : 24);
+    const reads = d.reads.filter((x) => tagged(x, team)).slice(0, 14);
+    const listen = d.listen.filter((x) => tagged(x, team)).slice(0, 10);
+    const watch = d.watch.filter((x) => tagged(x, team)).slice(0, 9);
+    const teams = Object.values(ESPN_TEAM).sort();
+    view.innerHTML = `<section class="zone">
+        <h1>News</h1>
+        <p class="lede">Headlines from ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. When a story involves players or teams we track, Claude writes a short take from the reports plus this site's numbers. Updated hourly${d.updated ? ` (last ${ago(d.updated)})` : ""}.</p>
+        <div class="controls"><label class="check" for="nTeam">Team</label>
+          <select id="nTeam"><option value="all">All teams</option>${teams.map((t) => `<option ${S.nTeam === t ? "selected" : ""}>${t}</option>`).join("")}</select>
+          <span class="chips">${[["stories", "Top stories"], ["reads", "Worth reading"], ["listen", "Listen"], ["watch", "Watch"]].map(([k, l]) => `<a class="chip" href="#news" data-jump="${k}">${l}</a>`).join("")}</span></div>
+      </section>
+      <section class="zone" id="n-stories"><h2>Top stories</h2>
+        <div class="news-list">${stories.map(storyCard).join("") || `<p class="empty">Nothing ${team ? `on ${team} ` : ""}in the last few days.</p>`}</div></section>
+      <section class="zone" id="n-reads"><h2>Worth reading</h2><p class="lede">Analysis, features and newsletters. Links go to the writer's site; some need a subscription.</p>
+        <div class="read-list">${reads.map(readCard).join("") || `<p class="empty">Nothing new.</p>`}</div></section>
+      <section class="zone" id="n-listen"><h2>Listen</h2><p class="lede">The latest episodes from 32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.</p>
+        <div class="listen-list">${listen.map(listenCard).join("") || `<p class="empty">No new episodes.</p>`}</div></section>
+      <section class="zone" id="n-watch"><h2>Watch</h2><p class="lede">New videos from The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.</p>
+        <div class="watch-grid">${watch.map(videoCard).join("") || `<p class="empty">No new videos.</p>`}</div></section>`;
+    $("#nTeam").addEventListener("change", (e) => { S.nTeam = e.target.value; draw(); });
+    // the masthead is sticky, so land the section just below it
+    view.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const top = $(`#n-${a.dataset.jump}`).getBoundingClientRect().top + scrollY - ($(".masthead")?.offsetHeight || 0) - 8;
+      scrollTo({ top, behavior: "smooth" });
+    }));
+    bindMedia(view, listen);
+  };
+  draw();
 }
 async function renderTake(view, id) {
-  const T = await takes(), x = T[String(id)];
-  if (!x) { view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news">News</a></p><h1>Not written yet</h1><p class="lede">There's no take on that story yet. They're written every hour or two.</p></section>`; return; }
+  const d = await newsIndex(), st = d.stories.find((x) => x.id === String(id) || (x.ids || []).includes(String(id)));
+  if (!st || !st.take) { view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news">News</a></p><h1>Not written yet</h1><p class="lede">There's no take on that story yet. They're written every hour or two.</p></section>`; return; }
   view.innerHTML = `<section class="zone take">
       <p class="crumbs"><a href="#news">News</a></p>
-      <h1>${esc(x.headline)}</h1>
-      <p class="ni-meta">Reported by ESPN ${ago(x.published)}${x.teams?.length ? ` · ${x.teams.join(", ")}` : ""}</p>
-      <div class="story">${x.take.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>
-      ${x.players?.length ? `<p class="note">Players in this story: ${x.players.map((p) => playerLink(p.id, p.name)).join(", ")}</p>` : ""}
-      <p class="note">The facts of the story come from ESPN's report${x.link ? ` (<a href="${esc(x.link)}" target="_blank" rel="noopener">read it here</a>)` : ""}. The analysis is written by Claude from this site's own numbers.</p>
+      <h1>${esc(st.title)}</h1>
+      <p class="ni-meta">${ago(st.latest || st.published)}${teamChips(st.teams)}</p>
+      <div class="story">${st.take.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>
+      ${st.players?.length ? `<p class="note">Players in this story: ${st.players.map((p) => playerLink(p.id, p.name)).join(", ")}</p>` : ""}
+      <h3 class="kicker">The reports</h3>
+      <ul class="plist">${st.items.map((i) => `<li><a href="${esc(i.link || "#")}" target="_blank" rel="noopener">${esc(i.title)}</a> <span class="dim">${esc(i.source)}${i.paywalled ? ", subscription" : ""}, ${ago(i.published)}</span></li>`).join("")}</ul>
+      <p class="note">The facts come from the reports above. The analysis is written by Claude from those headlines and this site's own numbers.</p>
     </section>`;
 }
+// compact "around the league" block for team and player pages
+async function relatedMedia(team, pid, label) {
+  const d = await newsIndex();
+  const stories = d.stories.filter((x) => tagged(x, team, pid)).slice(0, 5);
+  const reads = d.reads.filter((x) => tagged(x, team, pid)).slice(0, 4);
+  const listen = d.listen.filter((x) => tagged(x, team, pid)).slice(0, 3);
+  const watch = d.watch.filter((x) => tagged(x, team, pid)).slice(0, 3);
+  if (!stories.length && !reads.length && !listen.length && !watch.length) return "";
+  const html = `<section class="zone media-block"><h2>${esc(label)}</h2>
+      ${stories.length ? `<div class="news-list">${stories.map(storyCard).join("")}</div>` : ""}
+      ${reads.length ? `<h3 class="kicker">Worth reading</h3><div class="read-list">${reads.map(readCard).join("")}</div>` : ""}
+      ${listen.length ? `<h3 class="kicker">Listen</h3><div class="listen-list">${listen.map(listenCard).join("")}</div>` : ""}
+      ${watch.length ? `<h3 class="kicker">Watch</h3><div class="watch-grid">${watch.map(videoCard).join("")}</div>` : ""}
+    </section>`;
+  return { html, listen };
+}
 async function teamNews(team) {
-  const id = ESPN_ID[team];
-  if (!id) return "";
-  const [d, T] = await Promise.all([espn(`news?team=${id}&limit=12`).catch(() => ({ articles: [] })), takes()]);
-  const recent = (a) => Date.now() - new Date(a.published) < 14 * 864e5;
-  const arts = (d.articles || []).filter((a) => (a.type === "HeadlineNews" || a.type === "Story") && recent(a)).slice(0, 5);
-  return arts.length ? `<section class="zone"><h2>Latest on ${team}</h2><div class="news-list">${arts.map((a) => newsItem(a, T[String(a.id)])).join("")}</div></section>` : "";
+  const r = await relatedMedia(team, null, `Latest on ${team}`);
+  return r ? r : "";
+}
+// official NHL highlight video for a finished game, through YouTube's player
+async function gameHighlights(gid) {
+  const d = await newsIndex(), vid = d.highlights[String(gid)];
+  return vid ? `<section class="zone"><h2>Highlights</h2><div class="hl-video">${videoCard({ id: vid, channel: "NHL on YouTube", title: "Official game highlights", published: null, teams: [] }).replace(/<div class="ni-meta">.*?<\/div>\s*<h3>.*?<\/h3>/s, "")}</div></section>` : "";
 }

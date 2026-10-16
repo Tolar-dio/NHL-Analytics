@@ -1,0 +1,146 @@
+{
+  "_note": "Feeds the hourly news job reads (scripts/media.py). Headlines, teasers and links only are shown; never republish full text. Add or remove entries freely.",
+  "news": [
+    {
+      "name": "The Athletic",
+      "url": "https://www.nytimes.com/athletic/rss/nhl/",
+      "paywalled": true
+    },
+    {
+      "name": "The Hockey News",
+      "url": "https://thehockeynews.com/feed"
+    },
+    {
+      "name": "Daily Faceoff",
+      "url": "https://www.dailyfaceoff.com/feed"
+    }
+  ],
+  "newsletters": [
+    {
+      "name": "Virtual Hockey Scout",
+      "url": "https://virtualhockeyscout.substack.com/feed"
+    },
+    {
+      "name": "Dater on Avalanche",
+      "url": "https://adriandater.substack.com/feed",
+      "team": "COL"
+    },
+    {
+      "name": "JFresh",
+      "url": "https://jfresh.substack.com/feed"
+    },
+    {
+      "name": "Scott Cullen",
+      "url": "https://scottcullenhockey.substack.com/feed"
+    },
+    {
+      "name": "PuckPedia",
+      "url": "https://puckpedia.substack.com/feed"
+    }
+  ],
+  "podcasts": [
+    {
+      "name": "32 Thoughts",
+      "url": "https://feeds.simplecast.com/fYqFr5h_",
+      "apple": 1332150124
+    },
+    {
+      "name": "The Sheet with Jeff Marek",
+      "url": "https://feeds.acast.com/public/shows/672c0e761e4926b519960bc2",
+      "apple": 1778349773
+    },
+    {
+      "name": "The Athletic Hockey Show",
+      "url": "https://feeds.acast.com/public/shows/6818bb89f30c20bff73c9ebc",
+      "apple": 1546282862
+    },
+    {
+      "name": "The Hockey PDOcast",
+      "url": "https://feeds.simplecast.com/HBoOrnlM",
+      "apple": 1045850849
+    },
+    {
+      "name": "Daily Faceoff Live",
+      "url": "https://feeds.acast.com/public/shows/62965f7370338500121e40c8",
+      "apple": 1589878902
+    },
+    {
+      "name": "Morning Cuppa Hockey",
+      "url": "https://feeds.acast.com/public/shows/65f4c46778cf73001733b8d8",
+      "apple": 1722800993
+    },
+    {
+      "name": "Spittin' Chiclets",
+      "url": "https://mcsorleys.barstoolsports.com/feed/spittin-chiclets",
+      "apple": 1112425552
+    },
+    {
+      "name": "Keeping Karlsson (fantasy)",
+      "url": "https://feeds.simplecast.com/FxLigH_r",
+      "apple": 725506148
+    },
+    {
+      "name": "The Wraparound (THN)",
+      "url": "https://feeds.megaphone.fm/the-hockey-news-action-show",
+      "apple": 1771866042
+    },
+    {
+      "name": "DNVR Avalanche",
+      "url": "https://rss.pdrl.fm/16e49c/feeds.simplecast.com/UvRsLzkH",
+      "apple": 1069497109,
+      "team": "COL"
+    },
+    {
+      "name": "Locked On Avalanche",
+      "url": "https://feeds.simplecast.com/pDiYqYj1",
+      "apple": 1485902260,
+      "team": "COL"
+    }
+  ],
+  "youtube": [
+    {
+      "name": "NHL",
+      "channel": "UCqFMzb-4AUf6WAIbl132QKA",
+      "highlights": true,
+      "highlights_only": true
+    },
+    {
+      "name": "The Hockey Guy",
+      "channel": "UC_AFyA9FqrZ57bb9QRH77wg"
+    },
+    {
+      "name": "Hockey Psychology",
+      "channel": "UCcg171okllPcyT6Sm5iBb7A"
+    },
+    {
+      "name": "The Hockey PDOcast",
+      "channel": "UCSWivVoFm7wLz7p5V1yA7og"
+    },
+    {
+      "name": "Spittin' Chiclets",
+      "channel": "UChV3NHKFYgxe4k1ajuk_bbw"
+    },
+    {
+      "name": "Daily Faceoff",
+      "channel": "UCPH8VRwYfex5olrt0VJcgnw"
+    },
+    {
+      "name": "Keeping Karlsson",
+      "channel": "UCdfDjchqDbLYbewbqxYzamA"
+    },
+    {
+      "name": "The Hockey News",
+      "channel": "UCTSsWKqTXwOK9THxs1pq4PQ"
+    },
+    {
+      "name": "Colorado Avalanche",
+      "channel": "UCM715eqbBCk1JE4zlAwYLqw",
+      "team": "COL"
+    },
+    {
+      "name": "DNVR Sports",
+      "channel": "UC8aOXvlqQqMlTFvbbAarD-A",
+      "only_team": "COL"
+    }
+  ]
+}

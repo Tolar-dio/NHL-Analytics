@@ -222,6 +222,7 @@ async function renderGame(view, id) {
         </div>
       </div>
     </section>
+    <div id="gHighlights"></div>
     <section class="zone">
       <h2>How the chances piled up</h2>
       <p class="lede">Each line climbs by a shot's chance of going in. Red dots are goals. Steep stretches are when a team was taking over.</p>
@@ -268,6 +269,13 @@ async function renderGame(view, id) {
   }));
   const deep = location.hash.split("/")[2];
   if (deep && g.seqs && g.seqs[deep]) openTheater(g, deep);
+  const here = location.hash;
+  gameHighlights(g.id).then((html) => {
+    const el = $("#gHighlights");
+    if (!el || !location.hash.startsWith(here.split("/").slice(0, 2).join("/"))) return;
+    el.outerHTML = html;
+    const sec = view.querySelector(".hl-video"); if (sec) bindMedia(sec, []);
+  }).catch(() => {});
 }
 
 // ------------------------------------------------------------------ preview page
