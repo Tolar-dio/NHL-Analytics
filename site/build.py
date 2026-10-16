@@ -331,7 +331,7 @@ def main():
             k = np.arange(len(dist))
             def options(team, chosen):
                 ids = list(dict.fromkeys(([chosen] if chosen else []) +
-                                         gss[gss.team == team].player_id.astype(int).tolist()[::-1]))[:3]
+                                         gss[gss.team == team].player_id.astype(int).tolist()[::-1]))[:5]   # enough to match ESPN's probable starter
                 return [dict(id=i, name=names.get(i), factor=r(M.goalie_factor(tm, team, i), 4),
                              starts=int((gss.player_id == i).sum())) for i in ids]
             gm_out.append(dict(id=g["id"], start=g["start"], away=g["away"], home=g["home"],
@@ -380,6 +380,10 @@ def main():
     except Exception as e:
         print("  this-season backtest skipped:", e)
     dump("model.json", model)
+
+    # ---- in-game xG model for the live game page (ESPN feed, before MoneyPuck's numbers exist)
+    import xg_live
+    xg_live.train(os.path.join(OUTD, "xg_live.json"))
 
     # ---- fantasy roster
     cfg = json.load(open(os.path.join(SITE, "config.json")))

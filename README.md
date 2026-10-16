@@ -42,6 +42,10 @@ The **Backfill a past season** workflow (Actions tab) pulls a full past season: 
 
 To preview locally: `python site/build.py && cd site && python -m http.server`.
 
+### Live scores and news
+
+During games the site polls ESPN's public scoreboard every 30 seconds (scores across the top, on each Tonight card, and ESPN's probable starting goalies applied to the odds) and, on a game's live page, ESPN's play feed every minute for a live shot map, chance flow and "deserved to win", rated by an in-game xG model (`analysis/xg_live.py`). ESPN's injury report flags players on the odds, previews and My team. The News tab shows ESPN's headlines; an hourly workflow (`news.yml`) has Claude write a short take on stories about players or teams we track, using our own numbers (about 1 cent each).
+
 ### Game catalogue and previews
 
 Every game this season gets a page (Games tab): a written recap, a "deserved to win" replay of every shot, an expected-goals flow chart, both teams' shot maps, each goal with a link to its official NHL highlight and a Replay that animates its build-up from the recorded events and shift charts (step through it moment by moment, or slow it to 0.25x), three stars, and player-by-player numbers. Tonight's games each get a preview page. Recaps and previews are written by Claude in the nightly run (needs the `ANTHROPIC_API_KEY` repository secret) and saved under `data/stories/` so each game is only written once.

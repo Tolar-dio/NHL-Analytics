@@ -1,0 +1,45 @@
+name: News takes
+
+on:
+  schedule:
+    - cron: "41 * * * *"     # hourly; GitHub often starts scheduled runs late, which is fine for news
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# its own group: sharing the nightly's group would let a queued news run cancel a waiting nightly run
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  news:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the Claude SDK
+        run: pip install "anthropic>=0.40"
+
+      - name: Write takes on new headlines (about 1 cent each, 8 per run at most)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          STORY_MODEL: claude-sonnet-5-5
+          NEWS_MAX: "8"
+        run: python scripts/write_news.py
+
+      - name: Save them
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/news
+          if git diff --cached --quiet; then echo "No new takes."; exit 0; fi
+          git commit -q -m "News takes $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q && exit 0; sleep 10; done
+          exit 1

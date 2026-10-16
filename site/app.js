@@ -212,7 +212,7 @@ const playerLink = (id, name) => `<a class="who" href="#players/${id}">${esc(nam
 
 // ------------------------------------------------------------------ TONIGHT
 function goalieFor(game, side) {
-  const pick = S.goalies[game.id]?.[side] ?? game[side + "_goalie"];
+  const pick = S.goalies[game.id]?.[side] ?? probableId(game, side) ?? game[side + "_goalie"];
   const opts = game[side + "_goalies"] || [];
   return opts.find((o) => o.id === pick) || opts[0] || { factor: 1, name: "Unknown" };
 }
@@ -254,18 +254,19 @@ function renderTonight(view) {
         <span class="xg">${xg.toFixed(2)}</span></div>
         <label class="goalie"><select data-game="${g.id}" data-side="${key}" aria-label="${abbr} goalie">
           ${opts.map((o) => `<option value="${o.id}" ${o.id === chosen.id ? "selected" : ""}>${esc(o.name)} (${o.starts} start${o.starts === 1 ? "" : "s"})</option>`).join("")}
-        </select></label>`;
+        </select><span class="g-src">${esc(goalieSource(g, key))}</span></label>`;
     };
     return `<article class="game ${S.game === g.id ? "is-picked" : ""}">
       <div class="game-time"><span>${timeMT(g.start)}</span><span class="row" style="gap:12px"><a class="preview-link" href="#preview/${g.id}">Preview</a><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></span></div>
       ${side(g.away, g.away_xg, "away")}${side(g.home, g.home_xg, "home")}
       <div class="game-foot" data-tip="${esc("Game totals did not beat a league-average guess in last season's backtest. Context only.")}">Projected total ${g.total.toFixed(1)}. Over 5.5: ${pct(g.o55)}. Context, not a pick.</div>
+      <div class="live-line" data-live="${g.id}"></div>
     </article>`;
   };
   view.innerHTML = `
     <section class="zone">
       <h1>${esc(new Date(T.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))}: ${games.length} game${games.length === 1 ? "" : "s"}</h1>
-      <p class="lede">Bars show each team's expected goals tonight. Goalies are projected from recent starts, so switch any of them to the confirmed starter and every number on this page updates.</p>
+      <p class="lede">Bars show each team's expected goals tonight. Goalies follow ESPN's probable starters once they're posted (recent starts until then); switch any of them and every number on this page updates. Live scores update every 30 seconds.</p>
       <div class="slate">${games.map(gameCard).join("")}</div>
     </section>
     <section class="zone">
@@ -288,7 +289,9 @@ function renderTonight(view) {
     if (S.pos !== "all") rows = rows.filter((r) => r.pos === S.pos);
     if (S.radar) rows = rows.filter((r) => r.radar);
     if (S.q) rows = rows.filter((r) => r.name.toLowerCase().includes(S.q.toLowerCase()));
-    const all = sortRows(rows, S.sort);
+    // players ESPN lists as out or on IR sink to the bottom (still shown, flagged)
+    const out = (r) => { const x = injuryOf(r.name); return x && x.abbr !== "DTD" ? 1 : 0; };
+    const all = sortRows(rows, S.sort).sort((a, b) => out(a) - out(b));
     rows = all.slice(0, S.game || S.q || S.radar ? 400 : S.tLimit);
     const oddsKey = (id) => `odds:${T.date}:${id}`;
     const evCell = (r) => {
@@ -298,7 +301,7 @@ function renderTonight(view) {
       return `<span class="${ev >= 0 ? "pos" : "neg"}">${signed(100 * ev, 0)}%</span>`;
     };
     const cols = [
-      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}` },
+      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}${injuryTag(r.name)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
       { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" },
@@ -325,6 +328,7 @@ function renderTonight(view) {
   $("#radar").addEventListener("change", (e) => { S.radar = e.target.checked; drawTable(); });
   $$("[data-pos]", view).forEach((b) => b.addEventListener("click", () => { S.pos = b.dataset.pos; renderTonight(view); }));
   $$("[data-pick]", view).forEach((b) => b.addEventListener("click", () => { const id = +b.dataset.pick; S.game = S.game === id ? null : id; renderTonight(view); }));
+  fillLiveLines();
   $$("select[data-game]", view).forEach((sel) => sel.addEventListener("change", () => {
     (S.goalies[sel.dataset.game] ||= {})[sel.dataset.side] = +sel.value;
     store.set("goalies:" + T.date, JSON.stringify(S.goalies));
@@ -448,7 +452,8 @@ function renderTeams(view, param) {
         ], null, "tg") : `<p class="empty">No goalie data yet.</p>`}
       </div>
     </section>
-    <section class="zone"><h2>Skaters</h2><p class="lede">"Team better with him" is how much larger a share of 5v5 expected goals the team gets with this player on the ice than without him.</p><div id="teamSk"></div></section>`;
+    <section class="zone"><h2>Skaters</h2><p class="lede">"Team better with him" is how much larger a share of 5v5 expected goals the team gets with this player on the ice than without him.</p><div id="teamSk"></div></section>
+    <div id="teamNews"></div>`;
   const draw = () => { $("#teamSk").innerHTML = table(sortRows(sk, S.tSort), skaterCols(), S.tSort, "tsk"); bindSort($("#teamSk"), S.tSort, draw); };
   draw();
   const here = location.hash;
@@ -468,6 +473,7 @@ function renderTeams(view, param) {
     ].join("") : "";
     $("#teamTrend").innerHTML = trendChart(team, idx);
   }).catch(() => {});
+  teamNews(team).then((html) => { const el = $("#teamNews"); if (location.hash === here && el) el.outerHTML = html || ""; }).catch(() => {});
   teamLog(team).then((html) => { if (location.hash === here) view.insertAdjacentHTML("beforeend", html); }).catch(() => {});
   $("#teamPick").addEventListener("change", (e) => (location.hash = "#teams/" + e.target.value));
 }
@@ -649,7 +655,7 @@ function drawFantasy(view, F) {
   });
   const perDay = days.map((d) => rows.filter((r) => r.slot !== "G" && r.sched[d]).length);
   const head = `<tr><th class="nosort">Player</th>${days.map((d) => `<th class="nosort ${d === today ? "today" : ""}">${dateLabel(d)}</th>`).join("")}<th class="nosort">Next 7</th></tr>`;
-  const body = rows.map((r) => `<tr><td><span class="slot">${r.slot}</span>${playerLink(r.id, r.name || "")}<span class="sub">${r.team || ""}</span></td>
+  const body = rows.map((r) => `<tr><td><span class="slot">${r.slot}</span>${playerLink(r.id, r.name || "")}<span class="sub">${r.team || ""}</span>${injuryTag(r.name)}</td>
      ${days.map((d) => `<td class="${r.sched[d] ? "game-day" : "off"} ${d === today ? "today" : ""}">${r.sched[d] ? esc(r.sched[d]) : "·"}</td>`).join("")}<td>${r.games7}</td></tr>`).join("");
   const foot = `<tr><td><b>Skaters playing</b></td>${perDay.map((n, i) => `<td class="${days[i] === today ? "today" : ""}"><b>${n}</b></td>`).join("")}<td></td></tr>`;
   const sells = rows.filter((r) => r.slot !== "G" && ((r.gmx ?? 0) >= 2 || (r.luck ?? 0) >= 4));
@@ -705,9 +711,9 @@ function renderModel(view) {
 }
 
 // ------------------------------------------------------------------ router
-const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, league: renderLeague,
+const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, league: renderLeague,
   teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
-const TAB_OF = { game: "games", goals: "games", preview: "tonight" };
+const TAB_OF = { game: "games", goals: "games", preview: "tonight", live: "tonight" };
 function route(e) {
   const rerender = e === "resize";
   const keepY = scrollY;
@@ -722,7 +728,7 @@ function route(e) {
   if (rerender) {
     // Same page at a new width: put the reader back where they were once the async render settles.
     Promise.resolve(p).then(() => requestAnimationFrame(() => scrollTo(0, keepY)));
-  } else if (param || tab === "game" || tab === "preview" || tab === "goals") scrollTo(0, 0);
+  } else if (param || tab === "game" || tab === "preview" || tab === "goals" || tab === "live" || tab === "news") scrollTo(0, 0);
 }
 
 function applyThemeLabel() {
@@ -764,5 +770,7 @@ async function boot() {
   showFantasyTab(!!store.get(FKEY));
   addEventListener("hashchange", route);
   route();
+  liveStart();      // ESPN scoreboard: live scores and probable goalies
+  liveInjuries();   // ESPN injury report: flags on the odds
 }
 boot();

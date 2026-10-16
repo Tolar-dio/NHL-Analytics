@@ -97,7 +97,8 @@ function flowChart(g) {
     series[k].push([s[5], tot[k]]);
     if (s[3]) goals.push({ k, t: s[5], v: tot[k], pid: s[6] });
   });
-  series[0].push([end, tot[0]]); series[1].push([end, tot[1]]);
+  const stop = g.now != null ? Math.min(g.now, end) : end;   // live games: lines stop at the current game time
+  series[0].push([stop, tot[0]]); series[1].push([stop, tot[1]]);
   const ymax = Math.max(1, tot[0], tot[1]) * 1.08;
   const X = (t) => m.l + (t / end) * (W - m.l - m.r), Y = (v) => H - m.b - (v / ymax) * (H - m.t - m.b);
   const path = (pts) => "M" + pts.map(([t, v]) => `${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join(" L");
@@ -296,7 +297,7 @@ async function renderPreview(view, id) {
       <div class="dim">Last season: ${gc.prev_gp ? `${gc.prev_gp} games, ${signed(gc.prev_gsax)} saves above expected` : "no NHL games"}</div></div>`;
   const lines = (t) => {
     const L = p.lines[t];
-    const unit = (u, tag) => `<li><span class="ln-tag">${tag}</span>${u.map((x) => playerLink(x.id, x.name)).join(", ")}</li>`;
+    const unit = (u, tag) => `<li><span class="ln-tag">${tag}</span>${u.map((x) => playerLink(x.id, x.name) + injuryTag(x.name)).join(", ")}</li>`;
     const extra = [...(L.F_extra || []), ...(L.D_extra || [])];
     return `<div><h3>${t}</h3>
       <ol class="lines">${(L.F || []).map((u, i) => unit(u, `L${i + 1}`)).join("")}</ol>
@@ -304,7 +305,7 @@ async function renderPreview(view, id) {
       ${extra.length ? `<p class="note">Also dressed: ${extra.map((x) => playerLink(x.id, x.name)).join(", ")}</p>` : ""}</div>`;
   };
   const props = (t) => table([...p.props[t].goal.map((x) => ({ ...x, what: "Goal", pr: x.p_goal })), ...p.props[t].pts.map((x) => ({ ...x, what: "2+ points", pr: x.p_2pts }))], [
-    { key: "name", label: t, nosort: true, fmt: (x) => playerLink(x.id, x.name) },
+    { key: "name", label: t, nosort: true, fmt: (x) => playerLink(x.id, x.name) + injuryTag(x.name) },
     { key: "what", label: "Market", nosort: true },
     { key: "pr", label: "Chance", nosort: true, fmt: (x) => cellBar(x.pr, 0.6) },
     { key: "fair", label: "Fair odds", nosort: true, fmt: (x) => fair(x.pr) },

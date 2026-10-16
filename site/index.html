@@ -23,12 +23,14 @@
   <nav class="tabs" aria-label="Sections">
     <a href="#tonight" data-tab="tonight">Tonight</a>
     <a href="#games" data-tab="games">Games</a>
+    <a href="#news" data-tab="news">News</a>
     <a href="#league" data-tab="league">League</a>
     <a href="#teams" data-tab="teams">Teams</a>
     <a href="#players" data-tab="players">Players</a>
     <a href="#fantasy" data-tab="fantasy" hidden>My team</a>
     <a href="#model" data-tab="model">Trust the model?</a>
   </nav>
+  <div class="live-strip" id="liveStrip" hidden aria-label="Tonight's scores"></div>
 </header>
 
 <main id="view" tabindex="-1"></main>
@@ -41,6 +43,7 @@
 <div class="tip" id="tip" role="tooltip" hidden></div>
 <script src="games.js"></script>
 <script src="replay.js"></script>
+<script src="live.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

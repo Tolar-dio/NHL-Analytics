@@ -42,6 +42,7 @@ jobs:
             echo "No new data."
           else
             git commit -m "Data through $(date -u +%Y-%m-%d)"
+            git pull -q --rebase origin main   # the hourly news job may have pushed in the meantime
             git push
           fi
 
