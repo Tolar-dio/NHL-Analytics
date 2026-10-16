@@ -215,6 +215,73 @@ def fetch_edge(season, force=False):
     print(f"Edge: refreshed {done} of {len(todo)} due players; {left} still due; per-game distance rows {len(dist)}")
 
 
+# ---------------------------------------------------------------- player bios (NHL player landing)
+# Birthplace, birth date, draft, size, the NHL teams each player has played for, and career totals THROUGH
+# LAST SEASON (this season comes from our own tables, so milestones stay current without refetching).
+# Fetched once per player per season and refreshed every BIO_REFRESH_DAYS, at most BIO_MAX a night.
+
+BIO_REFRESH_DAYS = 45
+BIO_MAX = int(os.environ.get("BIO_MAX", "800"))   # the first run fetches everyone (~5 min); after that only new players and 45-day refreshes
+TEAM_BY_NAME = {"Ducks": "ANA", "Bruins": "BOS", "Sabres": "BUF", "Flames": "CGY", "Hurricanes": "CAR", "Blackhawks": "CHI",
+                "Avalanche": "COL", "Blue Jackets": "CBJ", "Stars": "DAL", "Red Wings": "DET", "Oilers": "EDM", "Panthers": "FLA",
+                "Kings": "LAK", "Wild": "MIN", "Canadiens": "MTL", "Predators": "NSH", "Devils": "NJD", "Islanders": "NYI",
+                "Rangers": "NYR", "Senators": "OTT", "Flyers": "PHI", "Penguins": "PIT", "Sharks": "SJS", "Kraken": "SEA",
+                "Blues": "STL", "Lightning": "TBL", "Maple Leafs": "TOR", "Canucks": "VAN", "Golden Knights": "VGK",
+                "Capitals": "WSH", "Jets": "WPG", "Utah Hockey Club": "UTA", "Hockey Club": "UTA", "Mammoth": "UTA",
+                "Utah Mammoth": "UTA", "Coyotes": "ARI"}
+CAREER_KEYS = ["gamesPlayed", "goals", "assists", "points", "wins", "shutouts"]
+
+
+def bio_of(j, season):
+    nhl = [x for x in j.get("seasonTotals") or [] if x.get("leagueAbbrev") == "NHL" and x.get("gameTypeId") == 2]
+    cur = [x for x in nhl if str(x.get("season")) == season]
+    car = ((j.get("careerTotals") or {}).get("regularSeason") or {})
+    prev = {k: (car.get(k) or 0) - sum(x.get(k) or 0 for x in cur) for k in CAREER_KEYS if k in car}
+    teams = []
+    for x in nhl:
+        name = (x.get("teamCommonName") or {}).get("default") or (x.get("teamName") or {}).get("default", "")
+        ab = TEAM_BY_NAME.get(name) or next((v for k, v in TEAM_BY_NAME.items() if name.endswith(k)), None)
+        if ab:
+            teams.append([int(x["season"]), ab, x.get("gamesPlayed") or 0])
+    dd = j.get("draftDetails") or {}
+    txt = lambda o: (o or {}).get("default") if isinstance(o, dict) else o
+    return dict(name=f'{txt(j.get("firstName"))} {txt(j.get("lastName"))}', pos=j.get("position"), birth_date=j.get("birthDate"),
+                birth_city=txt(j.get("birthCity")), birth_state=txt(j.get("birthStateProvince")), birth_country=j.get("birthCountry"),
+                height_in=j.get("heightInInches"), weight_lb=j.get("weightInPounds"), shoots=j.get("shootsCatches"),
+                draft=dict(year=dd.get("year"), team=dd.get("teamAbbrev"), round=dd.get("round"), overall=dd.get("overallPick")) if dd else None,
+                nhl_teams=teams, career_prev=prev)
+
+
+def fetch_bios(season):
+    out = os.path.join(DATA, "external", "bios", season)
+    os.makedirs(out, exist_ok=True)
+    path = os.path.join(out, "bios.json.gz")
+    bios = json.load(gzip.open(path, "rt")) if os.path.exists(path) else {}
+    today = dt.date.today()
+    with gzip.open(os.path.join(DATA, "tables", season, "players.csv.gz"), "rt") as f:
+        roster = list(csv.DictReader(f))
+    due = [p for p in roster if p["player_id"] not in bios or
+           (today - dt.date.fromisoformat(bios[p["player_id"]].get("fetched", "2000-01-01"))).days >= BIO_REFRESH_DAYS]
+    due.sort(key=lambda p: bios.get(p["player_id"], {}).get("fetched", ""))
+    done = 0
+    for p in due[:BIO_MAX]:
+        try:
+            j = get_json(f"https://api-web.nhle.com/v1/player/{p['player_id']}/landing", tries=2)
+        except RuntimeError:
+            continue
+        b = bio_of(j, season)
+        b["fetched"] = today.isoformat()
+        bios[p["player_id"]] = b
+        done += 1
+        time.sleep(0.4)
+    buf = io.BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode="wb", mtime=0) as gz:
+        gz.write(json.dumps(bios, separators=(",", ":"), sort_keys=True).encode())
+    with open(path, "wb") as f:
+        f.write(buf.getvalue())
+    print(f"Bios: fetched {done}; {len(bios)} on file; {max(0, len(due) - done)} still due")
+
+
 # ---------------------------------------------------------------- MoneyPuck season summaries
 
 def fetch_moneypuck_summary(season):
@@ -250,6 +317,7 @@ def main():
             ("MoneyPuck summaries", lambda: fetch_moneypuck_summary(a.season))]
     if not a.skip_edge:
         jobs.append(("Edge", lambda: fetch_edge(a.season, a.force_edge)))
+    jobs.append(("Bios", lambda: fetch_bios(a.season)))
     for name, fn in jobs:
         try:
             fn()

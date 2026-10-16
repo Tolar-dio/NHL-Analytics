@@ -444,6 +444,11 @@ function renderTonight(view) {
       <p class="lede">Bars show each team's expected goals tonight. Goalies follow ESPN's probable starters once they're posted (recent starts until then); switch any of them and every number on this page updates. Live scores update every 30 seconds.</p>
       <div class="slate">${games.map(gameCard).join("")}</div>
     </section>
+    ${(T.headlines || []).length ? `<section class="zone">
+      <h2>Tonight's storylines</h2>
+      <p class="lede">What's going on around tonight's games. Tap one for the preview; hover or tap the line for whether the model already prices it. More on the <a href="#pulse">Pulse</a> page.</p>
+      ${storyList(T.headlines.slice(0, 6), { game: true, compact: true })}
+    </section>` : ""}
     <section class="zone">
       <h2>Who scores, who stacks points</h2>
       <p class="lede">Chance of a goal or of 1, 2 or 3+ points, with the fair price. Pick the market your book is offering, type its odds and the return shows; positive means the book is paying more than the model thinks it should.</p>
@@ -482,7 +487,7 @@ function renderTonight(view) {
     };
     const other = mk === "p_goal" ? ["p_2pts", "2+ points"] : ["p_goal", "Goal chance"];
     const cols = [
-      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}${injuryTag(r.name)}${lineupTag(r)}` },
+      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
       mk === "p_goal" ? { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" }
@@ -562,7 +567,7 @@ function renderLeague(view) {
 // ------------------------------------------------------------------ TEAMS
 function skaterCols() {
   return [
-    { key: "name", label: "Player", fmt: (r) => playerLink(r.id, r.name) },
+    { key: "name", label: "Player", fmt: (r) => playerLink(r.id, r.name) + formTag(r) },
     { key: "pos", label: "Pos" }, { key: "gp", label: "GP" },
     { key: "toi_pg", label: "TOI", fmt: (r) => num(r.toi_pg, 1) },
     { key: "g", label: "G" }, { key: "a", label: "A" }, { key: "pts", label: "P" },
@@ -622,6 +627,7 @@ function renderTeams(view, param) {
         <select id="teamPick">${abbrs.map((a) => `<option ${a === team ? "selected" : ""}>${a}</option>`).join("")}</select></div>
       <h1>${team}${t ? `: ${t.w}-${t.l}-${t.otl}, ${t.pts} points` : ""}</h1>
       <p class="lede">${t ? `${ordinal(rank)} in the league by points. ` : ""}${story}</p>
+      <div id="teamStory"></div>
       <div class="stat-row" id="teamTiles"></div>
     </section>
     <section class="zone grid-2">
@@ -658,6 +664,7 @@ function renderTeams(view, param) {
       tile(signed(t.xga - t.ga), "Goaltending", "goals saved above expected"),
     ].join("") : "";
     $("#teamTrend").innerHTML = trendChart(team, idx);
+    if ((P.story || []).length) $("#teamStory").innerHTML = `<h3 class="kicker">Storylines</h3><ul class="notes team-notes">${P.story.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
   }).catch(() => {});
   teamNews(team).then((r) => {
     const el = $("#teamNews");
@@ -713,6 +720,7 @@ function renderPlayers(view, param) {
         ${tile(p.sog, "Shots", `${p.hits} hits, ${p.blk} blocks`)}
       </div>
       <p class="verdict">${esc(verdictFor(p))}</p>
+      <div id="pStory"></div>
     </section>
     <section class="zone grid-2">
       <div class="figure"><h3>Shot map</h3><p class="note">${shots.length} unblocked shots this season. Bigger dots were better chances; red went in. Tap one for the details.</p>
@@ -764,6 +772,7 @@ function renderPlayers(view, param) {
     if (location.hash !== here || !$("#pLog")) return;
     const rows = Array.isArray(file) ? file : file.log || [], ed = Array.isArray(file) ? null : file.edge;
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
+    if (!Array.isArray(file) && file.story && $("#pStory")) $("#pStory").innerHTML = playerStory(file.story);
     const anyMiles = rows.some((x) => x.miles != null), anyMph = rows.some((x) => x.mph);
     const res = (x) => `<b class="res res-${x.res}">${x.res}</b>`;
     $("#pLog").innerHTML = rows.length ? table([...rows].reverse().map((x) => ({ ...x, pm: (x.xgf ?? 0) - (x.xga ?? 0), pts: x.g + x.a })), [
@@ -948,7 +957,7 @@ function renderModel(view) {
 }
 
 // ------------------------------------------------------------------ router
-const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, league: renderLeague,
+const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, pulse: renderPulse, league: renderLeague,
   teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
 const TAB_OF = { game: "games", goals: "games", preview: "tonight", live: "tonight" };
 function route(e) {
@@ -966,7 +975,7 @@ function route(e) {
   if (rerender) {
     // Same page at a new width: put the reader back where they were once the async render settles.
     Promise.resolve(p).then(() => requestAnimationFrame(() => scrollTo(0, keepY)));
-  } else if (param || tab === "game" || tab === "preview" || tab === "goals" || tab === "live" || tab === "news") scrollTo(0, 0);
+  } else if (param || tab === "game" || tab === "preview" || tab === "goals" || tab === "live" || tab === "news" || tab === "pulse") scrollTo(0, 0);
 }
 
 function applyThemeLabel() {

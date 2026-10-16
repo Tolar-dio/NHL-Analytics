@@ -90,7 +90,7 @@ def expected_lineups(teams, pgc, prev_pg, gg_cur, gg_prev, names, today):
     """
     sys.path.insert(0, os.path.join(ROOT, "scripts"))
     import espn
-    lu = dict(pool={}, strength={}, extra={}, out=set(), probable={}, returning=[], source="last game's lineup (ESPN unavailable)")
+    lu = dict(pool={}, strength={}, extra={}, out=set(), inj={}, probable={}, returning=[], source="last game's lineup (ESPN unavailable)")
     cols = ["player_id", "team", "pos", "date"]
     sk = pd.concat([prev_pg[cols], pgc[cols]]).sort_values("date").groupby("player_id").last()
     gl = pd.concat([gg_prev[["player_id", "team", "date"]], gg_cur[["player_id", "team", "date"]]]).sort_values("date").groupby("player_id").last()
@@ -127,6 +127,8 @@ def expected_lineups(teams, pgc, prev_pg, gg_cur, gg_prev, names, today):
 
     for x in cur_inj:
         i = match(x["name"], x["team"], x["pos"])
+        if i:   # status, injury type and ESPN's expected return, for the storylines (site/narrative.py)
+            lu["inj"][i] = dict(team=x["team"], status=x["status"], out=x["out"], kind=x.get("kind"), back=x["back"])
         if i and x["out"]:
             lu["out"].add(i)
     ret = {}
@@ -426,7 +428,8 @@ def main():
                 credit="Shot data and expected goals courtesy of MoneyPuck.com. Game data from the NHL API.")
 
     # ---- teams and goalies
-    dump("teams.json", standings(games, cur["tg"]))
+    teams_rows = standings(games, cur["tg"])
+    dump("teams.json", teams_rows)
     goalie_rows = goalies(cur["gg"], ev, names, prev["gg"])
     edge = load_edge(CUR)
     for g in goalie_rows:   # EDGE: high-danger save % from the NHL's tracked shot locations
@@ -477,6 +480,7 @@ def main():
                          "top_shot_pctile", "distance_pctile", "oz_time_ev_pct"]])
     sk["name"] = sk.index.map(names)
     sk["num"] = plist.number.reindex(sk.index)
+    sk_idx = sk.copy()                 # by player id, for the narrative layer
     sk = sk.reset_index().rename(columns={"player_id": "id"})
     cols = ["id", "name", "team", "pos", "num", "gp", "toi_pg", "g", "a", "pts", "ppp", "sog", "hits", "blk",
             "ixg", "ixg60", "pts60", "g_minus_xg", "oi_luck", "cf5", "xgf5", "rel5",
@@ -484,7 +488,7 @@ def main():
             "max_speed_mph", "max_speed_pctile", "bursts_20mph", "bursts_pctile", "top_shot_mph",
             "top_shot_pctile", "distance_pctile", "oz_time_ev_pct"]
     cols = [c for c in cols if c in sk.columns]
-    dump("skaters.json", records(sk.sort_values("pts", ascending=False), cols))
+    sk_rows = records(sk.sort_values("pts", ascending=False), cols)   # written once the narrative layer adds form
 
     # ---- shot maps (this season): {player_id: [[x, y, xg_milli, goal], ...]}
     s = shot_coords(ev)
@@ -521,6 +525,7 @@ def main():
     # ---- per-player game logs (one small file each, loaded when a player page opens)
     plog = os.path.join(OUTD, "players")
     os.makedirs(plog, exist_ok=True)
+    plogs = {}
     gh = games.set_index("game_id")
     for pid, grp in cur["pg"].groupby("player_id"):
         rows = []
@@ -535,9 +540,19 @@ def main():
                              toi=r(x.toi, 1), g=int(x.g), a=int(x.a), sog=int(x.sog), ixg=r(x.ixg, 2),
                              xgf=r(x.xgf, 2), xga=r(x.xga, 2), miles=edge["miles"].get((int(pid), int(x.game_id))),
                              mph=edge["game_top"].get((int(pid), int(x.game_id)))))
-        with open(os.path.join(plog, f"{int(pid)}.json"), "w") as f:
-            json.dump(dict(log=rows, edge=edge["player"].get(int(pid))), f, separators=(",", ":"))
-    print(f"  players/: {cur['pg'].player_id.nunique()} game logs")
+        plogs[int(pid)] = rows
+
+    # ---- narrative layer: form, streaks, breakouts, regression, milestones (site/narrative.py)
+    import narrative as N
+    from previews import team_profile
+    profiles = {t: {k: v for k, v in team_profile(t, s, cur["tg"], ev, game_index).items() if k != "last5"}
+                for t in sorted(set(cur["tg"].team))}
+    bios = N.load_bios(CUR)
+    P = N.season_pulse(CUR, PREV, cur, prev, names, fp, pri["players"], sk_idx, teams_rows, goalie_rows, profiles, bios, today)
+    for row in sk_rows:
+        f = P["skater"].get(row["id"], {}).get("form", {})
+        row["form"], row["fv"] = f.get("state"), f.get("verdict")
+    dump("skaters.json", sk_rows)
 
     all_shots = s
     s = s[s.nx > 0]
@@ -616,20 +631,48 @@ def main():
                             "pp_share", "p_goal", "p_1pt", "p_2pts", "p_3pts", "lam_g", "lam_p", "g_f", "radar",
                             "lineup", "lineup_note"])
         archive_tonight(str(today), gm_out, props, lu)
+        for p in props:
+            f = P["skater"].get(p["id"], {}).get("form", {})
+            p["form"], p["fv"] = f.get("state"), f.get("verdict")
     else:
         props = []
+    stories, headlines = N.game_stories(P, gm_out, props, lu, sched, cur, prev, names, profiles, teams_rows, game_index,
+                                        bios, today, CUR) if gm_out else ({}, [])
+    for g in gm_out:
+        g["storylines"] = stories.get(g["id"], {}).get("storylines", [])[:3]
     if gm_out:
         from previews import build_previews
         shifts = shifts_all
         posmap = plist.position.map(lambda p: "D" if p == "D" else ("G" if p == "G" else "F"))
         build_previews(slate, props, gm_out, all_shots, cur["tg"], ev, game_index, goalie_rows, pgc, shifts,
                        posmap, names, os.path.join(OUTD, "previews"),
-                       os.path.join(ROOT, "data", "stories", CUR, "previews", str(today)), str(today))
-    # ---- per-team profile (special teams, penalties, 5v5 share) for the Teams page
-    from previews import team_profile
-    dump("team_profiles.json", {t: {k: v for k, v in team_profile(t, all_shots, cur["tg"], ev, game_index).items() if k != "last5"}
-                                for t in sorted(set(cur["tg"].team))})
-    dump("tonight.json", dict(date=str(today), games=gm_out, props=props,
+                       os.path.join(ROOT, "data", "stories", CUR, "previews", str(today)), str(today), stories=stories)
+    # ---- per-team profile (special teams, penalties, 5v5 share) plus storylines, for the Teams page
+    for t, prof in profiles.items():
+        T = P["team"].get(t, {})
+        prof.update(story=[x["text"] for x in T.get("lines", []) if x["k"] != "luck"][:4],   # the page's lede covers luck
+                    last10=T.get("last10"), xg10=T.get("xg10"))
+    dump("team_profiles.json", profiles)
+    # ---- the Pulse page, and the story block on each player page
+    watch = sorted((dict(w, team=t, game=gid) for gid, x in stories.items() for t, ws in x["watch"].items() for w in ws[:1]),
+                   key=lambda w: -(w["p_goal"] + 0.4 * w["p_2pts"]))
+    dump("pulse.json", dict(date=str(today), through=last_game, note=P["sample_note"], headlines=headlines, watch=watch[:8],
+                            **P["lists"]))
+    tonight_lines = {}
+    for gid, x in stories.items():
+        for line in x["storylines"]:
+            if line.get("pid"):
+                tonight_lines.setdefault(line["pid"], []).append(line["text"])
+    for pid, rows in plogs.items():
+        S = P["skater"].get(pid) or P["goalie"].get(pid) or {}
+        story = {k: S.get(k) for k in ("bio", "form", "flags", "milestones", "career", "rookie", "age") if S.get(k) is not None}
+        if pid in tonight_lines:
+            story["tonight"] = tonight_lines[pid]
+        with open(os.path.join(plog, f"{pid}.json"), "w") as f:
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None), f, separators=(",", ":"),
+                      default=lambda o: o.item() if hasattr(o, "item") else str(o))
+    print(f"  players/: {len(plogs)} game logs")
+    dump("tonight.json", dict(date=str(today), games=gm_out, props=props, headlines=headlines,
                               lineup_source=lu["source"], disp=M.DISP,
                               goalie_note="Goalies are ESPN's probable starters where posted, otherwise most starts in "
                                           "each team's last five games. Check confirmations before betting."))

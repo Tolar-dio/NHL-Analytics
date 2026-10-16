@@ -42,7 +42,7 @@ JSON facts:
 """
 
 PREVIEW_TASK = """Write a preview of tonight's NHL game in 3 short paragraphs, 160 to 220 words total.
-Cover how the teams compare in chance creation and prevention, special teams, the goalie matchup (this season and last), recent form (use each team's last_five summary), and one or two players the model likes tonight (use the probabilities as given). Projected goalies may change; say "projected" when naming them.
+Cover how the teams compare in chance creation and prevention, special teams, the goalie matchup (this season and last), recent form (use each team's last_five summary), and one or two players worth watching (use the probabilities and reasons as given). Work in the one or two storylines that matter most, as written in the facts, and when a storyline says the model doesn't price it, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
 JSON facts:
 """
 
@@ -160,6 +160,11 @@ def preview_facts(p):
                      earlier_meetings_this_season=[dict(date=x["date"], final=f'{x["away"]} {x["a"]}, {x["home"]} {x["h"]}', decided_in=x["end"])
                                                    for x in p["series"] if x["a"] is not None],
                      data_notes=p.get("notes") or None,
+                     storylines=[dict(team=x.get("team"), story=x["text"], in_the_model=bool(x.get("priced")))
+                                 for x in (p.get("storylines") or [])[:6]] or None,
+                     players_to_watch={t: [dict(name=w["name"], reasons=[c["t"] for c in w["chips"]], score_a_goal_pct=round(100 * w["p_goal"]),
+                                                point_pct=round(100 * w["p_1pt"])) for w in ws]
+                                       for t, ws in (p.get("watch") or {}).items()} or None,
                      players_model_likes={t: dict(score_a_goal=[{"name": x["name"], "pct": round(100 * x["p_goal"])} for x in v["goal"]],
                                                   two_plus_points=[{"name": x["name"], "pct": round(100 * x["p_2pts"])} for x in v["pts"]])
                                           for t, v in p["props"].items()}))

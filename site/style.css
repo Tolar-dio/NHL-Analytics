@@ -565,3 +565,57 @@ tr:has(.tag-out) td:first-child { opacity: 1; }
 table.mini { width: 100%; }
 table.mini th, table.mini td { padding: 6px 10px; font-size: 14px; }
 table.mini th { cursor: default; }
+
+/* ---------------------------------------------------------------- narrative: storylines, players to watch, the pulse */
+.mt { margin-top: 30px; }
+.slines { list-style: none; margin: 0; padding: 0; max-width: 820px; }
+.sl { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair); }
+.sl-team { font: 800 20px/1.25 var(--display); color: var(--ink); }
+.sl-kind { font: 700 12px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 10px; }
+.sl-game { font: 600 13px var(--body); color: var(--blue); }
+.sl-text { margin: 2px 0 0; font-size: 16px; line-height: 1.45; color: var(--ink); }
+.sl-eff { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.sl-priced { display: inline-block; font-size: 11px; font-weight: 700; border: 1px solid; border-radius: 3px; padding: 0 5px; margin-right: 6px; vertical-align: 1px; }
+.sl-priced.in { color: var(--blue); border-color: var(--blue); }
+.sl-priced.out { color: var(--muted); border-color: var(--axis); }
+.slines.compact .sl { padding: 9px 0; cursor: help; }
+.slines.compact .sl-text { font-size: 15px; }
+.wlist { display: grid; gap: 10px; margin-top: 10px; }
+.wgrid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.wcard, .pcard { background: var(--sheet); border: 1px solid var(--hair); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.wc-head, .pc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 16px; }
+.wc-head .tag, .pc-head .tag { margin-left: 0; }
+.wc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.wchip { font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--ink-2); background: var(--ice); border: 1px solid var(--hair); border-radius: 999px; padding: 1px 8px; }
+.wchip-hot, .wchip-streak, .wchip-milestone, .wchip-breakout { color: var(--blue); border-color: var(--blue); }
+.wchip-former, .wchip-hometown, .wchip-vs, .wchip-new, .wchip-back { color: var(--ink); border-color: var(--axis); }
+.wc-why { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.wc-line { margin: 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; margin-top: 10px; }
+.pc-stat { font-size: 14px; color: var(--ink-2); }
+.pc-stat b { font: 700 26px/1 var(--display); color: var(--ink); margin-right: 3px; }
+.pc-text { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.tag-form { cursor: help; }
+.tag-form.tag-hot { color: var(--sheet); background: var(--blue); border-color: var(--blue); }
+.tag-form.tag-cold { color: var(--ink-2); border-color: var(--axis); }
+.tag-v { color: var(--ink-2); border-color: var(--axis); font-weight: 600; cursor: help; }
+.tag-v-earned, .tag-v-due { color: var(--blue); border-color: var(--blue); }
+.prow li { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 2px 8px; align-items: baseline; }
+.prow .pr-text { color: var(--ink-2); }
+.pulse-panel h2 + .lede { margin-bottom: 4px; }
+.pstory { margin-top: 14px; max-width: 72ch; }
+.ps-bio { margin: 0; color: var(--ink-2); font-size: 15px; }
+.ps-form { margin: 10px 0 8px; font-size: 15px; line-height: 1.5; }
+.ps-form .tag:first-child { margin-left: 0; }
+.pstory .notes { margin-top: 8px; }
+.team-notes { margin-bottom: 16px; }
+details.fold summary { cursor: pointer; font-weight: 600; color: var(--blue); padding: 6px 0; }
+details.fold[open] summary { margin-bottom: 8px; }
+@media (max-width: 640px) {
+  .sl { grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
+  .sl-team { font-size: 18px; }
+  .prow li { grid-template-columns: auto minmax(0, 1fr); }
+  .prow .pr-text { grid-column: 1 / -1; }
+  .pgrid, .wgrid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) { .pulse-tabs .nt-n { display: none; } }

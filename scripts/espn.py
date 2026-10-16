@@ -40,7 +40,7 @@ def get(path, timeout=20):
 
 
 def injuries():
-    """Everyone on ESPN's report right now: [{key, name, team, pos, status, out, back, note, date}]."""
+    """Everyone on ESPN's report right now: [{key, name, team, pos, status, out, back, kind, note, date}]."""
     d = get("injuries")
     out = []
     for t in d.get("injuries", []):
@@ -53,6 +53,7 @@ def injuries():
             out.append(dict(key=m.group(1) if m else f'{norm(a.get("displayName"))}|{team}', name=a.get("displayName"), team=team,
                             pos=posgroup((a.get("position") or {}).get("abbreviation")), status=st,
                             out=st in OUT_STATUSES, back=(x.get("details") or {}).get("returnDate"),
+                            kind=(x.get("details") or {}).get("type"),
                             note=x.get("shortComment") or "", date=x.get("date")))
     return out
 

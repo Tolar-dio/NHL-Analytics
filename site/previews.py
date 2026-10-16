@@ -126,7 +126,8 @@ def preview_notes(away, home, prof, goalies, series):
     return notes[:7]
 
 
-def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, shifts, pos, names, out_dir, stories_dir, today):
+def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, shifts, pos, names, out_dir, stories_dir, today,
+                   stories=None):
     os.makedirs(out_dir, exist_ok=True)
     gl = {g["id"]: g for g in goalies}
     written = 0
@@ -161,7 +162,9 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
                       teams=prof, series=series, notes=preview_notes(away, home, prof, gcards, series),
                       goalies=gcards,
                       lines={t: projected_lines(t, pg, shifts, pos, names) for t in (away, home)},
-                      props=key, story=story)
+                      props=key, story=story,
+                      storylines=(stories or {}).get(g["id"], {}).get("storylines", []),
+                      watch=(stories or {}).get(g["id"], {}).get("watch", {}))
         with open(os.path.join(out_dir, f"{g['id']}.json"), "w") as f:
             json.dump(detail, f, separators=(",", ":"), allow_nan=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
         written += 1

@@ -353,6 +353,12 @@ async function renderPreview(view, id) {
         </div>
       </div>
     </section>
+    ${(p.storylines || []).length ? `<section class="zone"><h2>Storylines</h2>
+      <p class="lede">What's going on around this game, and whether the model already accounts for it. Streaks, old teams and milestones make good stories; the model only moves on what shows up in the chances.</p>
+      ${storyList(p.storylines)}</section>` : ""}
+    ${p.watch && Object.keys(p.watch).length ? `<section class="zone"><h2>Players to watch</h2>
+      <p class="lede">Three a side: the likeliest producers, pushed up by the stories around them. Probabilities are the model's, before any story.</p>
+      ${watchBlock(p.watch, [p.away, p.home])}</section>` : ""}
     <section class="zone"><h2>In net</h2><p class="lede">Projected from recent starts. Switch goalies on the Tonight page to reprice every number.</p>
       <div class="grid-2">${goalieCard(p.goalies[p.away], p.away)}${goalieCard(p.goalies[p.home], p.home)}</div></section>
     <section class="zone"><h2>Last five</h2><p class="lede">Each bar is that game's share of expected goals; past the middle tick means they out-chanced the other team. Tap a game to open it.</p>
@@ -360,7 +366,8 @@ async function renderPreview(view, id) {
     <section class="zone"><h2>Lines from their last game</h2><p class="lede">Grouped by who shared the most ice time. Coaches shuffle, so treat these as likely, not certain.</p>
       <div class="grid-2">${lines(p.away)}${lines(p.home)}</div></section>
     <section class="zone"><h2>Who the model likes</h2><p class="lede">Each team's likeliest scorers and two-point players, with the fair odds the model would set. Full list with your own odds on the Tonight page.</p>
-      <div class="grid-2"><div>${props(p.away)}</div><div>${props(p.home)}</div></div></section>
+      <details class="fold"${p.watch && Object.keys(p.watch).length ? "" : " open"}><summary>Likeliest scorers and two-point players</summary>
+      <div class="grid-2"><div>${props(p.away)}</div><div>${props(p.home)}</div></div></details></section>
     ${series.length ? `<section class="zone"><h2>Earlier this season</h2><ul class="game-list">${series.map((x) => `<li><a class="game-row" href="#game/${x.id}"><span class="gr-date">${shortDate(x.date)}</span><span class="gr-score">${x.away} ${x.a} <span class="dim">at</span> ${x.home} ${x.h}${endTag(x.end)}</span><span class="dim">${x.h > x.a ? x.home : x.away} deserved ${pct(x.h > x.a ? x.dtw_home : 1 - x.dtw_home)}</span></a></li>`).join("")}</ul></section>` : ""}`;
 }
 
