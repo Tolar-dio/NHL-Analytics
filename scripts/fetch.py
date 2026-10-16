@@ -160,7 +160,15 @@ def download_game(season, gid, game_date, want_detail=False):
             sh = get_json(f"{STATS}/shiftcharts?cayenneExp=gameId={gid}")
             if sh.get("data"):
                 write_gz_json(os.path.join(d, "shifts.json.gz"), sh)
-                status["shifts"] = True
+                # the feed fills in over the hours after a game; keep retrying until it matches the boxscore
+                gap = shift_gap(sh, read_gz_json(os.path.join(d, "boxscore.json.gz")))
+                age = (dt.date.today() - dt.date.fromisoformat(game_date)).days
+                if gap <= 30 or age > SHIFT_RETRY_DAYS:
+                    status["shifts"] = True
+                    status.pop("shifts_partial", None)
+                else:
+                    status["shifts_partial"] = gap
+                    print(f"  ~ shifts for {gid} incomplete (worst player {gap:.0f} s short); will retry")
         except RuntimeError as e:
             print(f"  ! shifts unavailable for {gid}: {e}", file=sys.stderr)
         # The JSON shift feed is empty for many games. Fall back to the NHL's
@@ -185,6 +193,44 @@ def download_game(season, gid, game_date, want_detail=False):
     os.makedirs(d, exist_ok=True)
     with open(status_path, "w") as f:
         json.dump(status, f)
+
+
+def shift_gap(sh, box):
+    """Largest gap in seconds between a skater's shift total and his boxscore TOI (0 if the boxscore is missing)."""
+    mmss = lambda t: (int(t.split(":")[0]) * 60 + int(t.split(":")[1])) if t and ":" in t else 0
+    tot = {}
+    for x in sh.get("data", []):
+        if x.get("typeCode") in (517, None):
+            tot[x.get("playerId")] = tot.get(x.get("playerId"), 0) + mmss(x.get("duration"))
+    gap = 0
+    for side in ("homeTeam", "awayTeam"):
+        for grp in ("forwards", "defense"):
+            for p in ((box or {}).get("playerByGameStats") or {}).get(side, {}).get(grp, []):
+                gap = max(gap, mmss(p.get("toi")) - tot.get(p.get("playerId"), 0))
+    return gap
+
+
+def recheck_recent_shifts(season):
+    """Games saved in the last SHIFT_RETRY_DAYS days whose stored shifts fall short of the boxscore get
+    queued for another download (they were saved before the feed finished filling in)."""
+    root = os.path.join(DATA, "raw", season)
+    n = 0
+    for gid in os.listdir(root) if os.path.isdir(root) else []:
+        d = os.path.join(root, gid)
+        sp, shp, bp = (os.path.join(d, f) for f in ("status.json", "shifts.json.gz", "boxscore.json.gz"))
+        if not (os.path.exists(sp) and os.path.exists(shp) and os.path.exists(bp)):
+            continue
+        st = json.load(open(sp))
+        if st.get("shifts") is not True or st.get("shifts_checked") or time.time() - os.path.getmtime(shp) > SHIFT_RETRY_DAYS * 86400:
+            continue
+        if shift_gap(read_gz_json(shp), read_gz_json(bp)) > 30:
+            st["shifts"] = False
+            n += 1
+        else:
+            st["shifts_checked"] = True
+        json.dump(st, open(sp, "w"))
+    if n:
+        print(f"Requeued {n} recent games whose shift charts were incomplete")
 
 
 DETAIL_RETRY_DAYS = 7  # highlight clips post a few hours after the game, a few take days; keep checking this long
@@ -447,6 +493,7 @@ def main():
         end = min(dt.date.fromisoformat(a.end) if a.end else today, season_end)
         games = finished_games(start, end, a.season)
         detail = a.season == current_season(today)   # game-page detail only for the live season
+        recheck_recent_shifts(a.season)
         todo = [g for gid, g in sorted(games.items()) if needs_work(a.season, gid, detail)]
         print(f"{len(games)} finished games found, {len(todo)} need downloading")
         for i, g in enumerate(todo, 1):

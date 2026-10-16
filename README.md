@@ -42,6 +42,10 @@ The **Backfill a past season** workflow (Actions tab) pulls a full past season: 
 
 To preview locally: `python site/build.py && cd site && python -m http.server`.
 
+### Market lines, EDGE tracking and model checks
+
+Tonight cards and previews show DraftKings' moneyline and total (published free by the NHL) next to the model's numbers, and the live record grades the model against them. NHL EDGE tracking adds shot locations by area, each player's hardest shots, per-game skating distance and goalies' high-danger save %. The props cover anytime goal and 1+, 2+ and 3+ points; model settings come from walk-forward tests documented in CLAUDE.md, and a nightly check compares shift-derived ice time with the NHL's official report.
+
 ### Lineups and the live record
 
 Tonight's prices cover everyone who dressed in a team's last three games and is still on its roster, minus ESPN's injured list, plus players coming back from injury or just traded in; anyone who missed the last game is tagged, and every price assumes the player dresses (as sportsbooks do). Goalies are ESPN's probable starters when posted. Each game's prices are frozen at puck drop in `data/archive/` and graded the next morning by `analysis/track.py`, which feeds the "Live record" on the Trust page: the real test, since the backtest knew the actual lineups.

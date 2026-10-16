@@ -28,7 +28,7 @@ import zipfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fetch import DATA, HEADERS, current_season, get_json, write_gz_csv  # noqa: E402
 
-EDGE_REFRESH_DAYS = 6
+EDGE_REFRESH_DAYS = 5
 
 
 # ---------------------------------------------------------------- MoneyPuck
@@ -65,13 +65,14 @@ def fetch_moneypuck(season):
 
 
 # ---------------------------------------------------------------- NHL Edge
+# Public EDGE endpoints on api-web.nhle.com, per player: skater-detail (speed, distance, zone time),
+# skater-shot-location-detail (17 shot areas), skater-shot-speed-detail (10 hardest shots, with game and
+# clock), skater-skating-distance-detail (last 10 games, by strength) and goalie-detail (save % by area).
+# A rotation refreshes each player every EDGE_REFRESH_DAYS days, at most EDGE_MAX players a night, so the
+# load is spread out (about 4 calls per skater, half a second apart). The last-10 distance lists are
+# merged into a running per-game log, the only way to build per-game EDGE history from the public API.
 
-def edge_due(out):
-    stamp = os.path.join(out, "updated.txt")
-    if not os.path.exists(stamp):
-        return True
-    last = dt.date.fromisoformat(open(stamp).read().strip())
-    return (dt.date.today() - last).days >= EDGE_REFRESH_DAYS
+EDGE_MAX = int(os.environ.get("EDGE_MAX", "260"))
 
 
 def pct(obj, *keys):
@@ -82,58 +83,136 @@ def pct(obj, *keys):
     return "" if obj is None else obj
 
 
-def fetch_edge(season, force=False):
-    out = os.path.join(DATA, "external", "edge", season)
-    if not force and not edge_due(out):
-        print("Edge: refreshed recently, skipping")
-        return
-    os.makedirs(out, exist_ok=True)
+def read_gz_csv(path):
+    if not os.path.exists(path):
+        return []
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
-    players = os.path.join(DATA, "tables", season, "players.csv.gz")
-    with gzip.open(players, "rt") as f:
-        roster = [r for r in csv.DictReader(f) if r["position"] != "G"]
 
-    raw, rows = {}, []
-    for i, p in enumerate(roster, 1):
-        pid = p["player_id"]
-        try:
-            j = get_json(f"https://api-web.nhle.com/v1/edge/skater-detail/{pid}/{season}/2", tries=2)
-        except RuntimeError:
-            continue
-        raw[pid] = j
-        zt = j.get("zoneTimeDetails") or {}
-        sog = {s.get("locationCode"): s for s in j.get("sogSummary") or []}
-        rows.append([
-            pid, p["player"], p["team"], p["position"],
+def game_of(link):
+    return (link or "").rstrip("/").split("/")[-1]
+
+
+def skater_row(pid, p, j):
+    zt = j.get("zoneTimeDetails") or {}
+    sog = {s.get("locationCode"): s for s in j.get("sogSummary") or []}
+    return [pid, p["player"], p["team"], p["position"],
             pct(j, "player", "gamesPlayed"),
-            pct(j, "skatingSpeed", "speedMax", "imperial"),
-            pct(j, "skatingSpeed", "speedMax", "percentile"),
-            pct(j, "skatingSpeed", "burstsOver20", "value"),
-            pct(j, "skatingSpeed", "burstsOver20", "percentile"),
-            pct(j, "totalDistanceSkated", "imperial"),
-            pct(j, "totalDistanceSkated", "percentile"),
-            pct(j, "topShotSpeed", "imperial"),
-            pct(j, "topShotSpeed", "percentile"),
+            pct(j, "skatingSpeed", "speedMax", "imperial"), pct(j, "skatingSpeed", "speedMax", "percentile"),
+            pct(j, "skatingSpeed", "burstsOver20", "value"), pct(j, "skatingSpeed", "burstsOver20", "percentile"),
+            pct(j, "totalDistanceSkated", "imperial"), pct(j, "totalDistanceSkated", "percentile"),
+            pct(j, "topShotSpeed", "imperial"), pct(j, "topShotSpeed", "percentile"),
             zt.get("offensiveZonePctg", ""), zt.get("offensiveZoneEvPctg", ""),
             zt.get("neutralZonePctg", ""), zt.get("defensiveZonePctg", ""),
-            pct(sog.get("high"), "shots"), pct(sog.get("mid"), "shots"),
-            pct(sog.get("long"), "shots"),
-        ])
-        if i % 100 == 0:
-            print(f"  Edge: {i}/{len(roster)}")
-        time.sleep(0.5)
+            pct(sog.get("high"), "shots"), pct(sog.get("mid"), "shots"), pct(sog.get("long"), "shots")]
 
-    write_gz_csv(os.path.join(out, "skaters.csv.gz"), [
-        "player_id", "player", "team", "position", "gp",
-        "max_speed_mph", "max_speed_pctile", "bursts_20mph", "bursts_pctile",
-        "distance_miles", "distance_pctile", "top_shot_mph", "top_shot_pctile",
-        "oz_time_pct", "oz_time_ev_pct", "nz_time_pct", "dz_time_pct",
-        "sog_high_danger", "sog_mid", "sog_long"], rows)
-    with gzip.open(os.path.join(out, "skaters_raw.json.gz"), "wt") as f:
-        json.dump(raw, f, separators=(",", ":"))
+
+SKATER_COLS = ["player_id", "player", "team", "position", "gp", "max_speed_mph", "max_speed_pctile", "bursts_20mph",
+               "bursts_pctile", "distance_miles", "distance_pctile", "top_shot_mph", "top_shot_pctile", "oz_time_pct",
+               "oz_time_ev_pct", "nz_time_pct", "dz_time_pct", "sog_high_danger", "sog_mid", "sog_long"]
+AREA_COLS = ["player_id", "area", "sog", "goals", "sh_pct", "sog_pctile", "goals_pctile", "sh_pctile"]
+HARD_COLS = ["player_id", "game_id", "date", "period", "time_in_period", "mph"]
+DIST_COLS = ["player_id", "game_id", "date", "miles_all", "toi_all", "miles_ev", "toi_ev", "miles_pp", "toi_pp",
+             "miles_pk", "toi_pk"]
+GOALIE_COLS = ["goalie_id", "area", "shots_against", "saves", "goals_against", "save_pct", "save_pct_pctile", "league_save_pct"]
+
+
+def fetch_edge(season, force=False):
+    out = os.path.join(DATA, "external", "edge", season)
+    os.makedirs(out, exist_ok=True)
+    state_path = os.path.join(out, "fetched.json")
+    state = json.load(open(state_path)) if os.path.exists(state_path) else {}
+    today = dt.date.today()
+    due = lambda pid: force or pid not in state or (today - dt.date.fromisoformat(state[pid])).days >= EDGE_REFRESH_DAYS
+    with gzip.open(os.path.join(DATA, "tables", season, "players.csv.gz"), "rt") as f:
+        roster = list(csv.DictReader(f))
+    only = set(filter(None, os.environ.get("EDGE_ONLY", "").split(",")))   # debugging: refresh just these ids
+    todo = sorted((p for p in roster if due(p["player_id"]) and (not only or p["player_id"] in only)),
+                  key=lambda p: state.get(p["player_id"], ""))[:EDGE_MAX]
+    if not todo:
+        print("Edge: everyone refreshed recently, skipping")
+        return
+
+    # existing tables, keyed so a refreshed player's rows replace his old ones
+    sk = {r["player_id"]: [r.get(c, "") for c in SKATER_COLS] for r in read_gz_csv(os.path.join(out, "skaters.csv.gz"))}
+    areas = [r for r in read_gz_csv(os.path.join(out, "shot_areas.csv.gz"))]
+    hard = [r for r in read_gz_csv(os.path.join(out, "hard_shots.csv.gz"))]
+    dist = {(r["player_id"], r["game_id"]): r for r in read_gz_csv(os.path.join(out, "distance_games.csv.gz"))}
+    gareas = [r for r in read_gz_csv(os.path.join(out, "goalie_areas.csv.gz"))]
+    raw_path = os.path.join(out, "skaters_raw.json.gz")
+    raw = json.load(gzip.open(raw_path, "rt")) if os.path.exists(raw_path) else {}
+    base = "https://api-web.nhle.com/v1/edge"
+    done = 0
+    for i, p in enumerate(todo, 1):
+        pid = p["player_id"]
+        try:
+            if p["position"] == "G":
+                j = get_json(f"{base}/goalie-detail/{pid}/{season}/2", tries=2)
+                gareas = [r for r in gareas if r["goalie_id"] != pid]
+                for a in j.get("shotLocationDetails") or []:
+                    if a.get("savePctg") is not None:
+                        gareas.append(dict(goalie_id=pid, area=a["area"], shots_against="", saves=a.get("saves"),
+                                           goals_against="", save_pct=a.get("savePctg"), save_pct_pctile=a.get("savePctgPercentile"),
+                                           league_save_pct=""))
+                for a in j.get("shotLocationSummary") or []:
+                    gareas.append(dict(goalie_id=pid, area="all:" + a.get("locationCode", ""), shots_against="",
+                                       saves=a.get("saves"), goals_against=a.get("goalsAgainst"), save_pct=a.get("savePctg"),
+                                       save_pct_pctile=a.get("savePctgPercentile"), league_save_pct=a.get("savePctgLeagueAvg")))
+            else:
+                j = get_json(f"{base}/skater-detail/{pid}/{season}/2", tries=2)
+                raw[pid] = j
+                sk[pid] = skater_row(pid, p, j)
+                time.sleep(0.4)
+                loc = get_json(f"{base}/skater-shot-location-detail/{pid}/{season}/2", tries=2)
+                areas = [r for r in areas if r["player_id"] != pid]
+                for a in loc.get("shotLocationDetails") or []:
+                    if a.get("sog"):
+                        areas.append(dict(player_id=pid, area=a["area"], sog=a["sog"], goals=a.get("goals"),
+                                          sh_pct=a.get("shootingPctg"), sog_pctile=a.get("sogPercentile"),
+                                          goals_pctile=a.get("goalsPercentile"), sh_pctile=a.get("shootingPctgPercentile")))
+                time.sleep(0.4)
+                spd = get_json(f"{base}/skater-shot-speed-detail/{pid}/{season}/2", tries=2)
+                hard = [r for r in hard if r["player_id"] != pid]
+                for h in spd.get("hardestShots") or []:
+                    hard.append(dict(player_id=pid, game_id=game_of(h.get("gameCenterLink")), date=h.get("gameDate"),
+                                     period=(h.get("periodDescriptor") or {}).get("number"), time_in_period=h.get("timeInPeriod"),
+                                     mph=(h.get("shotSpeed") or {}).get("imperial")))
+                time.sleep(0.4)
+                dd = get_json(f"{base}/skater-skating-distance-detail/{pid}/{season}/2", tries=2)
+                for g in dd.get("skatingDistanceLast10") or []:
+                    gid = game_of(g.get("gameCenterLink"))
+                    v = lambda k: (g.get(k) or {}).get("imperial") if isinstance(g.get(k), dict) else g.get(k)
+                    dist[(pid, gid)] = dict(player_id=pid, game_id=gid, date=g.get("gameDate"),
+                                            miles_all=v("distanceSkatedAll"), toi_all=g.get("toiAll"),
+                                            miles_ev=v("distanceSkatedEven"), toi_ev=g.get("toiEven"),
+                                            miles_pp=v("distanceSkatedPP"), toi_pp=g.get("toiPP"),
+                                            miles_pk=v("distanceSkatedPK"), toi_pk=g.get("toiPK"))
+            state[pid] = today.isoformat()
+            done += 1
+        except RuntimeError:
+            continue
+        if i % 50 == 0:
+            print(f"  Edge: {i}/{len(todo)}")
+        time.sleep(0.4)
+
+    rows = lambda recs, cols: [[r.get(c, "") for c in cols] for r in recs]
+    write_gz_csv(os.path.join(out, "skaters.csv.gz"), SKATER_COLS, [sk[k] for k in sorted(sk)])
+    write_gz_csv(os.path.join(out, "shot_areas.csv.gz"), AREA_COLS, rows(sorted(areas, key=lambda r: (r["player_id"], r["area"])), AREA_COLS))
+    write_gz_csv(os.path.join(out, "hard_shots.csv.gz"), HARD_COLS, rows(sorted(hard, key=lambda r: (r["player_id"], -float(r["mph"] or 0))), HARD_COLS))
+    write_gz_csv(os.path.join(out, "distance_games.csv.gz"), DIST_COLS, rows(sorted(dist.values(), key=lambda r: (r["player_id"], r["date"] or "")), DIST_COLS))
+    write_gz_csv(os.path.join(out, "goalie_areas.csv.gz"), GOALIE_COLS, rows(sorted(gareas, key=lambda r: (r["goalie_id"], r["area"])), GOALIE_COLS))
+    buf = io.BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode="wb", mtime=0) as gz:
+        gz.write(json.dumps(raw, separators=(",", ":"), sort_keys=True).encode())
+    with open(raw_path, "wb") as f:
+        f.write(buf.getvalue())
+    with open(state_path, "w") as f:
+        json.dump(state, f, sort_keys=True, indent=0)
     with open(os.path.join(out, "updated.txt"), "w") as f:
-        f.write(dt.date.today().isoformat())
-    print(f"Edge: {len(rows)} skaters")
+        f.write(today.isoformat())
+    left = sum(1 for p in roster if due(p["player_id"]))
+    print(f"Edge: refreshed {done} of {len(todo)} due players; {left} still due; per-game distance rows {len(dist)}")
 
 
 # ---------------------------------------------------------------- MoneyPuck season summaries

@@ -108,7 +108,8 @@ on_ice = oi.groupby(["game_id", "player_id"])[["xgf", "xga", "gf", "ga", "pp_xgf
 # ---- individual
 u = s[s.unblocked]
 ind = u.groupby(["game_id", "player1_id"]).agg(ixg=("xg", "sum"), g=("is_goal", "sum"),
-                                              sog=("event", lambda x: x.isin(["shot-on-goal", "goal"]).sum()))
+                                              sog=("event", lambda x: x.isin(["shot-on-goal", "goal"]).sum()),
+                                              ush=("event", "size"))   # unblocked shots: on goal, goals, misses
 ind.index.names = ["game_id", "player_id"]
 gl = s[s.is_goal == 1]
 a1 = gl.groupby(["game_id", "player2_id"]).size().rename("a1")

@@ -25,11 +25,54 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTROOT = os.path.join(ROOT, "analysis", "output")
 CUR, PREV = "20262027", "20252026"
 
-K = dict(Kx=300, Ko=600, Ki=20, Kf=30, Kt=600, Kg=60,       # current-season shrinkage
+# Shrinkage, in the units of each stat (minutes, xG, on-ice goals). Oct 2026 walk-forward tests (2025-26, 44k
+# player-games) set Kg 60 -> 300 and Kg0 100 -> 600 (goalie seasons barely repeat: r ~ 0.22) and added Kof, on-ice
+# finishing, which fixed the model's underrating of stars (2+ points for 0.9+ point-a-game players: 25.7% predicted
+# vs 27.9% actual before, 28.2% after). Kf finishing in shot units and negative-binomial points were tested and
+# made no difference or overshot, so they stay off.
+K = dict(Kx=300, Ko=600, Ki=20, Kf=30, Kt=600, Kg=300,      # current-season shrinkage
+         Kof=50, Kof_prior=150,                           # on-ice finishing (xGF units): this season, last season
          alpha=0.7,                                       # weight on last season vs role prior
-         Kt_prior=1200, beta=0.7, Kg0=100)                # team/goalie prior settings
+         Kt_prior=1200, beta=0.7, Kg0=600)                # team/goalie prior settings
 MAXG = 15
-PTS_CAL = 1.03
+PTS_CAL = 1.015      # overall points scale; 1.03 before on-ice finishing (Kof) was modelled, refit Oct 2026
+# Overdispersion (gamma-Poisson / negative binomial shape r; None = plain Poisson). Game-to-game swings in a
+# team's scoring rate make a player's points burstier than Poisson, which is what thins the 3+ tail.
+DISP = dict(g=None, p=None)
+# Second night of a back-to-back: in 2025-26 the tired team's xG share fell from 50.0% to 47.4% (286 games).
+# Offense down and defense worse by this fraction; 0 switches it off.
+B2B = 0.025          # shrunk from the 2025-26 gap (47.4% vs 50%); too small to show up in prop log loss
+
+
+def back_to_back(games):
+    """{(game_id, team): True} for teams that played the day before (regular and playoff games)."""
+    g = games[["game_id", "date", "home", "away"]]
+    long = pd.concat([g.rename(columns={"home": "team"})[["game_id", "date", "team"]],
+                      g.rename(columns={"away": "team"})[["game_id", "date", "team"]]])
+    long["d"] = pd.to_datetime(long.date)
+    long = long.sort_values(["team", "d"])
+    long["prev"] = long.groupby("team").d.shift()
+    long["b2b"] = (long.d - long.prev).dt.days == 1
+    return {(int(a), t): bool(b) for a, t, b in zip(long.game_id, long.team, long.b2b)}
+
+
+def b2b_factor(own_tired, opp_tired):
+    return (1 - B2B * bool(own_tired)) * (1 + B2B * bool(opp_tired))
+
+
+def nb_tail(lam, r, k):
+    """P(X >= k) for a Poisson mean lam whose rate is gamma-mixed with shape r (r=None: plain Poisson)."""
+    lam = np.asarray(lam, dtype=float)
+    if r is None:
+        pmf = [np.exp(-lam)]
+        for i in range(1, k):
+            pmf.append(pmf[-1] * lam / i)
+    else:
+        q = r / (r + lam)                    # NB: P(0) = q^r, P(i) = P(i-1) * (r+i-1)/i * (1-q)
+        pmf = [q ** r]
+        for i in range(1, k):
+            pmf.append(pmf[-1] * (r + i - 1) / i * (1 - q))
+    return 1 - np.sum(pmf, axis=0)
 
 
 # ------------------------------------------------------------------ data
@@ -56,7 +99,10 @@ def player_agg(pg):
     p = pg.groupby("player_id").agg(team=("team", "last"), pos=("pos", "last"), gp=("game_id", "nunique"),
                                    toi=("toi", "sum"), ixg=("ixg", "sum"), g=("g", "sum"), pts=("pts", "sum"),
                                    xgf=("xgf", "sum"), xga=("xga", "sum"), gf=("gf", "sum"),
-                                   pp_xgf=("pp_xgf", "sum"), team_pp=("team_pp_xgf", "sum"))
+                                   pp_xgf=("pp_xgf", "sum"), team_pp=("team_pp_xgf", "sum"),
+                                   **({"ush": ("ush", "sum")} if "ush" in pg else {}))
+    if "ush" not in p:
+        p["ush"] = p.ixg / 0.09          # older tables: unblocked shots unknown, assume league shot quality
     p["toi_pg"] = p.toi / p.gp
     p["pp_share"] = (p.pp_xgf / p.team_pp.replace(0, np.nan)).fillna(0).clip(0, 1)
     return p
@@ -88,6 +134,9 @@ def build_prev_priors(prev):
     pr["fin"] = ((p.g + K["Kf"]) / (p.ixg + K["Kf"])).clip(0.8, 1.25)
     pr["toi_pg"] = p.toi_pg
     pr["pos"], pr["pp_share"], pr["team"] = p.pos, p.pp_share, p.team
+    if K.get("Kof") and K.get("Kof_prior"):   # last season's on-ice finishing, shrunk harder, as the starting point
+        lg_of = p.gf.sum() / max(p.xgf.sum(), 1e-9)
+        pr["ofin"] = (p.gf + K["Kof_prior"] * lg_of) / (p.xgf + K["Kof_prior"]) / lg_of   # relative to last season's league
     gg = prev["gg"][prev["gg"].game_type == "regular"]
     g = gg.groupby("player_id").agg(xga=("xga", "sum"), ga=("ga", "sum"))
     gpr = (g.ga + K["Kg0"]) / (g.xga + K["Kg0"])
@@ -130,7 +179,24 @@ def fit_players(cur, cut, priors=None, k=K, extra=None):
     p["oxgf60"] = (p.xgf + k["Ko"] * prior.o / 60) / (p.toi + k["Ko"]) * 60
     p["oxga60"] = (p.xga + k["Ko"] * prior.a / 60) / (p.toi + k["Ko"]) * 60
     p["ipp"] = (p.pts + k["Ki"] * prior.ipp) / (p.gf + k["Ki"])
-    p["fin"] = ((p.g + k["Kf"] * prior.fin) / (p.ixg + k["Kf"])).clip(0.8, 1.25)
+    if k.get("Kfs"):
+        # finishing shrunk in unblocked-shot units (Hockey-Graphs/POTG: ~450 forwards, ~335 defence), so the
+        # prior weight scales with the player's own shot quality instead of a flat amount of xG
+        q = (p.ixg / p.ush.clip(lower=1)).where(p.ush > 0, 0.09)
+        kk = np.where(p.pos == "D", k["Kfs"] * 0.75, k["Kfs"]) * q
+        p["fin"] = ((p.g + kk * prior.fin) / (p.ixg + kk)).clip(k.get("fin_lo", 0.8), k.get("fin_hi", 1.25))
+    else:
+        p["fin"] = ((p.g + k["Kf"] * prior.fin) / (p.ixg + k["Kf"])).clip(k.get("fin_lo", 0.8), k.get("fin_hi", 1.25))
+    if k.get("Kof"):
+        # on-ice finishing: elite lines turn chances into goals above xG; points are priced off on-ice xGF,
+        # so without this the best players' points are underrated. Shrunk toward the league GF/xGF.
+        lg_of = pg.gf.sum() / max(pg.xgf.sum(), 1e-9)
+        oprior = pd.Series(lg_of, index=p.index)
+        if priors is not None and "ofin" in priors["players"]:
+            po = priors["players"].ofin.reindex(p.index) * lg_of   # last season's relative finishing, in this season's terms
+            oprior = oprior.where(po.isna(), po)
+        # relative to the league, so it only separates players and leaves the overall level to PTS_CAL
+        p["ofin"] = ((p.gf + k["Kof"] * oprior) / (p.xgf + k["Kof"])) / lg_of
     return p
 
 
@@ -186,17 +252,23 @@ def goalie_factor(tm, team, goalie):
 
 def price_players(rows, p, tm):
     """rows: DataFrame(player_id, team, opp, opp_goalie)."""
-    d = rows.join(p[["pos", "gp", "proj_toi", "ixg60", "oxgf60", "ipp", "fin", "pp_share", "g", "pts", "ixg"]],
-                  on="player_id", how="inner")
+    d = rows.join(p[[c for c in ["pos", "gp", "proj_toi", "ixg60", "oxgf60", "ipp", "fin", "ofin", "pp_share", "g", "pts", "ixg"]
+                     if c in p]], on="player_id", how="inner")
     lg = tm["lg60"]
     d["def_f"] = d.opp.map(tm["t"].def60).fillna(lg) / lg
     d["g_f"] = [goalie_factor(tm, o, g) for o, g in zip(d.opp, d.opp_goalie)]
     d["lam_g"] = d.ixg60 / 60 * d.proj_toi * d.fin * d.def_f * d.g_f
-    # PTS_CAL: Poisson slightly under-predicts 2+ point games (game-level
-    # correlation); 1.03 was the best fit across the full 2025-26 backtest
+    # PTS_CAL: overall level of points; refit with on-ice finishing in Oct 2026 (1+, 2+ and 3+ all calibrated)
     d["lam_p"] = d.oxgf60 / 60 * d.proj_toi * d.def_f * d.g_f * d.ipp * PTS_CAL
-    d["p_goal"] = 1 - np.exp(-d.lam_g)
-    d["p_2pts"] = 1 - np.exp(-d.lam_p) * (1 + d.lam_p)
+    if "ofin" in d:
+        d["lam_p"] = d.lam_p * d.ofin
+    if B2B and "b2b" in d:
+        f = (1 - B2B * d.b2b.astype(float)) * (1 + B2B * d.opp_b2b.astype(float))
+        d["lam_g"], d["lam_p"] = d.lam_g * f, d.lam_p * f
+    d["p_goal"] = nb_tail(d.lam_g, DISP["g"], 1)
+    d["p_1pt"] = nb_tail(d.lam_p, DISP["p"], 1)
+    d["p_2pts"] = nb_tail(d.lam_p, DISP["p"], 2)
+    d["p_3pts"] = nb_tail(d.lam_p, DISP["p"], 3)
     return d
 
 
@@ -207,6 +279,13 @@ def team_lambda(tm, off, dfn, goalie):
     o = t.off60.get(off, lg)
     d = t.def60.get(dfn, lg)
     return o * d / lg * goalie_factor(tm, dfn, goalie) * tm["calib"]
+
+
+def win_prob(la, lh):
+    """Home win probability from the two teams' goal means; regulation ties split evenly (OT/shootout)."""
+    pa, ph = poisson.pmf(np.arange(MAXG + 1), la), poisson.pmf(np.arange(MAXG + 1), lh)
+    j = np.outer(pa, ph)
+    return float(np.triu(j, 1).sum() + np.trace(j) / 2)
 
 
 def total_dist(la, lb):
@@ -228,6 +307,7 @@ def logloss(y, p):
 
 def run_backtest(cur, dates, priors=None, k=K):
     prow, trow = [], []
+    tired = back_to_back(cur["games"])
     for cut in dates:
         p = fit_players(cur, cut, priors, k)
         day = cur["pg"][(cur["pg"].date == cut) & (cur["pg"].game_type == "regular")]
@@ -238,6 +318,8 @@ def run_backtest(cur, dates, priors=None, k=K):
         st = cur["gg"][(cur["gg"].date == cut) & cur["gg"].starter].set_index(["game_id", "team"]).player_id
         rows = day[["game_id", "player_id", "team", "opp", "g", "pts"]].rename(columns={"g": "y_g", "pts": "y_pts"})
         rows["opp_goalie"] = [st.get((gid, o)) for gid, o in zip(rows.game_id, rows.opp)]
+        rows["b2b"] = [tired.get((gid, t), False) for gid, t in zip(rows.game_id, rows.team)]
+        rows["opp_b2b"] = [tired.get((gid, o), False) for gid, o in zip(rows.game_id, rows.opp)]
         d = price_players(rows.set_index("player_id"), p, tm).reset_index()
         pgb = cur["pg"][(cur["pg"].date < cut) & (cur["pg"].game_type == "regular")]
         for pos in ("F", "D"):
@@ -249,8 +331,9 @@ def run_backtest(cur, dates, priors=None, k=K):
         prow.append(d)
         base_lam = tm["lg60"] * tm["calib"]
         for _, gm in cur["games"][(cur["games"].date == cut) & (cur["games"].game_type == "regular")].iterrows():
-            la = team_lambda(tm, gm.away, gm.home, st.get((gm.game_id, gm.home)))
-            lh = team_lambda(tm, gm.home, gm.away, st.get((gm.game_id, gm.away)))
+            ta, th = tired.get((gm.game_id, gm.away), False), tired.get((gm.game_id, gm.home), False)
+            la = team_lambda(tm, gm.away, gm.home, st.get((gm.game_id, gm.home))) * b2b_factor(ta, th)
+            lh = team_lambda(tm, gm.home, gm.away, st.get((gm.game_id, gm.away))) * b2b_factor(th, ta)
             dm, db = total_dist(la, lh), total_dist(base_lam, base_lam)
             y = int(gm.home_score + gm.away_score)
             kk = np.arange(len(dm))

@@ -114,6 +114,9 @@ input[type="search"] { min-width: 220px; }
 .bar-fill { display: block; height: 100%; background: var(--blue); border-radius: 0 4px 4px 0; }
 .goalie select { width: 100%; font-size: 13px; padding: 3px 6px; min-height: 30px; }
 .game-foot { font-size: 13px; color: var(--muted); }
+.game-foot.mkt { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; cursor: help; }
+.game-foot.mkt b { color: var(--ink-2); font-weight: 700; }
+.tag-b2b { cursor: help; color: var(--muted); border-color: var(--muted); }
 
 /* ---------------------------------------------------------------- tables */
 .table-wrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 6px; background: var(--sheet); }
@@ -557,3 +560,8 @@ tr:has(.tag-out) td:first-child { opacity: 1; }
   .nt-short { display: inline; }
   .news-item h3 { font-size: 18px; }
 }
+
+/* compact tables (EDGE shot areas) */
+table.mini { width: 100%; }
+table.mini th, table.mini td { padding: 6px 10px; font-size: 14px; }
+table.mini th { cursor: default; }

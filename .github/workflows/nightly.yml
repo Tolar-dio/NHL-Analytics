@@ -74,6 +74,10 @@ jobs:
           python analysis/props_data.py 20252026
           python analysis/props_data.py 20262027
 
+      - name: Check shift-derived ice time against the NHL's official report
+        continue-on-error: true
+        run: python analysis/validate_toi.py
+
       - name: Build site data
         env:
           FANTASY_PASSWORD: ${{ secrets.FANTASY_PASSWORD }}   # encrypts My team; without it that page isn't published

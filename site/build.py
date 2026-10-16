@@ -207,7 +207,7 @@ def archive_tonight(day, games, props, lu):
     path = os.path.join(ARCHIVE, f"{day}.json")
     arc = json.load(open(path)) if os.path.exists(path) else dict(date=day, games={})
     now = dt.datetime.now(dt.timezone.utc)
-    keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_2pts", "proj_toi", "g_f"]
+    keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_1pt", "p_2pts", "p_3pts", "proj_toi", "g_f"]
     for g in games:
         gid = str(g["id"])
         start = dt.datetime.fromisoformat(g["start"].replace("Z", "+00:00")) if g.get("start") else None
@@ -218,11 +218,99 @@ def archive_tonight(day, games, props, lu):
             built=now.isoformat(timespec="minutes"), pregame=pre, start=g.get("start"), away=g["away"], home=g["home"],
             away_goalie=g["away_goalie"], home_goalie=g["home_goalie"], away_goalie_src=g.get("away_goalie_src"),
             home_goalie_src=g.get("home_goalie_src"), away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
-            o55=g["o55"], o65=g["o65"], lineup_source=lu["source"],
+            o55=g["o55"], o65=g["o65"], lineup_source=lu["source"], market=g.get("market"),
             props=[{k: p.get(k) for k in keep} for p in props if p["game"] == g["id"]])
     os.makedirs(ARCHIVE, exist_ok=True)
     with open(path, "w") as f:
         json.dump(arc, f, separators=(",", ":"))
+
+
+# ------------------------------------------------------------------ NHL EDGE extras
+
+AREA_ORDER = ["Low Slot", "Crease", "L Net Side", "R Net Side", "High Slot", "L Circle", "R Circle", "L Corner",
+              "R Corner", "Behind the Net", "Center Point", "L Point", "R Point", "Outside L", "Outside R",
+              "Beyond Red Line", "Offensive Neutral Zone"]
+
+
+def load_edge(season):
+    """The tables scripts/fetch_external.py keeps from NHL EDGE (missing files just mean empty extras)."""
+    d = os.path.join(ROOT, "data", "external", "edge", season)
+    rd = lambda f: pd.read_csv(os.path.join(d, f)) if os.path.exists(os.path.join(d, f)) else pd.DataFrame()
+    areas, hard, dist, gareas = rd("shot_areas.csv.gz"), rd("hard_shots.csv.gz"), rd("distance_games.csv.gz"), rd("goalie_areas.csv.gz")
+    out = dict(speed={}, game_top={}, miles={}, player={}, goalie_hd={})
+    for x in hard.itertuples() if len(hard) else []:
+        if pd.isna(x.mph) or pd.isna(x.period):
+            continue
+        out["speed"][(int(x.game_id), int(x.player_id), int(x.period), str(x.time_in_period))] = round(float(x.mph), 1)
+        k = (int(x.player_id), int(x.game_id))
+        out["game_top"][k] = max(out["game_top"].get(k, 0), round(float(x.mph), 1))
+    for x in dist.itertuples() if len(dist) else []:
+        if not pd.isna(x.miles_all):
+            out["miles"][(int(x.player_id), int(x.game_id))] = round(float(x.miles_all), 2)
+    for pid, grp in areas.groupby("player_id") if len(areas) else []:
+        rows = [dict(area=a.area, sog=int(a.sog), g=int(a.goals or 0), sh=r(a.sh_pct, 3), sh_pct=r(a.sh_pctile, 2),
+                     sog_pct=r(a.sog_pctile, 2)) for a in grp.itertuples()]
+        rows.sort(key=lambda a: (-a["sog"], AREA_ORDER.index(a["area"]) if a["area"] in AREA_ORDER else 99))
+        out["player"].setdefault(int(pid), {})["areas"] = rows
+    for pid, grp in hard.groupby("player_id") if len(hard) else []:
+        top = grp.sort_values("mph", ascending=False).head(3)
+        out["player"].setdefault(int(pid), {})["hard"] = [dict(mph=r(h.mph, 1), game=int(h.game_id), date=h.date,
+                                                                 period=int(h.period), t=h.time_in_period) for h in top.itertuples()]
+    for x in gareas.itertuples() if len(gareas) else []:
+        if x.area == "all:high" and not pd.isna(x.save_pct):
+            out["goalie_hd"][int(x.goalie_id)] = dict(save_pct=r(x.save_pct, 3), pctile=r(x.save_pct_pctile, 2),
+                                                      lg=r(x.league_save_pct, 3))
+    print(f"  edge extras: {len(out['player'])} skaters with area/speed data, {len(out['miles'])} player-games with distance, "
+          f"{len(out['goalie_hd'])} goalies")
+    return out
+
+
+# ------------------------------------------------------------------ market lines
+
+def american_p(o):
+    return 100 / (o + 100) if o > 0 else -o / (-o + 100)
+
+
+def fetch_market(slate):
+    """DraftKings lines the NHL API publishes for today's games (moneyline, total, puck line). Free, live only.
+    Returns {game_id: {...}} with the vig removed from each two-way market and the total goals the over
+    price implies (the mean that gives that over probability under the same tie rule the model uses)."""
+    out = {}
+    try:
+        req = urllib.request.Request("https://api-web.nhle.com/v1/partner-game/US/now", headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            js = json.load(resp)
+    except Exception as e:
+        print(f"  market lines unavailable ({e!r})")
+        return out
+    ids = {g["id"] for g in slate}
+    for g in js.get("games", []):
+        if g.get("gameId") not in ids:
+            continue
+        odds = {side: {(o["description"], o.get("qualifier") or ""): o["value"] for o in g[side + "Team"].get("odds", [])}
+                for side in ("home", "away")}
+        m = dict(book="DraftKings", updated=js.get("lastUpdatedUTC"))
+        mh, ma = odds["home"].get(("MONEY_LINE_2_WAY", "")), odds["away"].get(("MONEY_LINE_2_WAY", ""))
+        if mh is not None and ma is not None:
+            ph, pa = american_p(mh), american_p(ma)
+            m.update(ml_home=int(mh), ml_away=int(ma), p_home=round(ph / (ph + pa), 4))
+        ov = next(((q, v) for (d, q), v in odds["home"].items() if d == "OVER_UNDER" and q.startswith("O")), None)
+        un = next(((q, v) for (d, q), v in odds["away"].items() if d == "OVER_UNDER" and q.startswith("U")), None)
+        if ov and un:
+            line = float(ov[0][1:])
+            po, pu = american_p(ov[1]), american_p(un[1])
+            p_over = po / (po + pu)
+            m.update(total=line, over=int(ov[1]), under=int(un[1]), p_over=round(p_over, 4))
+            # the expected total that makes P(goals > line) = p_over, both teams equal, ties adding a goal
+            lo, hi = 3.0, 10.0
+            for _ in range(40):
+                mid = (lo + hi) / 2
+                d = M.total_dist(mid / 2, mid / 2)
+                (lo, hi) = (mid, hi) if d[np.arange(len(d)) > line].sum() < p_over else (lo, mid)
+            m["implied_total"] = round((lo + hi) / 2, 2)
+        out[g["gameId"]] = m
+    print(f"  market lines: {len(out)} of {len(ids)} games")
+    return out
 
 
 # ------------------------------------------------------------------ schedule
@@ -340,6 +428,11 @@ def main():
     # ---- teams and goalies
     dump("teams.json", standings(games, cur["tg"]))
     goalie_rows = goalies(cur["gg"], ev, names, prev["gg"])
+    edge = load_edge(CUR)
+    for g in goalie_rows:   # EDGE: high-danger save % from the NHL's tracked shot locations
+        hd = edge["goalie_hd"].get(g["id"])
+        if hd:
+            g.update(hd_sv=hd["save_pct"], hd_sv_pctile=hd["pctile"], hd_sv_lg=hd["lg"])
     dump("goalies.json", goalie_rows)
 
     # ---- skaters: this season (all situations, MoneyPuck xG)
@@ -424,7 +517,7 @@ def main():
     stories = os.path.join(ROOT, "data", "stories", CUR, "recaps")
     shifts_all = pd.read_csv(TBL(CUR, "shifts.csv.gz"))
     game_index = build_games(CUR, ev, s, cur["pg"], cur["gg"], games, names, os.path.join(OUTD, "games"), stories,
-                             shifts=shifts_all, plist=plist)
+                             shifts=shifts_all, plist=plist, speeds=edge["speed"])
     # ---- per-player game logs (one small file each, loaded when a player page opens)
     plog = os.path.join(OUTD, "players")
     os.makedirs(plog, exist_ok=True)
@@ -440,21 +533,23 @@ def main():
             rows.append(dict(id=int(x.game_id), date=x.date, opp=x.opp, home=bool(home),
                              res="W" if gf_ > ga_ else ("OTL" if gm.decided_in != "REG" else "L"), gf=gf_, ga=ga_,
                              toi=r(x.toi, 1), g=int(x.g), a=int(x.a), sog=int(x.sog), ixg=r(x.ixg, 2),
-                             xgf=r(x.xgf, 2), xga=r(x.xga, 2)))
+                             xgf=r(x.xgf, 2), xga=r(x.xga, 2), miles=edge["miles"].get((int(pid), int(x.game_id))),
+                             mph=edge["game_top"].get((int(pid), int(x.game_id)))))
         with open(os.path.join(plog, f"{int(pid)}.json"), "w") as f:
-            json.dump(rows, f, separators=(",", ":"))
+            json.dump(dict(log=rows, edge=edge["player"].get(int(pid))), f, separators=(",", ":"))
     print(f"  players/: {cur['pg'].player_id.nunique()} game logs")
 
     all_shots = s
     s = s[s.nx > 0]
-    # [x, y, xg_milli, goal, game number (last 4 digits of the game id), game second, shot type code]
+    # [x, y, xg_milli, goal, game number (last 4 digits of the game id), game second, shot type code, mph or 0]
     from games import SHOT_CODE
     shots = {}
     for pid, grp in s.groupby("player1_id"):
         shots[str(int(pid))] = [[int(round(x)), int(round(y)), int(round(v * 1000)), int(e == "goal"), int(gid) % 10000,
-                                 int(sec), SHOT_CODE.get(t, "")]
-                                for x, y, v, e, gid, sec, t in zip(grp.nx, grp.ny, grp.xgv, grp.event, grp.game_id,
-                                                                   grp.game_seconds, grp.shot_type)]
+                                 int(sec), SHOT_CODE.get(t, ""), edge["speed"].get((int(gid), int(pid), int(per), tip), 0)]
+                                for x, y, v, e, gid, sec, t, per, tip in zip(grp.nx, grp.ny, grp.xgv, grp.event, grp.game_id,
+                                                                             grp.game_seconds, grp.shot_type, grp.period,
+                                                                             grp.time_in_period)]
     dump("shots.json", shots)
 
     # ---- tonight
@@ -476,6 +571,10 @@ def main():
         return int(last5[last5.player_id.isin(top)].player_id.iloc[-1]), "model"
     rows, gm_out = [], []
     rosters = lu["strength"]
+    market = fetch_market(slate) if slate else {}
+    yesterday = str(today - dt.timedelta(days=1))
+    played = set(games[games.date == yesterday].home) | set(games[games.date == yesterday].away)
+    tired = lambda t: t in played    # second night of a back-to-back
     if slate:
         fpt = M.fit_players(cur, str(today), pri, extra=lu["extra"])
         tm = M.fit_teams(cur, str(today), fpt, pri, M.K, rosters)
@@ -483,10 +582,10 @@ def main():
             (ga_, gas), (gh_, ghs) = proj_goalie(g["away"]), proj_goalie(g["home"])
             for team, opp, og in ((g["away"], g["home"], gh_), (g["home"], g["away"], ga_)):
                 rows += [{"player_id": i, "team": team, "opp": opp, "opp_goalie": og, "game": g["id"],
-                          "lineup": st, "lineup_note": note}
+                          "lineup": st, "lineup_note": note, "b2b": tired(team), "opp_b2b": tired(opp)}
                          for i, (st, note) in lu["pool"].get(team, {}).items()]
-            la = M.team_lambda(tm, g["away"], g["home"], gh_)
-            lh = M.team_lambda(tm, g["home"], g["away"], ga_)
+            la = M.team_lambda(tm, g["away"], g["home"], gh_) * M.b2b_factor(tired(g["away"]), tired(g["home"]))
+            lh = M.team_lambda(tm, g["home"], g["away"], ga_) * M.b2b_factor(tired(g["home"]), tired(g["away"]))
             dist = M.total_dist(la, lh)
             k = np.arange(len(dist))
             def options(team, chosen):
@@ -494,7 +593,12 @@ def main():
                                          gss[gss.team == team].player_id.astype(int).tolist()[::-1]))[:5]   # enough to match ESPN's probable starter
                 return [dict(id=i, name=names.get(i), factor=r(M.goalie_factor(tm, team, i), 4),
                              starts=int((gss.player_id == i).sum()), out=bool(i in lu["out"])) for i in ids]
-            gm_out.append(dict(id=g["id"], start=g["start"], away=g["away"], home=g["home"],
+            mk = market.get(g["id"])
+            if mk:   # how the model's own numbers compare with the market's
+                mk["model_p_home"] = r(M.win_prob(la, lh), 4)
+                mk["model_p_over"] = r(dist[np.arange(len(dist)) > mk["total"]].sum(), 4) if "total" in mk else None
+            gm_out.append(dict(id=g["id"], start=g["start"], away=g["away"], home=g["home"], market=mk,
+                               away_b2b=tired(g["away"]), home_b2b=tired(g["home"]),
                                away_goalie=ga_, home_goalie=gh_, away_goalie_src=gas, home_goalie_src=ghs,
                                away_goalies=options(g["away"], ga_), home_goalies=options(g["home"], gh_),
                                away_xg=r(la, 3), home_xg=r(lh, 3), total=r((dist * k).sum()),
@@ -509,7 +613,8 @@ def main():
         d["radar"] = d.player_id.isin(set(fwd.player_id) | set(dmen.player_id))
         d = d.rename(columns={"player_id": "id"}).sort_values("p_goal", ascending=False)
         props = records(d, ["id", "name", "team", "opp", "game", "pos", "gp", "g", "pts", "ixg", "proj_toi",
-                            "pp_share", "p_goal", "p_2pts", "lam_g", "lam_p", "g_f", "radar", "lineup", "lineup_note"])
+                            "pp_share", "p_goal", "p_1pt", "p_2pts", "p_3pts", "lam_g", "lam_p", "g_f", "radar",
+                            "lineup", "lineup_note"])
         archive_tonight(str(today), gm_out, props, lu)
     else:
         props = []
@@ -525,7 +630,7 @@ def main():
     dump("team_profiles.json", {t: {k: v for k, v in team_profile(t, all_shots, cur["tg"], ev, game_index).items() if k != "last5"}
                                 for t in sorted(set(cur["tg"].team))})
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props,
-                              lineup_source=lu["source"],
+                              lineup_source=lu["source"], disp=M.DISP,
                               goalie_note="Goalies are ESPN's probable starters where posted, otherwise most starts in "
                                           "each team's last five games. Check confirmations before betting."))
 

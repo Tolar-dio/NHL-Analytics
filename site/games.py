@@ -255,7 +255,7 @@ def r(x, n=3):
     return None if x is None or (isinstance(x, float) and np.isnan(x)) else round(float(x), n)
 
 
-def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir, shifts=None, plist=None):
+def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir, shifts=None, plist=None, speeds=None):
     """ev: events (no shootout); xg_shots: unblocked shots with nx/ny normalised to
     'attacking right' and column xgv; pg/gg: player/goalie per-game tables."""
     os.makedirs(out_dir, exist_ok=True)
@@ -277,7 +277,8 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
 
         # ---- shots: home attacks right (+x), away attacks left (-x)
         # [0 x, 1 y, 2 xg_milli, 3 goal, 4 home, 5 game second, 6 shooter, 7 strength, 8 shot type code,
-        #  9 distance ft, 10 goalie, 11 event id, 12 flags (1 rebound, 2 rush, 4 on net), 13 seconds into shift or -1]
+        #  9 distance ft, 10 goalie, 11 event id, 12 flags (1 rebound, 2 rush, 4 on net), 13 seconds into shift or -1,
+        #  14 shot speed mph when NHL EDGE lists it among the shooter's 10 hardest this season, else 0]
         shots = []
         num = lambda v, d=0: d if v is None or pd.isna(v) else int(v)
         for row in s.sort_values("sort_order").itertuples() if len(s) else []:
@@ -289,7 +290,8 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
                           int(row.game_seconds), num(row.player1_id), row.state,
                           SHOT_CODE.get(row.shot_type, "") if isinstance(row.shot_type, str) else "",
                           int(round(np.hypot(89 - row.nx, row.ny))), num(row.goalie_id), num(row.event_id), flags,
-                          num(getattr(row, "shooterTimeOnIce", None), -1)])
+                          num(getattr(row, "shooterTimeOnIce", None), -1),
+                          (speeds or {}).get((gid, num(row.player1_id), int(row.period), str(row.time_in_period)), 0)])
         not_en = s[s.state != "EN"]
         xg_h = float(s[s.team == home].xgv.sum())
         xg_a = float(s[s.team == away].xgv.sum())

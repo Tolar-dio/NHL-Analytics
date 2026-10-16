@@ -302,6 +302,7 @@ async function renderPreview(view, id) {
   const goalieCard = (gc, team) => !gc ? `<div class="gcard"><h3>${team}</h3><p class="note">No projected goalie yet.</p></div>` :
     `<div class="gcard"><h3>${team}</h3><b>${esc(gc.name)}</b> <span class="dim">projected</span>
       <div>This season: ${gc.gp} games, ${pct(gc.sv_pct, 1)} save rate, ${signed(gc.gsax)} saves above expected</div>
+      ${gc.hd_sv != null ? `<div>High-danger saves: ${pct(gc.hd_sv, 1)} <span class="dim">(league ${pct(gc.hd_sv_lg, 1)}, ${ordinal(Math.round(100 * gc.hd_sv_pctile))} percentile, NHL EDGE)</span></div>` : ""}
       <div class="dim">Last season: ${gc.prev_gp ? `${gc.prev_gp} games, ${signed(gc.prev_gsax)} saves above expected` : "no NHL games"}</div></div>`;
   const lines = (t) => {
     const L = p.lines[t];
@@ -332,7 +333,9 @@ async function renderPreview(view, id) {
         <div>
           <h3 class="kicker">Model's expected goals tonight</h3>
           ${xgBar(p.away, p.away_xg)}${xgBar(p.home, p.home_xg)}
-          <p class="note">Total ${num(p.total, 1)}. Totals haven't beaten a league-average guess in testing, so read this as context, not a pick.</p>
+          ${p.market && p.market.total != null ? `<p class="note"><b>Market</b> (DraftKings via the NHL): ${p.home} ${pct(p.market.p_home)} to win once the margin is removed, over/under ${p.market.total} (about ${num(p.market.implied_total, 1)} goals). <b>Model</b>: ${p.home} ${pct(p.market.model_p_home)}, total ${num(p.total, 1)}. The model's totals haven't beaten the market or a league average in testing, so read its total as context.</p>`
+            : `<p class="note">Total ${num(p.total, 1)}. Totals haven't beaten a league-average guess in testing, so read this as context, not a pick.</p>`}
+          ${p.away_b2b || p.home_b2b ? `<p class="note">${[p.away_b2b ? p.away : null, p.home_b2b ? p.home : null].filter(Boolean).join(" and ")} ${p.away_b2b && p.home_b2b ? "are both" : "is"} on the second night of a back-to-back. Tired teams got 47.4% of the expected goals in 2025-26.</p>` : ""}
           <h3 class="kicker">Tale of the tape</h3>
           <div class="vs-grid">
             <div class="vs vs-head"><span>${p.away}</span><b></b><span>${p.home}</span></div>

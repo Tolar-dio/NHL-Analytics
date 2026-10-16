@@ -142,7 +142,7 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
         def goalie_card(gid):
             x = gl.get(gid)
             return None if not x else {k: x.get(k) for k in ("id", "name", "team", "gp", "sv_pct", "gsax", "gsax60",
-                                                          "prev_gp", "prev_gsax")}
+                                                          "prev_gp", "prev_gsax", "hd_sv", "hd_sv_pctile", "hd_sv_lg")}
         game_props = [p for p in props if p["game"] == g["id"]]
         key = {}
         for t in (away, home):
@@ -156,7 +156,8 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
             story = d.get("text") if d.get("v", 1) >= 2 else None   # v1 stories had swapped team stats; see write_stories.STORY_VERSION
         gcards = {away: goalie_card(g["away_goalie"]), home: goalie_card(g["home_goalie"])}
         detail = dict(id=g["id"], date=today, start=g["start"], away=away, home=home,
-                      away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
+                      away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"], market=g.get("market"),
+                      away_b2b=g.get("away_b2b"), home_b2b=g.get("home_b2b"),
                       teams=prof, series=series, notes=preview_notes(away, home, prof, gcards, series),
                       goalies=gcards,
                       lines={t: projected_lines(t, pg, shifts, pos, names) for t in (away, home)},

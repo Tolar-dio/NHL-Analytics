@@ -54,6 +54,7 @@ def track(cur, season=M.CUR):
                 rg, rp = rate.get(p.get("pos") or d.pos, (np.nan, np.nan))
                 lp = rp * p["proj_toi"]
                 rows.append(dict(date=day, game=gid, lineup=p.get("lineup") or "last", p_goal=p["p_goal"], p_2pts=p["p_2pts"],
+                                 p_1pt=p.get("p_1pt"), p_3pts=p.get("p_3pts"), y_1=int(d.pts >= 1), y_3=int(d.pts >= 3),
                                  base_g=1 - np.exp(-rg * p["proj_toi"]), base_2=1 - np.exp(-lp) * (1 + lp),
                                  y_goal=int(d.g >= 1), y_2=int(d.pts >= 2)))
             unpriced = [i for i in dressed.index if i not in priced]
@@ -65,8 +66,11 @@ def track(cur, season=M.CUR):
                 if team in st.index and g.get(f"{side}_goalie"):
                     goalies.append(dict(src=g.get(f"{side}_goalie_src") or "model", hit=int(st[team]) == int(g[f"{side}_goalie"])))
             tot = int(gm.home_score + gm.away_score)
+            mk = g.get("market") or {}
             grows.append(dict(date=day, total=g["total"], actual=tot, p_home=win_home(g["away_xg"], g["home_xg"]),
-                              home_won=int(gm.home_score > gm.away_score)))
+                              home_won=int(gm.home_score > gm.away_score), m_total=mk.get("implied_total"),
+                              line=mk.get("total"), m_p_over=mk.get("p_over"), p_over=mk.get("model_p_over"),
+                              m_p_home=mk.get("p_home")))
     if not rows:
         return dict(nights=0, games=0)
     P, G, L, Q = pd.DataFrame(rows), pd.DataFrame(grows), pd.DataFrame(lineup), pd.DataFrame(goalies)
@@ -82,6 +86,7 @@ def track(cur, season=M.CUR):
                   cal=[dict(n=int(r.n), pred=round(float(r.pred), 3), act=round(float(r.act), 3)) for r in cal.itertuples()]),
         pts=dict(pred=round(float(P.p_2pts.sum()), 1), act=int(P.y_2.sum()), ll=round(ll(P.y_2, P.p_2pts), 4),
                  ll_base=round(ll(P.y_2, P.base_2), 4)),
+        **tails(P),
         lineup=dict(lu, unpriced=int((L.tag == "unpriced").sum())),
         goalies=dict(n=int(len(Q)), hits=int(Q.hit.sum()) if len(Q) else 0,
                      espn_n=int((Q.src == "espn").sum()) if len(Q) else 0,
@@ -90,7 +95,33 @@ def track(cur, season=M.CUR):
                     mean_act=round(float(G.actual.mean()), 2)),
         winners=dict(brier=round(float(((G.p_home - G.home_won) ** 2).mean()), 3),
                      fav_won=int(((G.p_home > .5) == (G.home_won == 1)).sum())),
+        market=market_grade(G),
     )
+
+
+def tails(P):
+    """1+ and 3+ points, graded only where the archive has them (added Oct 16, 2026)."""
+    q = P.dropna(subset=["p_1pt", "p_3pts"]) if "p_1pt" in P else P.iloc[0:0]
+    if q.empty:
+        return {}
+    return dict(pts1=dict(pred=round(float(q.p_1pt.sum()), 1), act=int(q.y_1.sum()), ll=round(ll(q.y_1, q.p_1pt), 4)),
+                pts3=dict(pred=round(float(q.p_3pts.sum()), 1), act=int(q.y_3.sum()), ll=round(ll(q.y_3, q.p_3pts), 4)))
+
+
+def market_grade(G):
+    """The model against DraftKings' lines (from the NHL API) on the games where both exist."""
+    m = G.dropna(subset=["m_total", "m_p_home", "m_p_over", "p_over"]) if "m_total" in G else G.iloc[0:0]
+    if m.empty:
+        return dict(games=0)
+    over = (m.actual > m.line).astype(int)
+    push = m.actual == m.line
+    o = m[~push]
+    return dict(games=int(len(m)),
+                total_mae_model=round(float((m.total - m.actual).abs().mean()), 2),
+                total_mae_market=round(float((m.m_total - m.actual).abs().mean()), 2),
+                over_ll_model=round(ll(over[~push], o.p_over), 4), over_ll_market=round(ll(over[~push], o.m_p_over), 4),
+                win_brier_model=round(float(((m.p_home - m.home_won) ** 2).mean()), 4),
+                win_brier_market=round(float(((m.m_p_home - m.home_won) ** 2).mean()), 4))
 
 
 if __name__ == "__main__":
