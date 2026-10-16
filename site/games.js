@@ -75,14 +75,14 @@ function rinkChrome(leftLabel, rightLabel) {
 }
 
 function fullRinkSVG(shots, away, home) {
-  const marks = shots.map(([x, y, xg, g, isHome, sec, pid, st]) => {
-    const rr = 0.6 + Math.sqrt(xg / 1000) * 3;
-    const who = (D._names && D._names[pid]) || "";
-    const tipTxt = `${g ? "<b>Goal</b>" : "Shot"} by ${esc(who) || (isHome ? home : away)}<br>${(xg / 10).toFixed(1)}% chance, ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} elapsed${st && st !== "EV" ? `, ${st}` : ""}`;
-    return { g, svg: `<circle class="${g ? "goal" : "shot"}" cx="${x}" cy="${-y}" r="${g ? Math.max(rr, 1.3) : rr}" data-tip="${esc(tipTxt)}"></circle>` };
-  }).sort((a, b) => a.g - b.g).map((m) => m.svg);
   return `<svg class="chart rink" viewBox="-101 -46 202 92" role="img" aria-label="Both teams' shots: ${away} shooting left, ${home} shooting right">
-    ${rinkChrome(`${away} shooting this way`, `${home} shooting this way`)}${marks.join("")}</svg>`;
+    ${rinkChrome(`${away} shooting this way`, `${home} shooting this way`)}${shotDots(shots, 1, 0.6, 3)}</svg>`;
+}
+// a game's shot map with tap-for-details (live pages pass ESPN's names and no goal list)
+function gameShotMap(g, shots, names) {
+  const nm = { ...names };
+  for (const x of g.goalies || []) if (x.id) nm[x.id] = x.name;
+  return shotMap(fullRinkSVG(shots, g.away, g.home), shots, { kind: "game", names: nm, away: g.away, home: g.home, goals: g.goals, seqs: g.seqs, game: g.seqs ? g : null, live: !!g.live });
 }
 
 function flowChart(g) {
@@ -244,7 +244,7 @@ async function renderGame(view, id) {
     </section>
     <section class="zone">
       <h2>Every shot</h2>
-      <div class="figure">${fullRinkSVG(g.shots, g.away, g.home)}
+      <div class="figure">${gameShotMap(g, g.shots, D._names)}
         <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss, sized by chance</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
     </section>
     <section class="zone">
@@ -313,7 +313,7 @@ async function renderPreview(view, id) {
       ${extra.length ? `<p class="note">Also dressed: ${extra.map((x) => playerLink(x.id, x.name)).join(", ")}</p>` : ""}</div>`;
   };
   const props = (t) => table([...p.props[t].goal.map((x) => ({ ...x, what: "Goal", pr: x.p_goal })), ...p.props[t].pts.map((x) => ({ ...x, what: "2+ points", pr: x.p_2pts }))], [
-    { key: "name", label: t, nosort: true, fmt: (x) => playerLink(x.id, x.name) + injuryTag(x.name) },
+    { key: "name", label: t, nosort: true, fmt: (x) => playerLink(x.id, x.name) + injuryTag(x.name) + lineupTag(x) },
     { key: "what", label: "Market", nosort: true },
     { key: "pr", label: "Chance", nosort: true, fmt: (x) => cellBar(x.pr, 0.6) },
     { key: "fair", label: "Fair odds", nosort: true, fmt: (x) => fair(x.pr) },

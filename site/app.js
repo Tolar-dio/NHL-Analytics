@@ -47,6 +47,9 @@ const tip = $("#tip");
 function showTip(target, x, y) {
   tip.innerHTML = target.dataset.tip;
   tip.hidden = false;
+  placeTip(x, y);
+}
+function placeTip(x, y) {
   const r = tip.getBoundingClientRect();
   let left = x + 14, top = y + 14;
   if (left + r.width > innerWidth - 8) left = x - r.width - 14;
@@ -57,7 +60,7 @@ function showTip(target, x, y) {
 document.addEventListener("pointermove", (e) => {
   const t = e.target.closest?.("[data-tip]");
   if (t && e.pointerType === "mouse") showTip(t, e.clientX, e.clientY);
-  else if (e.pointerType === "mouse") tip.hidden = true;
+  else if (e.pointerType === "mouse" && !e.target.closest?.(".shotmap svg")) tip.hidden = true;
 });
 document.addEventListener("click", (e) => {
   const t = e.target.closest?.("[data-tip]");
@@ -77,13 +80,6 @@ function ticks(lo, hi, n = 5) {
 
 function rinkSVG(shots, opts = {}) {
   // half rink in feet: centre red line x=0, blue line x=25, goal line x=89, boards x=100
-  const marks = shots.map(([x, y, xg, g]) => {
-    const rr = (0.7 + Math.sqrt(xg / 1000) * 3.4) * (opts.scale || 1);
-    const tipTxt = `${g ? "<b>Goal</b>" : "Shot"} · ${(xg / 10).toFixed(1)}% chance (xG ${(xg / 1000).toFixed(2)})`;
-    return `<circle class="${g ? "goal" : "shot"}" cx="${x}" cy="${-y}" r="${g ? Math.max(rr, 1.3) : rr}" data-tip="${esc(tipTxt)}"></circle>`;
-  });
-  // goals drawn last so they sit on top
-  marks.sort((a, b) => (a.includes('class="goal"') ? 1 : 0) - (b.includes('class="goal"') ? 1 : 0));
   return `<svg class="chart rink" viewBox="-1 -43.5 102 87" role="img" aria-label="${esc(opts.label || "Shot map")}">
     <path class="boards" d="M0,-42.5 L72,-42.5 A28,28 0 0 1 100,-14.5 L100,14.5 A28,28 0 0 1 72,42.5 L0,42.5 Z"/>
     <rect class="redline" x="-0.5" y="-42.5" width="1" height="85"/>
@@ -95,9 +91,162 @@ function rinkSVG(shots, opts = {}) {
     <line class="goalline" x1="89" y1="-36.7" x2="89" y2="36.7"/>
     <path class="crease" d="M89,-4 L85.5,-4 A6,6 0 0 0 85.5,4 L89,4 Z"/>
     <rect class="net" x="89" y="-3" width="3.3" height="6" rx="0.8"/>
-    ${marks.join("")}
+    ${shotDots(shots, opts.scale || 1, 0.7, 3.4)}
   </svg>`;
 }
+
+// ------------------------------------------------------------------ shot maps: tap or click a dot for its details
+// Every shot map is wrapped by shotMap(): the dots carry their index, a tap picks the nearest dot (so small
+// ones are easy to hit on a phone), the picked dot gets a ring and its details show in a panel under the
+// map, which stays put however the page is zoomed. Mouse hover shows a short label.
+const SHOT_TYPE = { w: "Wrist shot", s: "Snap shot", l: "Slap shot", b: "Backhand", t: "Tip-in", d: "Deflection", r: "Wraparound",
+  p: "Poke", a: "Batted puck", x: "Between-the-legs shot", c: "Lacrosse-style shot" };
+const STATE_NAME = { PP: "power play", SH: "shorthanded", EN: "into an empty net", EA: "with the extra attacker" };
+const SHOTMAPS = {};
+let smSeq = 0, smPointer = "mouse";
+function shotDots(shots, scale, base, k) {
+  const marks = shots.map((s, i) => {
+    const [x, y, xg, g] = s, rr = (base + Math.sqrt(xg / 1000) * k) * scale;
+    return { g, svg: `<circle class="${g ? "goal" : "shot"}" cx="${x}" cy="${-y}" r="${(g ? Math.max(rr, 1.3) : rr).toFixed(2)}" data-i="${i}"></circle>` };
+  });
+  marks.sort((a, b) => a.g - b.g);   // goals on top
+  return marks.map((m) => m.svg).join("") + `<g class="sm-sel" aria-hidden="true"></g>`;
+}
+// kind "game": shots carry game fields (see site/games.py); "player"/"team": [x, y, xg, goal, game number, second, type(, shooter)]
+function shotMap(svg, shots, ctx) {
+  const id = "sm" + ++smSeq;
+  for (const k of Object.keys(SHOTMAPS)) if (!document.getElementById(k)) delete SHOTMAPS[k];
+  const order = shots.map((s, i) => i).sort((a, b) => (ctx.kind === "game" ? shots[a][5] - shots[b][5] : (shots[a][4] - shots[b][4]) || (shots[a][5] - shots[b][5])));
+  SHOTMAPS[id] = { shots, ctx, order, sel: -1 };
+  const hint = shots.length ? `Tap a dot for the shot's details, or <button type="button" class="linkish" data-sm-first="goal">start with the first goal</button>.` : "No shots yet.";
+  return `<div class="shotmap" id="${id}">${svg}<div class="shot-info" aria-live="polite"><p class="si-hint">${hint}</p></div></div>`;
+}
+const smClock = (sec) => {
+  const per = Math.min(Math.floor(sec / 1200) + 1, 4), t = sec - (per - 1) * 1200;
+  return `${["1st", "2nd", "3rd", "OT"][per - 1]}, ${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")} in`;
+};
+function smNearest(map, svg, e, maxPx) {
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return -1;
+  const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+  let best = -1, bd = Infinity;
+  map.shots.forEach((s, i) => { const d = Math.hypot(s[0] - pt.x, -s[1] - pt.y) - (s[3] ? 0.6 : 0); if (d < bd) { bd = d; best = i; } });
+  return bd * Math.hypot(ctm.a, ctm.b) <= maxPx ? best : -1;
+}
+function smLabel(map, i) {
+  const s = map.shots[i], c = map.ctx, nm = c.kind === "game" ? c.names[s[6]] : c.kind === "team" ? c.names[s[7]] : c.name;
+  return `${s[3] ? "<b>Goal</b>" : "Shot"}${nm ? ` by ${esc(nm)}` : ""}, ${(s[2] / 10).toFixed(1)}% chance<br><span class="dim">Click for details</span>`;
+}
+function smSelect(box, i) {
+  const map = SHOTMAPS[box.id];
+  if (!map) return;
+  const svg = box.querySelector("svg"), layer = svg.querySelector(".sm-sel"), info = box.querySelector(".shot-info");
+  map.sel = i;
+  box.classList.toggle("has-sel", i >= 0);
+  if (i < 0) { layer.innerHTML = ""; return; }
+  const s = map.shots[i], dot = svg.querySelector(`circle[data-i="${i}"]`), r = dot ? +dot.getAttribute("r") : 1.5;
+  // the picked dot is redrawn on top with a ring around it
+  const vb = svg.viewBox.baseVal, ring = r + Math.max(2.4, vb.width / 60);
+  layer.innerHTML = `<line class="sm-cross" x1="${vb.x}" x2="${vb.x + vb.width}" y1="${-s[1]}" y2="${-s[1]}"/>
+    <line class="sm-cross" x1="${s[0]}" x2="${s[0]}" y1="${vb.y}" y2="${vb.y + vb.height}"/>
+    <circle class="sm-ring" cx="${s[0]}" cy="${-s[1]}" r="${ring.toFixed(2)}"/>
+    <circle class="${s[3] ? "goal" : "shot"} sm-on" cx="${s[0]}" cy="${-s[1]}" r="${r}"/>`;
+  const pos = map.order.indexOf(i);
+  info.innerHTML = `${smDescribe(map, i)}
+    <div class="si-nav"><button type="button" class="chip" data-sm-step="-1" ${pos <= 0 ? "disabled" : ""} aria-label="Previous shot">‹ Earlier</button>
+      <span class="dim">${pos + 1} of ${map.order.length}</span>
+      <button type="button" class="chip" data-sm-step="1" ${pos >= map.order.length - 1 ? "disabled" : ""} aria-label="Next shot">Later ›</button>
+      <button type="button" class="chip" data-sm-goal="1">Next goal</button>
+      <button type="button" class="linkish" data-sm-clear>Clear</button></div>`;
+  if (map.ctx.kind !== "game") smGameLine(box, s);
+}
+function smDescribe(map, i) {
+  const s = map.shots[i], c = map.ctx;
+  const type = SHOT_TYPE[c.kind === "game" ? s[8] : s[6]] || "Shot";
+  const dist = c.kind === "game" && s[9] != null ? s[9] : Math.round(Math.hypot(89 - Math.abs(s[0]), s[1]));
+  const chance = `${(s[2] / 10).toFixed(1)}% chance (xG ${(s[2] / 1000).toFixed(2)})`;
+  if (c.kind !== "game") {
+    const who = c.kind === "team" ? c.names[s[7]] : c.name, pid = c.kind === "team" ? s[7] : c.id;
+    return `<p class="si-head"><b class="${s[3] ? "si-goal" : ""}">${s[3] ? "Goal" : "Shot"}</b>${who ? ` · ${playerLink(pid, who)}` : ""} · <span class="si-game">${smClock(s[5])}</span></p>
+      <p class="si-body">${type} from ${dist} ft · ${chance}</p>`;
+  }
+  const team = s[4] ? c.home : c.away, opp = s[4] ? c.away : c.home;
+  // score just before this shot, from the shooter's side
+  let mine = 0, theirs = 0;
+  for (const j of map.order) { if (j === i) break; const q = map.shots[j]; if (q[3]) (q[4] === s[4] ? mine++ : theirs++); }
+  const score = mine === theirs ? `tied ${mine}-${theirs}` : `${team} ${mine > theirs ? "up" : "down"} ${mine}-${theirs}`;
+  const flags = s[12] || 0, bits = [];
+  if (flags & 1) bits.push("rebound");
+  if (flags & 2) bits.push("off the rush");
+  if (STATE_NAME[s[7]]) bits.push(STATE_NAME[s[7]]);
+  const goal = s[3] && c.goals ? c.goals.find((x) => String(x.eid) === String(s[11])) : null;
+  const goalie = s[10] ? c.names[s[10]] : "";
+  const result = s[3] ? "" : flags & 4 ? (goalie ? `Saved by ${esc(goalie)}` : "On net, saved") : "Missed the net";
+  const shooter = s[6] && c.names[s[6]] ? (c.live ? esc(c.names[s[6]]) : playerLink(s[6], c.names[s[6]])) : team;
+  return `<p class="si-head"><b class="${s[3] ? "si-goal" : ""}">${s[3] ? "Goal" : "Shot"}</b> · ${shooter} <span class="dim">${team}</span> · ${smClock(s[5])}</p>
+    <p class="si-body">${type} from ${dist} ft · ${chance}${bits.length ? ` · ${bits.join(", ")}` : ""}</p>
+    <p class="si-body">${result ? `${result} · ` : goalie ? `Beat ${esc(goalie)} · ` : ""}${score} before it${s[13] >= 0 ? ` · ${s[13]} s into his shift` : ""}</p>
+    ${goal ? `<p class="si-body">${goal.assists && goal.assists.length ? `Assists: ${goal.assists.map((a) => playerLink(a.pid, a.name)).join(", ")}` : "Unassisted"}${goal.num ? ` · his ${ordinal(goal.num)} of the season` : ""}
+      ${c.seqs && c.seqs[String(goal.eid)] ? ` · <button type="button" class="linkish" data-replay="${goal.eid}">Replay it</button>` : ""}${goal.clip ? ` · <a href="${esc(goal.clip)}" target="_blank" rel="noopener">Watch on NHL.com</a>` : ""}</p>` : ""}`;
+}
+async function smGameLine(box, s) {
+  try {
+    const idx = await getJSON("data/games/index.json");
+    const g = idx.find((x) => x.id % 10000 === s[4]);
+    const el = box.querySelector(".si-game");
+    if (!g || !el) return;
+    const team = SHOTMAPS[box.id]?.ctx.team || (D.skaters.find((p) => p.id === (SHOTMAPS[box.id]?.ctx.id ?? s[7]))?.team);
+    const opp = team === g.home ? `vs ${g.away}` : team === g.away ? `at ${g.home}` : `${g.away} at ${g.home}`;
+    el.innerHTML = `<a href="#game/${g.id}">${shortDate(g.date)} ${opp}</a>, ${smClock(s[5])}`;
+  } catch (e) { /* the clock alone is fine */ }
+}
+// the live page redraws every minute; keep the picked shot (matched by time and shooter)
+function smKeep(root) {
+  const box = root.querySelector(".shotmap"), m = box && SHOTMAPS[box.id];
+  return m && m.sel >= 0 ? m.shots[m.sel].slice(5, 7) : null;
+}
+function smRestore(root, keep) {
+  const box = root.querySelector(".shotmap"), m = box && SHOTMAPS[box.id];
+  if (!keep || !m) return;
+  const i = m.shots.findIndex((s) => s[5] === keep[0] && String(s[6]) === String(keep[1]));
+  if (i >= 0) smSelect(box, i);
+}
+document.addEventListener("pointerdown", (e) => { smPointer = e.pointerType || "mouse"; }, { capture: true, passive: true });
+document.addEventListener("click", (e) => {
+  const box = e.target.closest?.(".shotmap");
+  if (!box || !SHOTMAPS[box.id]) return;
+  const map = SHOTMAPS[box.id], b = e.target.closest("button");
+  if (b && b.dataset.smStep) {
+    const pos = map.order.indexOf(map.sel) + +b.dataset.smStep;
+    if (pos >= 0 && pos < map.order.length) smSelect(box, map.order[pos]);
+    return;
+  }
+  if (b && (b.dataset.smGoal || b.dataset.smFirst)) {
+    const from = b.dataset.smFirst ? -1 : map.order.indexOf(map.sel);
+    const next = map.order.slice(from + 1).find((j) => map.shots[j][3]) ?? map.order.find((j) => map.shots[j][3]);
+    smSelect(box, next ?? map.order[0]);
+    return;
+  }
+  if (b && b.dataset.replay && map.ctx.game && typeof openTheater === "function") {
+    history.replaceState(null, "", `#game/${map.ctx.game.id}/${b.dataset.replay}`);
+    openTheater(map.ctx.game, b.dataset.replay);
+    return;
+  }
+  if (b && "smClear" in b.dataset) { smSelect(box, -1); box.querySelector(".shot-info").innerHTML = `<p class="si-hint">Tap a dot for the shot's details.</p>`; return; }
+  const svg = e.target.closest("svg");
+  if (!svg) return;
+  const i = smNearest(map, svg, e, smPointer === "mouse" ? 14 : 26);
+  if (i >= 0) { tip.hidden = true; smSelect(box, i); }
+});
+document.addEventListener("pointermove", (e) => {
+  if (e.pointerType !== "mouse") return;
+  const svg = e.target.closest?.(".shotmap svg"), box = svg && svg.closest(".shotmap");
+  if (!box || !SHOTMAPS[box.id]) return;
+  const i = smNearest(SHOTMAPS[box.id], svg, e, 14);
+  svg.style.cursor = i >= 0 ? "pointer" : "";
+  if (i >= 0) { tip.innerHTML = smLabel(SHOTMAPS[box.id], i); tip.hidden = false; placeTip(e.clientX, e.clientY); }
+  else tip.hidden = true;
+});
 
 function scatterTeams(teams, fav) {
   const W = mainW(1000), H = Math.max(440, Math.round(W * 0.56)), m = { l: 52, r: 24, t: 16, b: 48 };
@@ -280,7 +429,7 @@ function renderTonight(view) {
         <label class="check"><input type="checkbox" id="radar" ${S.radar ? "checked" : ""}> Under the radar only</label>
       </div>
       <div id="propsTable"></div>
-      <p class="note">Under the radar marks players getting real chances whose goal totals lag behind them, outside the night's top dozen favourites. ${esc(T.goalie_note)}</p>
+      <p class="note">Under the radar marks players getting real chances whose goal totals lag behind them, outside the night's top dozen favourites. Lineups: everyone who dressed in a team's last three games, minus ESPN's injured list, plus players coming back; anyone who missed the last game is tagged, and every price assumes the player dresses. ${esc(T.goalie_note)}</p>
     </section>`;
 
   const drawTable = () => {
@@ -301,7 +450,7 @@ function renderTonight(view) {
       return `<span class="${ev >= 0 ? "pos" : "neg"}">${signed(100 * ev, 0)}%</span>`;
     };
     const cols = [
-      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}${injuryTag(r.name)}` },
+      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}${injuryTag(r.name)}${lineupTag(r)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
       { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" },
@@ -420,7 +569,7 @@ function renderTeams(view, param) {
   const t = D.teams.find((x) => x.team === team);
   const abbrs = D.teams.map((x) => x.team).sort();
   const sk = D.skaters.filter((s) => s.team === team);
-  const shots = sk.flatMap((s) => D.shots[s.id] || []);
+  const shots = sk.flatMap((s) => (D.shots[s.id] || []).map((x) => [...x.slice(0, 7), s.id]));
   const gl = D.goalies.filter((g) => g.team === team);
   const rank = [...D.teams].sort((a, b) => b.pts - a.pts || a.gp - b.gp).findIndex((x) => x.team === team) + 1;
   const finishing = t ? t.g_minus_xg : 0, keeping = t ? t.xga - t.ga : 0;
@@ -439,8 +588,8 @@ function renderTeams(view, param) {
       <div class="stat-row" id="teamTiles"></div>
     </section>
     <section class="zone grid-2">
-      <div class="figure"><h3>Every unblocked shot this season</h3><p class="note">Bigger dots were better chances. Red dots went in.</p>
-        ${rinkSVG(shots, { label: `${team} shot map`, scale: 0.7 })}
+      <div class="figure"><h3>Every unblocked shot this season</h3><p class="note">Bigger dots were better chances. Red dots went in. Tap one for who, when and how.</p>
+        ${shotMap(rinkSVG(shots, { label: `${team} shot map`, scale: 0.7 }), shots, { kind: "team", team, names: Object.fromEntries(sk.map((s) => [s.id, s.name])) })}
         <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
       <div><h3>Game by game</h3><p class="note">Chances created above the line, chances allowed below, every game in order. Hover or tap a game for the score.</p>
         <div id="teamTrend" class="figure trend-fig"></div>
@@ -516,8 +665,8 @@ function renderPlayers(view, param) {
       <p class="verdict">${esc(verdictFor(p))}</p>
     </section>
     <section class="zone grid-2">
-      <div class="figure"><h3>Shot map</h3><p class="note">${shots.length} unblocked shots this season. Bigger dots were better chances; red went in.</p>
-        ${rinkSVG(shots, { label: `${p.name} shot map` })}
+      <div class="figure"><h3>Shot map</h3><p class="note">${shots.length} unblocked shots this season. Bigger dots were better chances; red went in. Tap one for the details.</p>
+        ${shotMap(rinkSVG(shots, { label: `${p.name} shot map` }), shots, { kind: "player", id: p.id, name: p.name })}
         <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
       <div>
         <h3>What the model believes</h3>
@@ -699,6 +848,23 @@ function drawFantasy(view, F) {
 }
 
 // ------------------------------------------------------------------ MODEL
+// The prices this site actually showed, frozen at puck drop and graded the next morning (analysis/track.py).
+// Unlike the backtest, these had to guess lineups and goalies.
+function liveRecord(L) {
+  const head = `<h2>Live record</h2>`;
+  if (!L || !L.nights) return `<section class="zone">${head}<p class="lede">Starting with the October 16 slate, every game's prices are saved at puck drop, along with the lineups and goalies the site had to guess, and graded here the next morning. The backtest above was handed the real lineups and starting goalies; this record isn't, so expect it to look a little worse.</p></section>`;
+  const pc = (a, b) => (b ? `${Math.round((100 * a) / b)}%` : "–");
+  const lu = L.lineup, small = L.nights < 14;
+  return `<section class="zone">${head}
+    <p class="lede">${L.nights} night${L.nights === 1 ? "" : "s"} (${shortDate(L.first)} to ${shortDate(L.last)}), ${L.games} games, ${L.player_games.toLocaleString()} player-games, graded exactly as shown before puck drop.${small ? " That's a small sample: one hot night swings these numbers." : ""}</p>
+    <div class="grid-3">
+      <div><div class="bignum">${L.goal.pred.toFixed(0)} <span class="dim">vs</span> ${L.goal.act}</div><p>goal scorers predicted vs actual. The model beat the naive guess on ${L.goal.nights_beat} of ${L.nights} nights (log loss ${L.goal.ll.toFixed(4)} vs ${L.goal.ll_base.toFixed(4)}; lower is better).</p></div>
+      <div><div class="bignum">${pc(lu.last.dressed, lu.last.priced)}</div><p>of players from each team's last lineup dressed. Of the ones tagged as missing the last game, ${pc(lu.recent.dressed, lu.recent.priced)} played${lu.returning.priced ? `; of those coming back, ${pc(lu.returning.dressed, lu.returning.priced)}` : ""}. ${lu.unpriced} dressed without a price.</p></div>
+      <div><div class="bignum">${pc(L.goalies.hits, L.goalies.n)}</div><p>of starting goalies called right (${L.goalies.espn_n ? `${pc(L.goalies.espn_hits, L.goalies.espn_n)} when ESPN had posted a probable starter` : "no ESPN probables yet"}).</p></div>
+    </div>
+    <p class="note">Two or more points: ${L.pts.pred.toFixed(0)} predicted, ${L.pts.act} actual. Game totals missed by ${L.totals.mae} goals on average (projected ${L.totals.mean_pred}, actual ${L.totals.mean_act}).</p>
+  </section>`;
+}
 function renderModel(view) {
   const M = D.model, ts = M.this_season;
   view.innerHTML = `
@@ -711,6 +877,7 @@ function renderModel(view) {
         <div><div class="bignum">${M.totals.corr.toFixed(2)}</div><p>correlation between projected and actual game totals over ${M.games.toLocaleString()} games. That is essentially no signal, so totals here are context only.</p></div>
       </div>
     </section>
+    ${liveRecord(M.live)}
     <section class="zone grid-2">
       <div class="figure narrow"><h3>Goal chances</h3><p class="note">Each dot groups player-games by what the model said. On the line means the model was right on average. Bigger dots hold more games.</p>${calibrationChart(M.goal.cal, "Goal probability calibration")}</div>
       <div class="figure narrow"><h3>Two or more points</h3><p class="note">Same check for multi-point games.</p>${calibrationChart(M.pts.cal, "Two point probability calibration")}</div>
@@ -734,6 +901,7 @@ function route(e) {
   const active = TAB_OF[tab] || (ROUTES[tab] ? tab : "tonight");
   $$(".tabs a").forEach((a) => (a.dataset.tab === active ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   const view = $("#view");
+  view.onclick = view.onkeydown = view.onchange = null;   // pages that delegate events set these; start clean
   const p = fn(view, param);
   if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">Something failed to load (${esc(e.message)}). Reload to try again.</p>`));
   tip.hidden = true;

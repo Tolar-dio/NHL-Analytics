@@ -42,6 +42,10 @@ The **Backfill a past season** workflow (Actions tab) pulls a full past season: 
 
 To preview locally: `python site/build.py && cd site && python -m http.server`.
 
+### Lineups and the live record
+
+Tonight's prices cover everyone who dressed in a team's last three games and is still on its roster, minus ESPN's injured list, plus players coming back from injury or just traded in; anyone who missed the last game is tagged, and every price assumes the player dresses (as sportsbooks do). Goalies are ESPN's probable starters when posted. Each game's prices are frozen at puck drop in `data/archive/` and graded the next morning by `analysis/track.py`, which feeds the "Live record" on the Trust page: the real test, since the backtest knew the actual lineups.
+
 ### Live scores and news
 
 During games the site polls ESPN's public scoreboard every 30 seconds (scores across the top, on each Tonight card, and ESPN's probable starting goalies applied to the odds) and, on a game's live page, ESPN's play feed every minute for a live shot map, chance flow and "deserved to win", rated by an in-game xG model (`analysis/xg_live.py`). ESPN's injury report flags players on the odds, previews and My team. The News tab gathers ESPN, The Athletic, The Hockey News and Daily Faceoff headlines and groups reports of the same story; an hourly workflow (`news.yml`) has Claude write a short take on stories about players or teams we track, from the outlets' headlines and teasers plus our own numbers (about 1 cent each). It also lists worth-reading features and Substack newsletters, the latest podcast episodes (playable in the page from each show's public feed) and new YouTube videos (played through YouTube's own player). Team and player pages show the items that mention them, and game pages embed the NHL's official YouTube highlights. Sources live in `scripts/news_sources.json`; add or remove feeds there. YouTube's channel feeds fail on and off, so the job keeps the last good copy and, if a `YOUTUBE_API_KEY` secret exists (free, from Google Cloud), falls back to the YouTube Data API.

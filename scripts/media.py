@@ -72,8 +72,11 @@ def plain(s, n=260):
     s = re.sub(r"\s+", " ", s).strip()
     # show notes often run into chapter lists ("Intro - 0:00 Avs hire new PP coach - 1:00 ..."); keep the prose before them
     m = re.search(r"(?:\b[A-Z][\w' ]{0,30}[-–—:]\s*)?\(?\b\d{1,2}:\d{2}(?::\d{2})?\b", s)
-    if m and m.start() >= 40 and len(re.findall(r"\b\d{1,2}:\d{2}\b", s[m.start():])) >= 3:
-        s = s[:m.start()].rstrip(" -–—:|(,;")
+    if m and len(re.findall(r"\b\d{1,2}:\d{2}\b", s[m.start():])) >= 3:
+        if m.start() >= 40:
+            s = s[:m.start()].rstrip(" -–—:|(,;")
+        else:   # the notes are only a chapter list: keep the chapter titles, drop the times
+            s = re.sub(r"\s*\(?\b\d{1,2}:\d{2}(?::\d{2})?\)?\s*[-–—:]?\s*", "; ", s).strip("; ")
     return s if len(s) <= n else s[:n].rsplit(" ", 1)[0] + "…"
 
 

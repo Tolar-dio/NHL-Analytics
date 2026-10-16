@@ -86,13 +86,14 @@ jobs:
           STORY_MAX: "130"          # spending cap per run; a normal night writes 10-30
         run: python scripts/write_stories.py
 
-      - name: Save new stories to the repository
+      - name: Save stories and the pre-game archive
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stories || true
+          # stories and the frozen pre-game prices; data/injuries belongs to the hourly news job (avoids rebase conflicts)
+          for p in data/stories data/archive; do if [ -e "$p" ]; then git add "$p"; fi; done
           if ! git diff --cached --quiet; then
-            git commit -q -m "Stories through $(date -u +%Y-%m-%d)"
+            git commit -q -m "Stories and pre-game archive $(date -u +%Y-%m-%d)"
             git pull -q --rebase origin main
             git push -q
           fi

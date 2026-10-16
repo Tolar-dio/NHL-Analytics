@@ -9,6 +9,10 @@ import glob, gzip, json, os, re
 import numpy as np
 import pandas as pd
 
+# one-letter shot types for the compact shot arrays (decoded by SHOT_TYPE in site/app.js)
+SHOT_CODE = {"wrist": "w", "snap": "s", "slap": "l", "backhand": "b", "tip-in": "t", "deflected": "d", "wrap-around": "r",
+             "poke": "p", "bat": "a", "between-legs": "x", "cradle": "c"}
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -272,13 +276,20 @@ def build_games(season, ev, xg_shots, pg, gg, games, names, out_dir, stories_dir
         e = ev_by.get(gid, pd.DataFrame(columns=ev.columns))
 
         # ---- shots: home attacks right (+x), away attacks left (-x)
+        # [0 x, 1 y, 2 xg_milli, 3 goal, 4 home, 5 game second, 6 shooter, 7 strength, 8 shot type code,
+        #  9 distance ft, 10 goalie, 11 event id, 12 flags (1 rebound, 2 rush, 4 on net), 13 seconds into shift or -1]
         shots = []
-        for row in s.itertuples():
+        num = lambda v, d=0: d if v is None or pd.isna(v) else int(v)
+        for row in s.sort_values("sort_order").itertuples() if len(s) else []:
             side = 1 if row.team == home else -1
+            flags = (1 if getattr(row, "shotRebound", 0) == 1 else 0) | (2 if getattr(row, "shotRush", 0) == 1 else 0) | \
+                    (4 if row.event in ("shot-on-goal", "goal") else 0)
             shots.append([int(round(row.nx * side)), int(round(row.ny * side)), int(round(row.xgv * 1000)),
                           int(row.event == "goal"), 1 if row.team == home else 0,
-                          int(row.game_seconds), int(row.player1_id) if not pd.isna(row.player1_id) else 0,
-                          row.state])
+                          int(row.game_seconds), num(row.player1_id), row.state,
+                          SHOT_CODE.get(row.shot_type, "") if isinstance(row.shot_type, str) else "",
+                          int(round(np.hypot(89 - row.nx, row.ny))), num(row.goalie_id), num(row.event_id), flags,
+                          num(getattr(row, "shooterTimeOnIce", None), -1)])
         not_en = s[s.state != "EN"]
         xg_h = float(s[s.team == home].xgv.sum())
         xg_a = float(s[s.team == away].xgv.sum())

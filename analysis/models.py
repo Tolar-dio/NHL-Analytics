@@ -87,6 +87,7 @@ def build_prev_priors(prev):
     pr["ipp"] = (p.pts + K["Ki"] * r.ipp) / (p.gf + K["Ki"])
     pr["fin"] = ((p.g + K["Kf"]) / (p.ixg + K["Kf"])).clip(0.8, 1.25)
     pr["toi_pg"] = p.toi_pg
+    pr["pos"], pr["pp_share"], pr["team"] = p.pos, p.pp_share, p.team
     gg = prev["gg"][prev["gg"].game_type == "regular"]
     g = gg.groupby("player_id").agg(xga=("xga", "sum"), ga=("ga", "sum"))
     gpr = (g.ga + K["Kg0"]) / (g.xga + K["Kg0"])
@@ -97,11 +98,24 @@ def build_prev_priors(prev):
 
 # ------------------------------------------------------------------ props
 
-def fit_players(cur, cut, priors=None, k=K):
+def fit_players(cur, cut, priors=None, k=K, extra=None):
+    """extra: {player_id: team} for players expected back who have no games yet this season (back from
+    injury, say). With priors they get a row of zeros, so every rate below falls back to last season's."""
     pg = cur["pg"][(cur["pg"].date < cut) & (cur["pg"].game_type == "regular")]
     p = player_agg(pg)
+    if extra and priors is not None:
+        pp = priors["players"]
+        add = [i for i in extra if i not in p.index and i in pp.index]
+        if add:
+            z = pd.DataFrame({c: 0.0 for c in p.columns}, index=pd.Index(add, name=p.index.name))
+            z["team"] = [extra[i] for i in add]
+            z["pos"] = pp.pos.reindex(add).values
+            z["gp"] = 0
+            z["toi_pg"] = pp.toi_pg.reindex(add).values
+            z["pp_share"] = pp.pp_share.reindex(add).fillna(0).values
+            p = pd.concat([p, z])
     last3 = pg.sort_values("date").groupby("player_id").tail(3).groupby("player_id").toi.mean()
-    p["proj_toi"] = 0.6 * last3.reindex(p.index) + 0.4 * p.toi_pg
+    p["proj_toi"] = (0.6 * last3.reindex(p.index) + 0.4 * p.toi_pg).fillna(p.toi_pg)
     r = role_priors(p)
     prior = r.copy()
     lg_fin = pg.g.sum() / max(pg.ixg.sum(), 1e-9)

@@ -74,6 +74,12 @@ def main(client=None):
         else:
             print("No ANTHROPIC_API_KEY set; updating the feed without takes.")
     os.makedirs(OUT, exist_ok=True)
+    try:   # hourly snapshot of ESPN's injury report: the build uses the history to spot players coming back
+        import espn
+        h = espn.update_history(espn.injuries())
+        print(f"injury history: {len(h)} players")
+    except Exception as e:
+        print(f"injury snapshot failed: {e!r}")
     try:
         games = get(SITE + "games/index.json")
     except Exception:

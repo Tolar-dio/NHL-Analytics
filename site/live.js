@@ -114,7 +114,7 @@ function goalieSource(game, side) {
   const L = LIVE.byNhl[game.id], name = L?.prob?.[game[side]];
   if (probableId(game, side) != null) return "ESPN probable starter";
   if (name) return `ESPN lists ${name}, who isn't in the model's options`;
-  return "Projected from recent starts";
+  return game[side + "_goalie_src"] === "espn" ? "ESPN probable starter" : "Projected from recent starts";
 }
 
 // ------------------------------------------------------------------ injuries
@@ -136,6 +136,13 @@ async function liveInjuries() {
   } catch (e) { /* injuries are a nice-to-have */ }
   return LIVE.injuries;
 }
+// players priced tonight who weren't in their team's last lineup (prices assume they play, like a sportsbook prop)
+function lineupTag(r) {
+  if (!r || !r.lineup || r.lineup === "last") return "";
+  const back = r.lineup === "returning";
+  const tip = `<b>${back ? "Coming back" : "Not in the last lineup"}</b><br>${esc(r.lineup_note || "")}<br><span class="dim">Price assumes he plays; most books void the bet if he doesn't.</span>`;
+  return `<span class="tag tag-lu${back ? " tag-back" : ""}" data-tip="${esc(tip)}">${back ? "Back" : "Scratch?"}</span>`;
+}
 function injuryOf(name) { return LIVE.injuries?.map[normName(name)] || null; }
 function injuryTag(name) {
   const x = injuryOf(name);
@@ -153,6 +160,7 @@ const shotType = (text) => {
   return !m ? "other" : ({ "wrist shot": "wrist", "snap shot": "snap", "slap shot": "slap", "wrap around": "wrap-around" })[m[1].toLowerCase()] || m[1].toLowerCase();
 };
 // mirrors features() in analysis/xg_live.py
+const LIVE_CODE = { wrist: "w", snap: "s", slap: "l", backhand: "b", "tip-in": "t", deflected: "d", "wrap-around": "r" };
 function featurise(x, y, dir, type, state, rebound, rush) {
   const nx = 89 * dir, dist = Math.hypot(nx - x, y), angle = (Math.atan2(Math.abs(y), Math.abs(nx - x)) * 180) / Math.PI;
   const f = { dist, log_dist: Math.log1p(dist), angle, dist_x_angle: dist * angle, rebound, rush, pp: +(state === "PP"), sh: +(state === "SH") };
@@ -210,8 +218,10 @@ function buildLive(sum, g0, model) {
           xg = xgOf(model, featurise(p.coordinate.x, p.coordinate.y, dir, shotType(p.text), state, rebound, rush));
           const side = team === home ? 1 : -1;
           const shooter = (p.participants || []).find((x) => x.type === "shooter" || x.type === "scorer");
+          const st = shotType(p.text), dist = Math.round(Math.hypot(89 - p.coordinate.x * dir, p.coordinate.y));
           shots.push([Math.round(p.coordinate.x * dir * side), Math.round(p.coordinate.y * dir * side), Math.round(xg * 1000),
-            k === "goal" ? 1 : 0, team === home ? 1 : 0, t, shooter?.athlete?.id || 0, state]);
+            k === "goal" ? 1 : 0, team === home ? 1 : 0, t, shooter?.athlete?.id || 0, state,
+            LIVE_CODE[st] || "", dist, 0, 0, (rebound ? 1 : 0) | (rush ? 2 : 0) | (k === "missed-shot" ? 0 : 4), -1]);
         }
         if (k === "goal") goals.push({ per: p.period.number, clock: p.clock?.displayValue, team, text: p.text, xg, state,
           score: `${p.awayScore}-${p.homeScore}`, head: (p.participants || []).find((x) => x.type === "scorer")?.athlete?.headshot?.href });
@@ -264,6 +274,7 @@ async function renderLive(view, id) {
     const updated = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" });
     const done = L.state === "post";
     const y = scrollY;
+    const keep = smKeep(view);
     view.innerHTML = `
       <section class="zone">
         <p class="crumbs"><a href="#tonight">Tonight</a></p>
@@ -313,9 +324,10 @@ async function renderLive(view, id) {
       </section>
       <section class="zone">
         <h2>Every shot so far</h2>
-        <div class="figure">${fullRinkSVG(G.shots, G.away, G.home)}
+        <div class="figure">${gameShotMap({ away: G.away, home: G.home, live: true }, G.shots, G.names)}
           <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss, sized by chance</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
       </section>`;
+    smRestore(view, keep);
     requestAnimationFrame(() => scrollTo(0, y));
     if (!done) LIVE.gameTimer = setTimeout(draw, 60000);
   };
@@ -376,7 +388,7 @@ function listenCard(e, i) {
       <h3>${esc(e.title)}</h3>
       ${e.desc ? `<p class="ni-desc">${esc(e.desc)}</p>` : ""}
       <div class="pod-actions"><button type="button" class="chip chip-solid" data-play="${i}">Play</button>
-        ${e.apple ? `<a href="${esc(e.apple)}" target="_blank" rel="noopener">Apple Podcasts</a>` : ""}${e.link && e.link !== e.apple ? ` <a href="${esc(e.link)}" target="_blank" rel="noopener">Episode page</a>` : ""}</div>
+        ${e.apple ? `<a href="${esc(e.apple)}" target="_blank" rel="noopener">Apple Podcasts</a>` : ""}${e.link && e.link !== e.apple ? ` <a href="${esc(e.link)}" target="_blank" rel="noopener">Episode</a>` : ""}</div>
       <div class="pod-player" id="pod${i}"></div>
     </div>
   </article>`;
@@ -391,15 +403,22 @@ function videoCard(v) {
   </article>`;
 }
 function bindMedia(root, listen) {
-  root.querySelectorAll("[data-play]").forEach((b) => b.addEventListener("click", () => {
-    const e = listen[+b.dataset.play], box = root.querySelector(`#pod${b.dataset.play}`);
-    if (!box.innerHTML) box.innerHTML = `<audio controls autoplay preload="none" src="${esc(e.audio)}"></audio>`;
-    b.remove();
-  }));
-  root.querySelectorAll("[data-yt]").forEach((b) => b.addEventListener("click", () => {
-    b.outerHTML = `<div class="yt-frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.yt)}?autoplay=1&rel=0" title="YouTube video"
-      allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
-  }));
+  // safe to call again after more cards are added: each button is wired once
+  root.querySelectorAll("[data-play]:not([data-on])").forEach((b) => {
+    b.dataset.on = "";
+    b.addEventListener("click", () => {
+      const e = listen[+b.dataset.play], box = root.querySelector(`#pod${b.dataset.play}`);
+      if (!box.innerHTML) box.innerHTML = `<audio controls autoplay preload="none" src="${esc(e.audio)}"></audio>`;
+      b.remove();
+    });
+  });
+  root.querySelectorAll("[data-yt]:not([data-on])").forEach((b) => {
+    b.dataset.on = "";
+    b.addEventListener("click", () => {
+      b.outerHTML = `<div class="yt-frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.yt)}?autoplay=1&rel=0" title="YouTube video"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+    });
+  });
 }
 async function liveEspnStories(d) {
   // ESPN headlines that arrived after the hourly index was written
@@ -414,43 +433,86 @@ async function liveEspnStories(d) {
   } catch (e) { return []; }
 }
 
+// News is four tabs (stories, reads, listen, watch) over one filtered set; all four panels stay in the page
+// and only their visibility changes, so a podcast keeps playing while you look at another tab.
+const NEWS_TABS = [["stories", "Top stories", "Stories"], ["reads", "Worth reading", "Reads"], ["listen", "Listen", "Listen"], ["watch", "Watch", "Watch"]];
+const NEWS_PAGE = { stories: 12, reads: 12, listen: 8, watch: 9 };
 async function renderNews(view, id) {
+  const asTab = NEWS_TABS.some(([k]) => k === id);
   view.innerHTML = `<p class="empty">Loading the latest…</p>`;
-  if (id) return renderTake(view, id);
+  if (id && !asTab) return renderTake(view, id);
   const d = await newsIndex();
   const fresh = await liveEspnStories(d);
   S.nTeam ||= "all";
+  S.nTab = asTab ? id : S.nTab || "stories";
+  const teams = Object.values(ESPN_TEAM).sort();
+  const cards = { stories: storyCard, reads: readCard, listen: listenCard, watch: videoCard };
+  const empty = { stories: "No stories", reads: "Nothing new to read", listen: "No new episodes", watch: "No new videos" };
+  const blurb = {
+    stories: "ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Stories about players or teams we track get a short take from Claude using this site's numbers.",
+    reads: "Analysis, features and newsletters. Links go to the writer's site; some need a subscription.",
+    listen: "32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.",
+    watch: "The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.",
+  };
+  const listClass = { stories: "news-list", reads: "read-list", listen: "listen-list", watch: "watch-grid" };
+  let sets = {}, shown = {};
   const draw = () => {
     const team = S.nTeam === "all" ? null : S.nTeam;
-    const stories = [...fresh, ...d.stories].filter((x) => tagged(x, team)).slice(0, team ? 30 : 24);
-    const reads = d.reads.filter((x) => tagged(x, team)).slice(0, 14);
-    const listen = d.listen.filter((x) => tagged(x, team)).slice(0, 10);
-    const watch = d.watch.filter((x) => tagged(x, team)).slice(0, 9);
-    const teams = Object.values(ESPN_TEAM).sort();
-    view.innerHTML = `<section class="zone">
-        <h1>News</h1>
-        <p class="lede">Headlines from ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. When a story involves players or teams we track, Claude writes a short take from the reports plus this site's numbers. Updated hourly${d.updated ? ` (last ${ago(d.updated)})` : ""}.</p>
-        <div class="controls"><label class="check" for="nTeam">Team</label>
-          <select id="nTeam"><option value="all">All teams</option>${teams.map((t) => `<option ${S.nTeam === t ? "selected" : ""}>${t}</option>`).join("")}</select>
-          <span class="chips">${[["stories", "Top stories"], ["reads", "Worth reading"], ["listen", "Listen"], ["watch", "Watch"]].map(([k, l]) => `<a class="chip" href="#news" data-jump="${k}">${l}</a>`).join("")}</span></div>
+    sets = { stories: [...fresh, ...d.stories].filter((x) => tagged(x, team)), reads: d.reads.filter((x) => tagged(x, team)),
+      listen: d.listen.filter((x) => tagged(x, team)), watch: d.watch.filter((x) => tagged(x, team)) };
+    shown = Object.fromEntries(NEWS_TABS.map(([k]) => [k, Math.min(NEWS_PAGE[k], sets[k].length)]));
+    view.innerHTML = `<section class="zone news-head">
+        <div class="news-title"><h1>News</h1>
+          <label class="news-team"><span class="sr-only">Team</span><select id="nTeam"><option value="all">All teams</option>${teams.map((t) => `<option ${S.nTeam === t ? "selected" : ""}>${t}</option>`).join("")}</select></label></div>
+        <p class="lede">Updated hourly${d.updated ? `, last ${ago(d.updated)}` : ""}.</p>
       </section>
-      <section class="zone" id="n-stories"><h2>Top stories</h2>
-        <div class="news-list">${stories.map(storyCard).join("") || `<p class="empty">Nothing ${team ? `on ${team} ` : ""}in the last few days.</p>`}</div></section>
-      <section class="zone" id="n-reads"><h2>Worth reading</h2><p class="lede">Analysis, features and newsletters. Links go to the writer's site; some need a subscription.</p>
-        <div class="read-list">${reads.map(readCard).join("") || `<p class="empty">Nothing new.</p>`}</div></section>
-      <section class="zone" id="n-listen"><h2>Listen</h2><p class="lede">The latest episodes from 32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.</p>
-        <div class="listen-list">${listen.map(listenCard).join("") || `<p class="empty">No new episodes.</p>`}</div></section>
-      <section class="zone" id="n-watch"><h2>Watch</h2><p class="lede">New videos from The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.</p>
-        <div class="watch-grid">${watch.map(videoCard).join("") || `<p class="empty">No new videos.</p>`}</div></section>`;
-    $("#nTeam").addEventListener("change", (e) => { S.nTeam = e.target.value; draw(); });
-    // the masthead is sticky, so land the section just below it
-    view.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
-      e.preventDefault();
-      const top = $(`#n-${a.dataset.jump}`).getBoundingClientRect().top + scrollY - ($(".masthead")?.offsetHeight || 0) - 8;
-      scrollTo({ top, behavior: "smooth" });
-    }));
-    bindMedia(view, listen);
+      <div class="news-bar" id="newsBar">
+        <div class="news-tabs" role="tablist" aria-label="News sections">${NEWS_TABS.map(([k, l, sh]) => `<button type="button" role="tab" id="nt-${k}" aria-controls="np-${k}"
+          aria-selected="${S.nTab === k}" tabindex="${S.nTab === k ? 0 : -1}" data-ntab="${k}"><span class="nt-long">${l}</span><span class="nt-short">${sh}</span><span class="nt-n">${sets[k].length}</span></button>`).join("")}</div>
+      </div>
+      ${NEWS_TABS.map(([k]) => `<section class="zone news-panel" role="tabpanel" id="np-${k}" aria-labelledby="nt-${k}" ${S.nTab === k ? "" : "hidden"}>
+        <p class="note np-blurb">${blurb[k]}</p>
+        <div class="${listClass[k]}" id="nl-${k}">${sets[k].slice(0, shown[k]).map((x, i) => cards[k](x, i)).join("") || `<p class="empty">${empty[k]}${team ? ` on ${team}` : ""} in the last few days.</p>`}</div>
+        ${more(k)}
+      </section>`).join("")}`;
+    bindMedia(view, sets.listen);
+    stick();
   };
+  const more = (k) => sets[k].length > shown[k] ? `<div class="controls np-more"><button type="button" class="chip" data-nmore="${k}">Show ${Math.min(NEWS_PAGE[k], sets[k].length - shown[k])} more</button><span class="dim">${shown[k]} of ${sets[k].length}</span></div>` : "";
+  // on phones the masthead scrolls away, so the tab bar sticks to the top; on wider screens it sits under the masthead
+  const stick = () => {
+    const m = $(".masthead"), bar = $("#newsBar");
+    if (bar) bar.style.top = m && getComputedStyle(m).position === "sticky" ? `${m.offsetHeight}px` : "0px";
+  };
+  const pick = (k, focus) => {
+    S.nTab = k;
+    view.querySelectorAll("[data-ntab]").forEach((b) => { const on = b.dataset.ntab === k; b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+    view.querySelectorAll(".news-panel").forEach((p) => (p.hidden = p.id !== `np-${k}`));
+    history.replaceState(null, "", `#news/${k}`);
+    // if the bar is stuck, bring the top of the new tab into view under it
+    const bar = $("#newsBar"), top = bar.getBoundingClientRect().top;
+    if (top <= parseFloat(bar.style.top || 0) + 1) scrollTo(0, scrollY + $(`#np-${k}`).getBoundingClientRect().top - bar.offsetHeight - parseFloat(bar.style.top || 0));
+  };
+  view.onclick = (e) => {
+    const t = e.target.closest("[data-ntab]");
+    if (t) return pick(t.dataset.ntab);
+    const m = e.target.closest("[data-nmore]");
+    if (m) {
+      const k = m.dataset.nmore, from = shown[k];
+      shown[k] = Math.min(sets[k].length, from + NEWS_PAGE[k]);
+      $(`#nl-${k}`).insertAdjacentHTML("beforeend", sets[k].slice(from, shown[k]).map((x, i) => cards[k](x, from + i)).join(""));
+      m.closest(".np-more").outerHTML = more(k);
+      bindMedia($(`#np-${k}`), sets.listen);
+    }
+  };
+  view.onkeydown = (e) => {   // arrow keys move between tabs
+    if (!e.target.matches("[data-ntab]") || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    const i = NEWS_TABS.findIndex(([k]) => k === S.nTab), n = NEWS_TABS.length;
+    const j = e.key === "Home" ? 0 : e.key === "End" ? n - 1 : (i + (e.key === "ArrowRight" ? 1 : n - 1)) % n;
+    pick(NEWS_TABS[j][0], true);
+  };
+  view.onchange = (e) => { if (e.target.id === "nTeam") { S.nTeam = e.target.value; draw(); } };
   draw();
 }
 async function renderTake(view, id) {

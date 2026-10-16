@@ -76,6 +76,155 @@ def records(df, cols):
     return [{c: clean(v) for c, v in zip(cols, row)} for row in df[cols].itertuples(index=False, name=None)]
 
 
+# ------------------------------------------------------------------ expected lineups
+
+def expected_lineups(teams, pgc, prev_pg, gg_cur, gg_prev, names, today):
+    """Who to price tonight, per team, and which goalies start.
+
+    Pool: everyone who dressed in any of the team's last three games, minus players ESPN lists Out, on IR
+    or suspended, plus players coming back (Out/IR in the last three weeks and since cleared, or day-to-day
+    without a recent game). Each gets a lineup tag: "last" (dressed last game), "recent" (missed the last
+    game or more) or "returning". Prices are conditional on playing, like a sportsbook prop.
+    Team strength uses last game's lineup minus the injured plus the returning.
+    Without ESPN's report it falls back to last game's lineup, as before.
+    """
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import espn
+    lu = dict(pool={}, strength={}, extra={}, out=set(), probable={}, returning=[], source="last game's lineup (ESPN unavailable)")
+    cols = ["player_id", "team", "pos", "date"]
+    sk = pd.concat([prev_pg[cols], pgc[cols]]).sort_values("date").groupby("player_id").last()
+    gl = pd.concat([gg_prev[["player_id", "team", "date"]], gg_cur[["player_id", "team", "date"]]]).sort_values("date").groupby("player_id").last()
+    idx = {}
+    for i, row in sk.iterrows():
+        idx.setdefault(espn.bare(names.get(i, "")), []).append((int(i), row.team, row.pos))
+    for i, row in gl.iterrows():
+        idx.setdefault(espn.bare(names.get(i, "")), []).append((int(i), row.team, "G"))
+
+    def match(name, team, pos):
+        c = idx.get(espn.bare(name), [])
+        for f in (lambda x: x[1] == team and x[2] == pos, lambda x: x[1] == team, lambda x: x[2] == pos):
+            m = {x[0] for x in c if f(x)}
+            if len(m) == 1:
+                return m.pop()
+        return None
+
+    ok = False
+    try:
+        cur_inj = espn.injuries()
+        hist = espn.update_history(cur_inj)
+        back = espn.returning(hist, cur_inj)
+        ok = True
+    except Exception as e:
+        print(f"  ESPN injury report unavailable ({e!r}); pricing last game's lineups")
+        cur_inj, back = [], []
+    try:
+        for team, nm in espn.probables(today).items():
+            gid = match(nm, team, "G")
+            if gid:
+                lu["probable"][team] = gid
+    except Exception as e:
+        print(f"  ESPN probable goalies unavailable ({e!r})")
+
+    for x in cur_inj:
+        i = match(x["name"], x["team"], x["pos"])
+        if i and x["out"]:
+            lu["out"].add(i)
+    ret = {}
+    for x in back:
+        i = match(x["name"], x["team"], x["pos"])
+        if i and x["pos"] != "G":
+            ret[i] = (x["team"], f"Back from injury: {x['why']}")
+    for x in cur_inj:   # day-to-day and no recent game: could be back tonight
+        i = match(x["name"], x["team"], x["pos"])
+        if i and not x["out"] and x["pos"] != "G" and i not in ret and (not x["back"] or x["back"][:10] <= str(today)):
+            ret[i] = (x["team"], "Day-to-day; could return")
+
+    last_team = pgc.sort_values("date").groupby("player_id").team.last()
+    last_date = pgc.groupby("player_id").date.max()
+    rost = {}
+    if ok:
+        for team in teams:
+            try:
+                rost[team] = {i for i in (match(nm, team, pos) for nm, pos in espn.roster(team)) if i}
+            except Exception as e:
+                print(f"  ESPN roster for {team} unavailable ({e!r})")
+    for team in teams:
+        tg = pgc[pgc.team == team]
+        gids = tg.sort_values("date").game_id.drop_duplicates().tolist()
+        if not gids:
+            continue
+        last1 = set(tg[tg.game_id == gids[-1]].player_id)
+        if not ok:
+            lu["pool"][team] = {i: ("last", "") for i in sorted(last1)}
+            lu["strength"][team] = sorted(last1)
+            continue
+        last3 = {i for i in tg[tg.game_id.isin(gids[-3:])].player_id if last_team.get(i) == team}
+        on = rost.get(team)
+        if on:
+            last1 &= on              # traded, waived or sent down since
+            last3 &= on
+        pool = {}
+        for i in sorted(last3):
+            if i in lu["out"]:
+                continue
+            if i in last1:
+                pool[i] = ("last", "")
+            else:
+                played = set(tg[tg.player_id == i].game_id)
+                missed = len(gids) - 1 - max(gids.index(g) for g in played)
+                pool[i] = ("recent", "Missed the last game" if missed == 1 else f"Missed the last {missed} games")
+        for i, (t, note) in ret.items():
+            if t == team and i not in lu["out"] and pool.get(i, ("",))[0] != "last":
+                pool[i] = ("returning", note)
+                lu["extra"][i] = team
+        # just traded or claimed: on this roster, last played for someone else in the past ten days
+        for i in on or ():
+            old = last_team.get(i)
+            if old and old != team and i not in lu["out"] and i not in pool and \
+                    (today - dt.date.fromisoformat(last_date[i])).days <= 10 and i in sk.index and sk.pos[i] != "G":
+                pool[i] = ("returning", f"Just joined from {old}")
+        lu["pool"][team] = pool
+        lu["strength"][team] = [i for i, (st, _) in pool.items() if st in ("last", "returning")]
+        lu["returning"] += [dict(id=i, team=team, name=names.get(i), note=n) for i, (st, n) in pool.items() if st == "returning"]
+    if ok:
+        lu["source"] = "last three games, ESPN injury report"
+    n = lambda st: sum(1 for p in lu["pool"].values() for s, _ in p.values() if s == st)
+    print(f"  lineups: {n('last')} from last game, {n('recent')} recent, {n('returning')} returning; "
+          f"{len(lu['out'])} on ESPN's Out/IR list; {len(lu['probable'])} ESPN probable goalies")
+    return lu
+
+
+ARCHIVE = os.path.join(ROOT, "data", "archive", CUR)
+
+
+def archive_tonight(day, games, props, lu):
+    """Keep each game's pre-game numbers so the live track record can be graded later.
+
+    A game's entry is rewritten on every build until puck drop, then frozen. If the first build that sees
+    a game comes after puck drop, the entry is kept but marked pregame=false and left out of grading.
+    (data/archive/<season>/<date>.json, committed by the nightly workflow.)
+    """
+    path = os.path.join(ARCHIVE, f"{day}.json")
+    arc = json.load(open(path)) if os.path.exists(path) else dict(date=day, games={})
+    now = dt.datetime.now(dt.timezone.utc)
+    keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_2pts", "proj_toi", "g_f"]
+    for g in games:
+        gid = str(g["id"])
+        start = dt.datetime.fromisoformat(g["start"].replace("Z", "+00:00")) if g.get("start") else None
+        pre = start is None or now < start
+        if gid in arc["games"] and not pre:
+            continue
+        arc["games"][gid] = dict(
+            built=now.isoformat(timespec="minutes"), pregame=pre, start=g.get("start"), away=g["away"], home=g["home"],
+            away_goalie=g["away_goalie"], home_goalie=g["home_goalie"], away_goalie_src=g.get("away_goalie_src"),
+            home_goalie_src=g.get("home_goalie_src"), away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
+            o55=g["o55"], o65=g["o65"], lineup_source=lu["source"],
+            props=[{k: p.get(k) for k in keep} for p in props if p["game"] == g["id"]])
+    os.makedirs(ARCHIVE, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(arc, f, separators=(",", ":"))
+
+
 # ------------------------------------------------------------------ schedule
 
 def fetch_schedule(day):
@@ -249,14 +398,18 @@ def main():
     mpx = pd.read_csv(os.path.join(AN, "shots_with_xg.csv.gz"), usecols=["game_id", "event_id", "xg"])
     s = s.merge(mpx, on=["game_id", "event_id"], how="left")
     # prefer MoneyPuck xG where available (same join as props_data)
-    mp = pd.concat([pd.read_csv(f, usecols=["game_id", "time", "shooterPlayerId", "xGoal", "period"])
+    mpcols = ["game_id", "time", "shooterPlayerId", "xGoal", "period", "shotRebound", "shotRush", "shooterTimeOnIce"]
+    mp = pd.concat([pd.read_csv(f, usecols=lambda c: c in mpcols)
                     for f in glob.glob(os.path.join(ROOT, "data", "external", "moneypuck", CUR, "*.csv.gz"))])
+    for c in ("shotRebound", "shotRush", "shooterTimeOnIce"):
+        if c not in mp:
+            mp[c] = np.nan
     mp = mp[mp.period <= 4]
     mp["game_id"] = int(CUR[:4]) * 1000000 + mp.game_id
     mp = mp.rename(columns={"time": "game_seconds", "shooterPlayerId": "player1_id"}) \
            .drop_duplicates(["game_id", "game_seconds", "player1_id"])
-    s = s.merge(mp[["game_id", "game_seconds", "player1_id", "xGoal"]], on=["game_id", "game_seconds", "player1_id"],
-                how="left")
+    s = s.merge(mp[["game_id", "game_seconds", "player1_id", "xGoal", "shotRebound", "shotRush", "shooterTimeOnIce"]],
+                on=["game_id", "game_seconds", "player1_id"], how="left")
     s["xgv"] = s.xGoal.fillna(s.xg).fillna(0.05)
     # strength state from the shooter's side (EN = into an empty net, EA = shooter's goalie pulled)
     ih = s.team == s.home_team
@@ -294,37 +447,44 @@ def main():
 
     all_shots = s
     s = s[s.nx > 0]
+    # [x, y, xg_milli, goal, game number (last 4 digits of the game id), game second, shot type code]
+    from games import SHOT_CODE
     shots = {}
     for pid, grp in s.groupby("player1_id"):
-        shots[str(int(pid))] = [[int(round(x)), int(round(y)), int(round(v * 1000)), int(e == "goal")]
-                                for x, y, v, e in zip(grp.nx, grp.ny, grp.xgv, grp.event)]
+        shots[str(int(pid))] = [[int(round(x)), int(round(y)), int(round(v * 1000)), int(e == "goal"), int(gid) % 10000,
+                                 int(sec), SHOT_CODE.get(t, "")]
+                                for x, y, v, e, gid, sec, t in zip(grp.nx, grp.ny, grp.xgv, grp.event, grp.game_id,
+                                                                   grp.game_seconds, grp.shot_type)]
     dump("shots.json", shots)
 
     # ---- tonight
     sched = fetch_schedule(today)
     slate = [g for g in sched if g["date"] == str(today)]
     gss = cur["gg"][cur["gg"].starter].sort_values("date")
+    pgc = cur["pg"][cur["pg"].date < str(today)]
+    teams_tonight = sorted({t for g in slate for t in (g["away"], g["home"])})
+    lu = expected_lineups(teams_tonight, pgc, prev["pg"], cur["gg"], prev["gg"], names, today)
     def proj_goalie(team):
-        last5 = gss[gss.team == team].tail(5)
+        """ESPN's probable starter when it's posted; otherwise most starts in the last five, skipping anyone hurt."""
+        if team in lu["probable"]:
+            return lu["probable"][team], "espn"
+        last5 = gss[(gss.team == team) & ~gss.player_id.isin(lu["out"])].tail(5)
         if last5.empty:
-            return None
+            return None, "model"
         c = last5.player_id.value_counts()
         top = c[c == c.max()].index
-        return int(last5[last5.player_id.isin(top)].player_id.iloc[-1])
-    pgc = cur["pg"][cur["pg"].date < str(today)]
-    rosters, rows, gm_out = {}, [], []
-    for g in slate:
-        for team in (g["away"], g["home"]):
-            last = pgc[pgc.team == team].game_id.max()
-            rosters[team] = pgc[(pgc.game_id == last) & (pgc.team == team)].player_id.tolist()
+        return int(last5[last5.player_id.isin(top)].player_id.iloc[-1]), "model"
+    rows, gm_out = [], []
+    rosters = lu["strength"]
     if slate:
-        fpt = M.fit_players(cur, str(today), pri)
+        fpt = M.fit_players(cur, str(today), pri, extra=lu["extra"])
         tm = M.fit_teams(cur, str(today), fpt, pri, M.K, rosters)
         for g in slate:
-            ga_, gh_ = proj_goalie(g["away"]), proj_goalie(g["home"])
+            (ga_, gas), (gh_, ghs) = proj_goalie(g["away"]), proj_goalie(g["home"])
             for team, opp, og in ((g["away"], g["home"], gh_), (g["home"], g["away"], ga_)):
-                rows += [{"player_id": i, "team": team, "opp": opp, "opp_goalie": og, "game": g["id"]}
-                         for i in rosters[team]]
+                rows += [{"player_id": i, "team": team, "opp": opp, "opp_goalie": og, "game": g["id"],
+                          "lineup": st, "lineup_note": note}
+                         for i, (st, note) in lu["pool"].get(team, {}).items()]
             la = M.team_lambda(tm, g["away"], g["home"], gh_)
             lh = M.team_lambda(tm, g["home"], g["away"], ga_)
             dist = M.total_dist(la, lh)
@@ -333,9 +493,9 @@ def main():
                 ids = list(dict.fromkeys(([chosen] if chosen else []) +
                                          gss[gss.team == team].player_id.astype(int).tolist()[::-1]))[:5]   # enough to match ESPN's probable starter
                 return [dict(id=i, name=names.get(i), factor=r(M.goalie_factor(tm, team, i), 4),
-                             starts=int((gss.player_id == i).sum())) for i in ids]
+                             starts=int((gss.player_id == i).sum()), out=bool(i in lu["out"])) for i in ids]
             gm_out.append(dict(id=g["id"], start=g["start"], away=g["away"], home=g["home"],
-                               away_goalie=ga_, home_goalie=gh_,
+                               away_goalie=ga_, home_goalie=gh_, away_goalie_src=gas, home_goalie_src=ghs,
                                away_goalies=options(g["away"], ga_), home_goalies=options(g["home"], gh_),
                                away_xg=r(la, 3), home_xg=r(lh, 3), total=r((dist * k).sum()),
                                o55=r(dist[k >= 6].sum(), 3), o65=r(dist[k >= 7].sum(), 3)))
@@ -343,12 +503,14 @@ def main():
         d["name"] = d.player_id.map(names)
         # under the radar: real chances, goals lagging, outside the slate's top 12 favourites
         rank = d.p_goal.rank(ascending=False)
-        fwd = d[(d.pos == "F") & (d.g - d.ixg <= -1.0) & (d.p_goal >= 0.22) & (rank > 12)].nlargest(8, "p_goal")
-        dmen = d[(d.pos == "D") & (d.g - d.ixg <= -0.3)].nlargest(3, "p_goal")
+        regular = d.lineup == "last"
+        fwd = d[regular & (d.pos == "F") & (d.g - d.ixg <= -1.0) & (d.p_goal >= 0.22) & (rank > 12)].nlargest(8, "p_goal")
+        dmen = d[regular & (d.pos == "D") & (d.g - d.ixg <= -0.3)].nlargest(3, "p_goal")
         d["radar"] = d.player_id.isin(set(fwd.player_id) | set(dmen.player_id))
         d = d.rename(columns={"player_id": "id"}).sort_values("p_goal", ascending=False)
         props = records(d, ["id", "name", "team", "opp", "game", "pos", "gp", "g", "pts", "ixg", "proj_toi",
-                            "pp_share", "p_goal", "p_2pts", "lam_g", "lam_p", "g_f", "radar"])
+                            "pp_share", "p_goal", "p_2pts", "lam_g", "lam_p", "g_f", "radar", "lineup", "lineup_note"])
+        archive_tonight(str(today), gm_out, props, lu)
     else:
         props = []
     if gm_out:
@@ -363,8 +525,9 @@ def main():
     dump("team_profiles.json", {t: {k: v for k, v in team_profile(t, all_shots, cur["tg"], ev, game_index).items() if k != "last5"}
                                 for t in sorted(set(cur["tg"].team))})
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props,
-                              goalie_note="Projected goalies = most starts in each team's last five games. "
-                                          "Check confirmations before betting."))
+                              lineup_source=lu["source"],
+                              goalie_note="Goalies are ESPN's probable starters where posted, otherwise most starts in "
+                                          "each team's last five games. Check confirmations before betting."))
 
     # ---- model report: full-season backtest (static) + this season walk-forward
     bt_static = os.path.join(SITE, "static", "backtest_20252026.json")
@@ -379,6 +542,11 @@ def main():
                                     goal_ll_base=r(M.logloss(P1.y_goal, P1.base_g), 4))
     except Exception as e:
         print("  this-season backtest skipped:", e)
+    try:   # the live record: frozen pre-game prices graded against results (analysis/track.py)
+        import track
+        model["live"] = track.track(cur)
+    except Exception as e:
+        print("  live track record skipped:", e)
     dump("model.json", model)
 
     # ---- in-game xG model for the live game page (ESPN feed, before MoneyPuck's numbers exist)
