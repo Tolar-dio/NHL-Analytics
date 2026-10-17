@@ -53,10 +53,24 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      HAS_PRIVATE: ${{ secrets.PRIVATE_DATA_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main            # the commit the pull job just pushed
+
+      # All Three Zones tables from the private repo (read-only token). Only the processed tables are fetched, into
+      # private/ (gitignored); the deploy stages site/ alone, and nothing here prints their rows.
+      - name: Private data (All Three Zones tables)
+        if: env.HAS_PRIVATE == 'true'
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: Tolar-dio/nhl-private
+          token: ${{ secrets.PRIVATE_DATA_TOKEN }}
+          path: private
+          sparse-checkout: a3z/tables
 
       - uses: actions/setup-python@v5
         with:

@@ -148,7 +148,12 @@ def player_facts(pid):
                       hardest_shot_mph=x.get("top_shot_mph"), hardest_shot_percentile=x.get("top_shot_pctile"),
                       busiest_shot_areas=[dict(area=a["area"], shots_on_goal=a["sog"], goals=a["g"]) for a in (ed.get("areas") or [])[:5]])
         if x.get("max_speed_mph") is not None else None,
-        team=dict(team=team["team"], record=f"{team['w']}-{team['l']}-{team['otl']}", share_of_expected_goals_pct=round(team["xg_pct"], 1)) if team else None))
+        team=dict(team=team["team"], record=f"{team['w']}-{team['l']}-{team['otl']}", share_of_expected_goals_pct=round(team["xg_pct"], 1)) if team else None,
+        hand_tracking=dict(source="All Three Zones (Corey Sznajder), hand-tracked 5v5 play. Credit it by name whenever you use these numbers.",
+                           season=pf["a3z"]["season"], tracked_games=pf["a3z"]["games"], tracked_5v5_minutes=pf["a3z"]["toi5"],
+                           style=pf["a3z"].get("style"),
+                           rates=[dict(stat=r["label"], value=r["v"], is_share=r["share"], percentile_among_position=r["pctile"],
+                                       league_typical=r["lg"]) for r in pf["a3z"]["rows"]]) if pf.get("a3z") else None))
 
 
 def team_facts(abbr):

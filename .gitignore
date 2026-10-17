@@ -2,3 +2,6 @@ analysis/output/
 __pycache__/
 
 site/data/
+
+# the private repo's tables, checked out by the nightly (All Three Zones); never commit
+private/

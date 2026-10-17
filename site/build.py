@@ -542,6 +542,20 @@ def main():
                              mph=edge["game_top"].get((int(pid), int(x.game_id)))))
         plogs[int(pid)] = rows
 
+    # ---- All Three Zones (hand tracking, from the private repo when the nightly could fetch it): a "how he creates
+    # offense" card per skater; this season's card replaces last season's once he has enough tracked minutes
+    a3z_cards = {}
+    try:
+        import a3z as A3
+        for season in (PREV, CUR):
+            if A3.available(season):
+                a3z_cards.update(A3.cards(season))
+        if a3z_cards:
+            meta["credit"] += " " + A3.CREDIT
+            print(f"  a3z: {len(a3z_cards)} skater cards")
+    except Exception as e:
+        print(f"  a3z cards skipped: {e!r}")
+
     # ---- narrative layer: form, streaks, breakouts, regression, milestones (site/narrative.py)
     import narrative as N
     from previews import team_profile
@@ -618,6 +632,13 @@ def main():
                                away_goalies=options(g["away"], ga_), home_goalies=options(g["home"], gh_),
                                away_xg=r(la, 3), home_xg=r(lh, 3), total=r((dist * k).sum()),
                                o55=r(dist[k >= 6].sum(), 3), o65=r(dist[k >= 7].sum(), 3)))
+        try:   # All Three Zones playmaking nudge on the points means (models.A3Z_B); off when the tables aren't here
+            import a3z as A3
+            M.A3Z_Z, M.A3Z_NORM = A3.current_z(CUR, PREV)
+            if M.A3Z_Z:
+                print(f"  a3z: points nudge for {len(M.A3Z_Z)} skaters (league mean factor {M.A3Z_NORM:.3f})")
+        except Exception as e:
+            print(f"  a3z points nudge skipped: {e!r}")
         d = M.price_players(pd.DataFrame(rows).set_index("player_id"), fpt, tm).reset_index()
         d["name"] = d.player_id.map(names)
         # under the radar: real chances, goals lagging, outside the slate's top 12 favourites
@@ -670,7 +691,7 @@ def main():
         if pid in tonight_lines:
             story["tonight"] = tonight_lines[pid]
         with open(os.path.join(plog, f"{pid}.json"), "w") as f:
-            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None), f, separators=(",", ":"),
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print(f"  players/: {len(plogs)} game logs")
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props, headlines=headlines,

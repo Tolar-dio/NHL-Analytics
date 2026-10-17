@@ -41,6 +41,14 @@ PTS_CAL = 1.015      # overall points scale; 1.03 before on-ice finishing (Kof) 
 DISP = dict(g=None, p=None)
 # Second night of a back-to-back: in 2025-26 the tired team's xG share fell from 50.0% to 47.4% (286 games).
 # Offense down and defense worse by this fraction; 0 switches it off.
+# All Three Zones (hand tracking, private repo): each skater's 5v5 chance assists, scoring chances and carry-ins per 60,
+# shrunk and relative to his position (z = rate / position average - 1, clipped to [-1, 3]), nudge his points mean:
+# lam_p x exp(sum b z), renormalised so the league-wide level doesn't move. Fit on the 2025-26 walk-forward backtest
+# (log loss 1+ -0.0010, 2+ -0.0005, 3+ -0.0001) and held on 2026-27 (2,943 player-games: -0.0017, -0.0009, -0.0003).
+# Goal prices showed no gain from tracked shooting rates, so they are left alone. The build fills A3Z_Z; empty = off.
+A3Z_B = dict(chance_assists=0.08, chances=0.08, carries=0.04)
+A3Z_Z = {}
+A3Z_NORM = 1.0
 B2B = 0.025          # shrunk from the 2025-26 gap (47.4% vs 50%); too small to show up in prop log loss
 
 
@@ -262,6 +270,10 @@ def price_players(rows, p, tm):
     d["lam_p"] = d.oxgf60 / 60 * d.proj_toi * d.def_f * d.g_f * d.ipp * PTS_CAL
     if "ofin" in d:
         d["lam_p"] = d.lam_p * d.ofin
+    if A3Z_Z:
+        ids = d.index.get_level_values("player_id") if "player_id" in (d.index.names or []) else d["player_id"]
+        d["a3z_f"] = [float(np.exp(sum(b * A3Z_Z.get(int(i), {}).get(k, 0.0) for k, b in A3Z_B.items()))) / A3Z_NORM for i in ids]
+        d["lam_p"] = d.lam_p * d.a3z_f
     if B2B and "b2b" in d:
         f = (1 - B2B * d.b2b.astype(float)) * (1 + B2B * d.opp_b2b.astype(float))
         d["lam_g"], d["lam_p"] = d.lam_g * f, d.lam_p * f
