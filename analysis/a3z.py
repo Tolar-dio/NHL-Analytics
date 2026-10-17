@@ -283,7 +283,7 @@ def watch_notes(c, ctx):
     if weak:
         notes.append(weak)
     if not notes:
-        notes.append(f"Nothing in his tracked game sits far from the typical {one}: no clear strength or weakness yet.")
+        notes.append(f"Nothing in his tracked games sits far from the typical {one}: no clear strength or weakness yet.")
     if c["games"] < 10:
         notes.append(f"Small sample: {c['games']} tracked games.")
     return notes

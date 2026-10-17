@@ -560,7 +560,9 @@ def main():
         for season in (PREV, CUR):
             if A3.available(season):
                 c, lg = A3.profiles(season, {int(k): v for k, v in names.items()})
-                a3z_cards.update(c)
+                # this season's card takes over once it can be ranked (150 tracked minutes); until then a
+                # bigger sample from last season says more than a few games of tracking
+                a3z_cards.update({pid: x for pid, x in c.items() if season == PREV or pid not in a3z_cards or x["toi5"] >= 150})
                 if lg:
                     a3z_league[lg["season"]] = lg
         if a3z_cards:

@@ -125,7 +125,11 @@ async function renderPlays(el, card, pid, name) {
   const maps = PLAY_MAPS[card.pos === "D" ? "D" : "F"];
   S.playMap = maps.some((m) => m.k === S.playMap) ? S.playMap : maps[0].k;
   const posName = card.pos === "D" ? "defensemen" : "forwards", posOne = card.pos === "D" ? "defenseman" : "forward";
-  const bars = card.rows.map((r) => `<div class="meter"><span>${esc(r.label)}</span>
+  const poolN = (map) => lg ? lg.rows.filter((r) => r[3] === card.pos && r[lg.keys.indexOf(map.x)] != null && r[lg.keys.indexOf(map.y)] != null).length : 0;
+  const mapOK = poolN(maps[0]) >= 25, ranked = card.rows.some((r) => r.pctile != null);
+  const typ = (r) => (r.lg == null ? "" : `typical ${r.share ? pct(r.lg, 0) : num(r.lg, 1)}`);
+  const bars = !ranked ? card.rows.map((r) => `<div class="meter"><span>${esc(r.label)}</span><span class="dim">${typ(r)}</span>
+      <span class="val">${r.share ? pct(r.v, 0) : `${num(r.v, 1)}/60`}</span></div>`).join("") : card.rows.map((r) => `<div class="meter"><span>${esc(r.label)}</span>
       <span class="bar-track" data-tip="${esc(`${r.pctile == null ? "Too few tracked players to rank" : `${ordinal(Math.min(99, Math.max(1, Math.round(100 * r.pctile))))} percentile among ${posName}`}${r.lg != null ? `<br>Typical: ${r.share ? pct(r.lg, 0) : num(r.lg, 2) + " per 60"}` : ""}`)}"><span class="bar-fill" style="width:${r.pctile == null ? 0 : 100 * r.pctile}%"></span></span>
       <span class="val">${r.share ? pct(r.v, 0) : `${num(r.v, 1)}/60`}</span></div>`).join("");
   const cats = lg ? lg.pass_cats : [], plays = lg ? lg.play_cats : [];
@@ -133,19 +137,19 @@ async function renderPlays(el, card, pid, name) {
     const box = el.querySelector("#playMap");
     if (!box || !lg) return;
     const map = maps.find((m) => m.k === S.playMap);
-    box.innerHTML = styleMapSVG(lg, card, pid, map, Math.max(300, box.clientWidth || 520));
+    if (poolN(map) >= 25) box.innerHTML = styleMapSVG(lg, card, pid, map, Math.max(300, box.clientWidth || 520));
   };
   el.innerHTML = `<h2>How he plays</h2>
     <p class="lede">Hand-tracked from ${card.games} of his games (${Math.round(card.toi5)} minutes at five on five) in ${esc(card.season)}: every shot, the passes before it, and every time he carried the puck in or out.</p>
     <div class="plays-notes">${card.notes.map((n) => `<p>${esc(n)}</p>`).join("")}</div>
     <div class="grid-2 plays-grid">
-      <div class="figure">
+      ${!mapOK ? `<div class="figure"><h3>The league map</h3><p class="note">It fills in once enough ${posName} have 150 tracked minutes in ${esc(card.season)}. Until then, the bars below compare where his shots and setups come from with a typical ${posOne}.</p></div>` : `<div class="figure">
         <div class="chips" role="group" aria-label="Map">${maps.map((m) => `<button type="button" class="chip" data-pmap="${m.k}" aria-pressed="${S.playMap === m.k}">${esc(m.label)}</button>`).join("")}</div>
         <div id="playMap" class="play-map">${lg ? "" : `<p class="note">The league map isn't available.</p>`}</div>
         <p class="note">Every ${posOne} with at least 150 tracked minutes; the lines are the middle of the pack. Hover or tap a dot for the player, tap again to open his page.</p>
-      </div>
+      </div>`}
       <div>
-        <h3>Percentiles among ${posName}</h3>${bars}
+        <h3>${ranked ? `Percentiles among ${posName}` : "His rates"}</h3>${bars}
       </div>
     </div>
     <div class="mix-grid">

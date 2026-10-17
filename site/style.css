@@ -675,7 +675,7 @@ img.mug { font-size: 0; color: transparent; }   /* a headshot that fails to load
 .plays-notes p { margin: 0 0 10px; font-size: 16px; line-height: 1.55; color: var(--ink); padding-left: 14px; border-left: 3px solid var(--blue); }
 .plays-grid { align-items: start; }
 .plays-grid .figure .chips { margin-bottom: 10px; }
-.play-map { min-height: 300px; }
+.play-map:empty { min-height: 300px; }
 .style-map .sm-dot { fill: var(--axis); stroke: var(--sheet); stroke-width: 1.5; }
 .style-map a:hover .sm-dot { fill: var(--ink-2); }
 .style-map .sm-me { fill: var(--blue); stroke: var(--sheet); stroke-width: 2.5; }
