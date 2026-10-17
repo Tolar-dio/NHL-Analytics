@@ -1312,3 +1312,121 @@ def _watch(P, rows, items, lu):
         c["p_goal"], c["p_1pt"], c["p_2pts"] = r(c["p_goal"], 3), r(c["p_1pt"], 3), r(c["p_2pts"], 3)
         out.append(c)
     return out
+
+
+# ------------------------------------------------------------------ the week in review (fact sheet for the weekly column)
+
+def week_digest(cur, game_index, games_dir, names, P, bios, today, days=7):
+    """What happened over the last `days` days, from our own tables: the facts behind the weekly column."""
+    end = today - dt.timedelta(days=1)
+    start = today - dt.timedelta(days=days)
+    s, e = str(start), str(end)
+    gi = [g for g in game_index if s <= g["date"] <= e]
+    out = dict(start=s, end=e, games=len(gi))
+    if not gi:
+        return out
+    pg = cur["pg"][cur["pg"].game_type == "regular"]
+    wk = pg[(pg.date >= s) & (pg.date <= e)]
+    before = pg[pg.date < s]
+
+    def game_line(g):
+        win = g["home"] if g["h"] > g["a"] else g["away"]
+        lose = g["away"] if win == g["home"] else g["home"]
+        dw = g["dtw_home"] if win == g["home"] else 1 - g["dtw_home"]
+        return dict(id=g["id"], date=g["date"], final=f"{g['away']} {g['a']}, {g['home']} {g['h']}", decided_in=g["end"],
+                    winner=win, loser=lose, expected_goals={g["away"]: g["xg_a"], g["home"]: g["xg_h"]},
+                    winner_deserved_pct=round(100 * dw), star=g.get("star"))
+    fun = sorted(gi, key=lambda g: -(g["a"] + g["h"] + g["xg_a"] + g["xg_h"] + (1.5 if g["end"] != "REG" else 0)))
+    steal = sorted(gi, key=lambda g: (g["dtw_home"] if g["h"] > g["a"] else 1 - g["dtw_home"]))
+    rout = sorted(gi, key=lambda g: -max(g["xg_a"], g["xg_h"]) / max(min(g["xg_a"], g["xg_h"]), 0.3))
+    out.update(game_of_the_week=game_line(fun[0]), biggest_steal=game_line(steal[0]), most_one_sided=game_line(rout[0]))
+
+    # goals, hat tricks and goalies from the game pages
+    goals, hats, gk = [], [], {}
+    for g in gi:
+        path = os.path.join(games_dir, f"{g['id']}.json")
+        if not os.path.exists(path):
+            continue
+        with open(path) as f:
+            G = json.load(f)
+        per = {}
+        for x in G.get("goals", []):
+            if x.get("ptype") == "SO":
+                continue
+            per[x["pid"]] = per.get(x["pid"], 0) + 1
+            if x.get("xg") is not None and x.get("strength") != "en":
+                opp = G["home"] if x["team"] == G["away"] else G["away"]
+                goals.append(dict(name=x["name"], team=x["team"], opponent=opp, date=G["date"], xg=x["xg"],
+                                  shot=x.get("shot"), strength=x.get("strength"), game=G["id"]))
+        for pid, n in per.items():
+            if n >= 3:
+                x = next(y for y in G["goals"] if y["pid"] == pid)
+                hats.append(dict(name=x["name"], team=x["team"], goals=n, date=G["date"], game=G["id"]))
+        for x in G.get("goalies", []):
+            if x.get("toi", 0) >= 20:
+                a = gk.setdefault(x["id"], dict(name=x["name"], team=x["team"], games=0, shots=0, goals_against=0, gsax=0.0))
+                a["games"] += 1
+                a["shots"] += x.get("sa") or 0
+                a["goals_against"] += x.get("ga") or 0
+                a["gsax"] += x.get("gsax") or 0
+    goals.sort(key=lambda x: x["xg"])
+    out["least_likely_goals"] = [dict(x, chance_pct=round(100 * x.pop("xg"), 1)) for x in goals[:3]]
+    out["hat_tricks"] = hats
+    gl = sorted(gk.values(), key=lambda a: -a["gsax"])
+    fmt = lambda a: dict(a, gsax=round(a["gsax"], 1),
+                         save_pct=f"{(a['shots'] - a['goals_against']) / a['shots']:.3f}".lstrip("0") if a["shots"] else None)
+    out["goalie_of_the_week"] = fmt(gl[0]) if gl else None
+    out["rough_week_in_net"] = fmt(gl[-1]) if len(gl) > 1 and gl[-1]["gsax"] < -2 else None
+
+    # skaters: who piled up points, and who did it on real chances
+    agg = wk.groupby("player_id").agg(team=("team", "last"), gp=("game_id", "nunique"), g=("g", "sum"), a=("a", "sum"),
+                                       pts=("pts", "sum"), ixg=("ixg", "sum"), toi=("toi", "sum"))
+    top = agg.sort_values(["pts", "g", "ixg"], ascending=False).head(6)
+    out["top_scorers"] = [dict(name=names.get(int(i)), team=x.team, games=int(x.gp), goals=int(x.g), assists=int(x.a), points=int(x.pts),
+                               own_expected_goals=round(float(x.ixg), 1)) for i, x in top.iterrows()]
+    unl = agg[(agg.g == 0)].sort_values("ixg", ascending=False).head(3)
+    out["most_chances_without_a_goal"] = [dict(name=names.get(int(i)), team=x.team, games=int(x.gp), own_expected_goals=round(float(x.ixg), 1))
+                                          for i, x in unl.iterrows() if x.ixg >= 1.2]
+
+    # teams: the week's records and chance shares
+    recs = {}
+    for g in gi:
+        for t, gf, ga, xf, xa in ((g["home"], g["h"], g["a"], g["xg_h"], g["xg_a"]), (g["away"], g["a"], g["h"], g["xg_a"], g["xg_h"])):
+            r_ = recs.setdefault(t, dict(team=t, w=0, l=0, otl=0, gf=0, ga=0, xgf=0.0, xga=0.0))
+            r_["w" if gf > ga else "otl" if g["end"] != "REG" else "l"] += 1
+            r_["gf"] += gf
+            r_["ga"] += ga
+            r_["xgf"] += xf
+            r_["xga"] += xa
+    rows = []
+    for r_ in recs.values():
+        rows.append(dict(team=r_["team"], record=f"{r_['w']}-{r_['l']}-{r_['otl']}", goals=f"{r_['gf']}-{r_['ga']}",
+                         share_of_expected_goals_pct=round(100 * r_["xgf"] / max(r_["xgf"] + r_["xga"], 0.01)),
+                         points=2 * r_["w"] + r_["otl"], games=r_["w"] + r_["l"] + r_["otl"]))
+    rows.sort(key=lambda x: (-x["points"] / max(x["games"], 1), -x["share_of_expected_goals_pct"]))
+    out["best_weeks"] = rows[:3]
+    out["worst_weeks"] = rows[-3:][::-1]
+
+    # career milestones reached this week (career before the season from bios, plus our season totals)
+    reached = []
+    tot_before = before.groupby("player_id")[["g", "a", "pts"]].sum()
+    gp_before = before.groupby("player_id").game_id.nunique()
+    tot_after = pg[pg.date <= e].groupby("player_id")[["g", "a", "pts"]].sum()
+    gp_after = pg[pg.date <= e].groupby("player_id").game_id.nunique()
+    for pid in agg.index:
+        car = (bios.get(int(pid)) or {}).get("career_prev") or {}
+        if not car:
+            continue
+        for k, ck, label in (("g", "goals", "goal"), ("a", "assists", "assist"), ("pts", "points", "point"), ("gp", "gamesPlayed", "game")):
+            b0 = car.get(ck, 0) + (int(gp_before.get(pid, 0)) if k == "gp" else int(tot_before[k].get(pid, 0)) if pid in tot_before.index else 0)
+            b1 = car.get(ck, 0) + (int(gp_after.get(pid, 0)) if k == "gp" else int(tot_after[k].get(pid, 0)))
+            step = 50 if k == "g" and b1 < 100 else 100
+            hit = (b1 // step) * step
+            if hit > b0 and hit > 0:
+                reached.append(dict(name=names.get(int(pid)), team=agg.loc[pid, "team"],
+                                    milestone=f"{ordinal(hit)} NHL game" if k == "gp" else f"{hit:,} career {label}s"))
+    out["milestones_reached"] = reached[:12]
+    out["streaks_now"] = [dict(name=S["name"], team=S["team"], streak=s_["text"]) for S in P["skater"].values()
+                          for s_ in S["form"]["streaks"] if s_["k"] in ("points", "goals") and s_["n"] >= 5][:8]
+    out["team_streaks_now"] = [T["streak"]["text"] for T in P["team"].values() if T.get("streak") and T["streak"]["n"] >= 4]
+    return out

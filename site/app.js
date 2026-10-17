@@ -665,6 +665,10 @@ function renderTeams(view, param) {
     ].join("") : "";
     $("#teamTrend").innerHTML = trendChart(team, idx);
     if ((P.story || []).length) $("#teamStory").innerHTML = `<h3 class="kicker">Storylines</h3><ul class="notes team-notes">${P.story.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    getJSON("data/features.json").then((fs) => {   // the latest deep dive on this team
+      const f = (fs || []).find((x) => x.kind === "team" && x.subject && x.subject.team === team);
+      if (f && location.hash === here && $("#teamStory")) $("#teamStory").insertAdjacentHTML("beforeend", featureLink(f));
+    }).catch(() => {});
   }).catch(() => {});
   teamNews(team).then((r) => {
     const el = $("#teamNews");
@@ -773,6 +777,10 @@ function renderPlayers(view, param) {
     const rows = Array.isArray(file) ? file : file.log || [], ed = Array.isArray(file) ? null : file.edge;
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
     if (!Array.isArray(file) && file.story && $("#pStory")) $("#pStory").innerHTML = playerStory(file.story);
+    getJSON("data/features.json").then((fs) => {   // a deep dive on him, if there is one
+      const f = (fs || []).find((x) => x.kind === "player" && x.subject && x.subject.id === p.id);
+      if (f && location.hash === here && $("#pStory")) $("#pStory").insertAdjacentHTML("beforeend", featureLink(f));
+    }).catch(() => {});
     const anyMiles = rows.some((x) => x.miles != null), anyMph = rows.some((x) => x.mph);
     const res = (x) => `<b class="res res-${x.res}">${x.res}</b>`;
     $("#pLog").innerHTML = rows.length ? table([...rows].reverse().map((x) => ({ ...x, pm: (x.xgf ?? 0) - (x.xga ?? 0), pts: x.g + x.a })), [
@@ -957,9 +965,9 @@ function renderModel(view) {
 }
 
 // ------------------------------------------------------------------ router
-const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, pulse: renderPulse, league: renderLeague,
+const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, feature: renderFeature, pulse: renderPulse, league: renderLeague,
   teams: renderTeams, players: renderPlayers, fantasy: renderFantasy, model: renderModel };
-const TAB_OF = { game: "games", goals: "games", preview: "tonight", live: "tonight" };
+const TAB_OF = { game: "games", goals: "games", preview: "tonight", live: "tonight", feature: "news" };
 function route(e) {
   const rerender = e === "resize";
   const keepY = scrollY;
@@ -975,7 +983,7 @@ function route(e) {
   if (rerender) {
     // Same page at a new width: put the reader back where they were once the async render settles.
     Promise.resolve(p).then(() => requestAnimationFrame(() => scrollTo(0, keepY)));
-  } else if (param || tab === "game" || tab === "preview" || tab === "goals" || tab === "live" || tab === "news" || tab === "pulse") scrollTo(0, 0);
+  } else if (param || tab === "game" || tab === "preview" || tab === "goals" || tab === "live" || tab === "news" || tab === "pulse" || tab === "feature") scrollTo(0, 0);
 }
 
 function applyThemeLabel() {

@@ -352,7 +352,7 @@ async function newsIndex() {
   if (d.items && !d.stories)   // older single-source format
     d.stories = d.items.map((x) => ({ id: String(x.id), ids: [String(x.id)], title: x.headline, desc: x.description, published: x.published,
       latest: x.published, teams: x.teams || [], players: x.players || [], take: x.take, items: [{ source: "ESPN", title: x.headline, link: x.link, published: x.published }] }));
-  for (const k of ["stories", "reads", "listen", "watch"]) d[k] ||= [];
+  for (const k of ["stories", "reads", "listen", "watch", "moves"]) d[k] ||= [];
   d.highlights ||= {};
   return d;
 }
@@ -433,32 +433,58 @@ async function liveEspnStories(d) {
   } catch (e) { return []; }
 }
 
-// News is four tabs (stories, reads, listen, watch) over one filtered set; all four panels stay in the page
-// and only their visibility changes, so a podcast keeps playing while you look at another tab.
-const NEWS_TABS = [["stories", "Top stories", "Stories"], ["reads", "Worth reading", "Reads"], ["listen", "Listen", "Listen"], ["watch", "Watch", "Watch"]];
-const NEWS_PAGE = { stories: 12, reads: 12, listen: 8, watch: 9 };
+// roster and staff moves: ESPN's transactions feed, gathered hourly by scripts/moves.py
+const MOVE_KIND = { trade: "Trade", signing: "Signing", up: "Call-up", down: "Sent down", injury: "Injury list", waivers: "Waivers",
+  staff: "Front office", suspension: "Suspension", other: "Roster" };
+const MOVE_FILTERS = [["all", "All"], ["trade", "Trades"], ["signing", "Signings"], ["updown", "Up and down"], ["injury", "Injuries"],
+  ["waivers", "Waivers"], ["staff", "Front office"]];
+const moveMatch = (m, k) => k === "all" || m.kind === k || (k === "updown" && (m.kind === "up" || m.kind === "down"));
+let SK_BY = null;
+function moveCard(m) {
+  SK_BY ||= Object.fromEntries((D.skaters || []).map((x) => [x.id, x]));
+  const chips = (m.players || []).map((p) => {
+    const s = SK_BY[p.id];
+    return s ? `<a class="wchip mv-who" href="#players/${p.id}">${esc(p.name)} <span class="dim">${s.pts} pt${s.pts === 1 ? "" : "s"} in ${s.gp}</span></a>` : `<span class="wchip">${esc(p.name)}</span>`;
+  }).join("");
+  return `<article class="move-item">
+    <div class="ni-meta">${shortDate(m.date)} · <b>${(m.teams || []).join(" / ")}</b> · <span class="mv-kind mv-${m.kind}">${MOVE_KIND[m.kind] || "Roster"}</span></div>
+    ${m.items.map((i) => `<p class="mv-text">${m.items.length > 1 ? `<b>${esc(i.team)}:</b> ` : ""}${esc(i.text)}</p>`).join("")}
+    ${chips ? `<div class="wc-chips">${chips}</div>` : ""}
+    ${m.take ? `<p class="mv-take"><b>What it means.</b> ${esc(m.take)}</p>` : ""}
+  </article>`;
+}
+
+// News is five tabs over one team filter; all panels stay in the page and only their visibility changes, so a
+// podcast keeps playing while you look at another tab. Features are Ice Sheet's own pieces plus worth-reading links.
+const NEWS_TABS = [["stories", "Top stories", "Stories"], ["moves", "Moves", "Moves"], ["features", "Features", "Features"], ["listen", "Listen", "Listen"], ["watch", "Watch", "Watch"]];
+const NEWS_PAGE = { stories: 12, moves: 20, features: 12, listen: 8, watch: 9 };
 async function renderNews(view, id) {
+  if (id === "reads") id = "features";   // old links
   const asTab = NEWS_TABS.some(([k]) => k === id);
   view.innerHTML = `<p class="empty">Loading the latest…</p>`;
   if (id && !asTab) return renderTake(view, id);
-  const d = await newsIndex();
+  const [d, feats] = await Promise.all([newsIndex(), getJSON("data/features.json").catch(() => [])]);
   const fresh = await liveEspnStories(d);
   S.nTeam ||= "all";
+  S.mKind ||= "all";
   S.nTab = asTab ? id : S.nTab || "stories";
   const teams = Object.values(ESPN_TEAM).sort();
-  const cards = { stories: storyCard, reads: readCard, listen: listenCard, watch: videoCard };
-  const empty = { stories: "No stories", reads: "Nothing new to read", listen: "No new episodes", watch: "No new videos" };
+  const cards = { stories: storyCard, moves: moveCard, features: (x) => (x.slug ? featureCard(x) : readCard(x)), listen: listenCard, watch: videoCard };
+  const empty = { stories: "No stories", moves: "No moves", features: "Nothing new to read", listen: "No new episodes", watch: "No new videos" };
   const blurb = {
     stories: "ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Stories about players or teams we track get a short take from Claude using this site's numbers.",
-    reads: "Analysis, features and newsletters. Links go to the writer's site; some need a subscription.",
+    moves: `Every call-up, assignment, signing, trade, waiver move and front-office change from the last 30 days, as the teams announced them (via ESPN's transactions feed). Trades and staff changes get a short note from Claude using this site's numbers.
+      <span class="chips mv-filter" role="group" aria-label="Kind of move">${MOVE_FILTERS.map(([k, l]) => `<button type="button" class="chip" data-mkind="${k}" aria-pressed="${S.mKind === k}">${l}</button>`).join("")}</span>`,
+    features: "Our own writing first: a weekly column and deep dives on players and teams, written by Claude from this site's numbers. Then analysis, features and newsletters from elsewhere; links go to the writer's site, and some need a subscription.",
     listen: "32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.",
     watch: "The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.",
   };
-  const listClass = { stories: "news-list", reads: "read-list", listen: "listen-list", watch: "watch-grid" };
+  const listClass = { stories: "news-list", moves: "move-list", features: "read-list", listen: "listen-list", watch: "watch-grid" };
   let sets = {}, shown = {};
   const draw = () => {
     const team = S.nTeam === "all" ? null : S.nTeam;
-    sets = { stories: [...fresh, ...d.stories].filter((x) => tagged(x, team)), reads: d.reads.filter((x) => tagged(x, team)),
+    sets = { stories: [...fresh, ...d.stories].filter((x) => tagged(x, team)), moves: d.moves.filter((x) => tagged(x, team) && moveMatch(x, S.mKind)),
+      features: [...feats.filter((x) => tagged(x, team)), ...d.reads.filter((x) => tagged(x, team))],
       listen: d.listen.filter((x) => tagged(x, team)), watch: d.watch.filter((x) => tagged(x, team)) };
     shown = Object.fromEntries(NEWS_TABS.map(([k]) => [k, Math.min(NEWS_PAGE[k], sets[k].length)]));
     view.innerHTML = `<section class="zone news-head">
@@ -471,7 +497,7 @@ async function renderNews(view, id) {
           aria-selected="${S.nTab === k}" tabindex="${S.nTab === k ? 0 : -1}" data-ntab="${k}"><span class="nt-long">${l}</span><span class="nt-short">${sh}</span><span class="nt-n">${sets[k].length}</span></button>`).join("")}</div>
       </div>
       ${NEWS_TABS.map(([k]) => `<section class="zone news-panel" role="tabpanel" id="np-${k}" aria-labelledby="nt-${k}" ${S.nTab === k ? "" : "hidden"}>
-        <p class="note np-blurb">${blurb[k]}</p>
+        <div class="note np-blurb">${blurb[k]}</div>
         <div class="${listClass[k]}" id="nl-${k}">${sets[k].slice(0, shown[k]).map((x, i) => cards[k](x, i)).join("") || `<p class="empty">${empty[k]}${team ? ` on ${team}` : ""} in the last few days.</p>`}</div>
         ${more(k)}
       </section>`).join("")}`;
@@ -496,6 +522,20 @@ async function renderNews(view, id) {
   view.onclick = (e) => {
     const t = e.target.closest("[data-ntab]");
     if (t) return pick(t.dataset.ntab);
+    const mk = e.target.closest("[data-mkind]");
+    if (mk) {   // redraw only the moves list, so audio in the Listen tab keeps playing
+      S.mKind = mk.dataset.mkind;
+      view.querySelectorAll("[data-mkind]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mkind === S.mKind));
+      const team = S.nTeam === "all" ? null : S.nTeam;
+      sets.moves = d.moves.filter((x) => tagged(x, team) && moveMatch(x, S.mKind));
+      shown.moves = Math.min(NEWS_PAGE.moves, sets.moves.length);
+      $("#nl-moves").innerHTML = sets.moves.slice(0, shown.moves).map(moveCard).join("") || `<p class="empty">No moves of that kind${team ? ` for ${team}` : ""} in the last 30 days.</p>`;
+      const old = $("#np-moves .np-more");
+      if (old) old.remove();
+      $("#nl-moves").insertAdjacentHTML("afterend", more("moves"));
+      $("#nt-moves .nt-n").textContent = sets.moves.length;
+      return;
+    }
     const m = e.target.closest("[data-nmore]");
     if (m) {
       const k = m.dataset.nmore, from = shown[k];

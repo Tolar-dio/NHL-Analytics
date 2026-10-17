@@ -67,7 +67,7 @@ def tidy(o):
     """Round floats to 2 places so the writer quotes 2.15, not 2.145. Anything that needs more
     precision (save percentage) is passed as a preformatted string."""
     if isinstance(o, float):
-        return round(o, 2)
+        return int(o) if o.is_integer() else round(o, 2)   # counts stored as floats read as 7, not 7.0
     if isinstance(o, dict):
         return {k: tidy(v) for k, v in o.items()}
     if isinstance(o, list):

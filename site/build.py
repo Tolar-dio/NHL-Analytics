@@ -658,6 +658,7 @@ def main():
                    key=lambda w: -(w["p_goal"] + 0.4 * w["p_2pts"]))
     dump("pulse.json", dict(date=str(today), through=last_game, note=P["sample_note"], headlines=headlines, watch=watch[:8],
                             **P["lists"]))
+    dump("week.json", N.week_digest(cur, game_index, os.path.join(OUTD, "games"), names, P, bios, today))   # the weekly column's facts
     tonight_lines = {}
     for gid, x in stories.items():
         for line in x["storylines"]:

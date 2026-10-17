@@ -20,10 +20,17 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data", "news")
 SITE = os.environ.get("SITE_DATA_URL", "https://tolar-dio.github.io/NHL-Analytics/data/")
 NEWS_MAX = int(os.environ.get("NEWS_MAX", "8"))
+MOVES_MAX = int(os.environ.get("MOVES_MAX", "4"))   # Claude notes on trades and staff changes per run
 
 NEWS_TASK = """Write a short take on this NHL news story for a hockey analytics site, 2 short paragraphs, 120 to 180 words total.
 First, state what happened in one or two sentences, credited to the outlet that reported it ("per ESPN", "The Athletic reports"), using only the headlines and summaries given. Do not add details they don't contain.
 Then spend the rest on what this site's numbers say about the players or teams involved and why that matters: for the team's strength, a player's real level versus his results, fantasy value, or what changes on the ice. Only use numbers from the JSON, and say "so far this season" where the sample is small.
+JSON facts:
+"""
+
+
+MOVE_TASK = """Write a short note on this NHL roster or front-office move for a hockey analytics site: 2 to 4 sentences, 50 to 110 words.
+Start by restating the move plainly from the transaction text (credit it to the team's announcement). Then say what this site's numbers show about the players or teams involved and what changes for them. Only use the transaction text and the numbers in the JSON. Do not guess at reasons, contracts, salary cap, health or motives, and say nothing about a player's quality if the JSON has no numbers for him.
 JSON facts:
 """
 
@@ -94,6 +101,50 @@ def main(client=None):
     except Exception:
         prof = {}
 
+    # roster and staff moves (ESPN's transactions feed); Claude adds a short note to trades and staff changes
+    mdir = os.path.join(OUT, "moves")
+    os.makedirs(mdir, exist_ok=True)
+    try:
+        import moves
+        feed["moves"] = moves.gather(skaters_by, goalies_by)
+    except Exception as e:
+        print(f"moves failed ({e!r}); keeping the last list")
+        try:
+            feed["moves"] = json.load(open(os.path.join(OUT, "index.json"))).get("moves", [])
+        except Exception:
+            feed["moves"] = []
+    noted = 0
+    for m in feed["moves"]:
+        path = os.path.join(mdir, f"{m['id']}.json")
+        if os.path.exists(path):
+            m["take"] = json.load(open(path)).get("take")
+            continue
+        if m["kind"] not in ("trade", "staff") or client is None or noted >= MOVES_MAX:
+            continue
+        facts = tidy(dict(transaction=[dict(team=i["team"], announcement=i["text"]) for i in m["items"]], date=m["date"],
+                          players=[player_card(skaters_by[p["id"]]) for p in m["players"] if p["id"] in skaters_by][:4],
+                          goalies=[goalie_card(goalies_by[p["id"]]) for p in m["players"] if p["id"] in goalies_by][:2],
+                          teams=[team_card(teams_by[t], prof) for t in m["teams"] if t in teams_by]))
+        try:
+            msg = client.messages.create(model=MODEL, max_tokens=1200, system=STYLE, thinking={"type": "between_tools"},
+                                         messages=[{"role": "user", "content": MOVE_TASK + json.dumps(facts, separators=(",", ":"))}])
+            text = clean("".join(b.text for b in msg.content if getattr(b, "type", "") == "text"))
+            if getattr(msg, "stop_reason", "end_turn") != "end_turn" or len(text.split()) < 30 or text[-1:] not in '.!?)"\u201d':
+                raise RuntimeError(f"unfinished note ({len(text.split())} words)")
+        except Exception as e:
+            print(f"  ! move note {m['id']} failed: {e!r}", file=sys.stderr)
+            break
+        m["take"] = text
+        json.dump(dict(id=m["id"], date=m["date"], take=text, model=MODEL,
+                       written=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")), open(path, "w"))
+        noted += 1
+    for f in glob.glob(os.path.join(mdir, "*.json")):   # notes on moves older than the list are dropped after 45 days
+        try:
+            if media.age_days(json.load(open(f)).get("written")) > 45:
+                os.remove(f)
+        except Exception:
+            pass
+
     written, fails = 0, 0
     for st in feed["stories"]:
         # a take written earlier for any article in this story (ids are stable per article) is reused
@@ -144,7 +195,7 @@ def main(client=None):
 
     feed["updated"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     json.dump(feed, open(os.path.join(OUT, "index.json"), "w"), separators=(",", ":"), ensure_ascii=False)
-    print(f"takes written: {written}; stories {len(feed['stories'])}, reads {len(feed['reads'])}, "
+    print(f"takes written: {written}; move notes {noted}; moves {len(feed['moves'])}; stories {len(feed['stories'])}, reads {len(feed['reads'])}, "
           f"listen {len(feed['listen'])}, watch {len(feed['watch'])}, highlights {len(feed['highlights'])}")
 
 

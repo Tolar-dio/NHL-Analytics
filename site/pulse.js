@@ -167,3 +167,36 @@ function playerStory(st) {
       ${flags || ms || tonight ? `<ul class="notes">${tonight}${flags}${ms}</ul>` : ""}
     </div>`;
 }
+
+// ------------------------------------------------------------------ Ice Sheet's own writing (scripts/write_features.py)
+const FEATURE_KIND = { column: "Around the league", player: "Player deep dive", team: "Team deep dive" };
+const readMins = (w) => `${Math.max(1, Math.round((w || 0) / 230))} min read`;
+function featureCard(f) {
+  return `<article class="news-item feat-item">
+    <div class="ni-meta"><span class="feat-kind">${FEATURE_KIND[f.kind] || "Feature"}</span> · ${shortDate(f.date)} · ${readMins(f.words)}</div>
+    <h3><a href="#feature/${esc(f.slug)}">${esc(f.title)}</a></h3>
+    ${f.dek ? `<p class="ni-desc">${esc(f.dek)}</p>` : ""}
+  </article>`;
+}
+const featureLink = (f) => `<a class="feat-link" href="#feature/${esc(f.slug)}"><span class="feat-kind">${FEATURE_KIND[f.kind]}</span> ${esc(f.title)} <span class="dim">${shortDate(f.date)}</span></a>`;
+async function renderFeature(view, slug) {
+  view.innerHTML = `<p class="empty">Loading…</p>`;
+  let f;
+  try { f = await getJSON(`data/features/${slug}.json`); } catch (e) {
+    view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news/features">Features</a></p><h1>Not found</h1><p class="lede">That piece isn't published. The list is on the Features tab.</p></section>`;
+    return;
+  }
+  const body = f.text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean)
+    .map((x) => (x.startsWith("## ") ? `<h3>${esc(x.slice(3))}</h3>` : `<p>${esc(x)}</p>`)).join("");
+  const subj = f.kind === "player" && f.subject?.id ? `<a href="#players/${f.subject.id}">${esc(f.subject.name)}'s page</a>` :
+    f.kind === "team" ? `<a href="#teams/${esc(f.subject.team)}">the ${esc(f.subject.team)} page</a>` : `<a href="#pulse">the Pulse</a>`;
+  view.innerHTML = `<article class="zone feature">
+      <p class="crumbs"><a href="#news/features">Features</a></p>
+      <p class="kicker">${FEATURE_KIND[f.kind] || "Feature"}</p>
+      <h1>${esc(f.title)}</h1>
+      ${f.dek ? `<p class="lede feat-dek">${esc(f.dek)}</p>` : ""}
+      <p class="byline">Written by Claude from Ice Sheet's numbers · ${new Date(f.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${readMins(f.words)}</p>
+      <div class="story feature-body">${body}</div>
+      <p class="note">Every number here comes from this site's data: shot data and expected goals courtesy of MoneyPuck.com, game, shift and tracking data from the NHL. Nothing is reported: no interviews, no inside information. More on ${subj}.</p>
+    </article>`;
+}

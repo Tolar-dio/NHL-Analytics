@@ -618,4 +618,27 @@ details.fold[open] summary { margin-bottom: 8px; }
   .prow .pr-text { grid-column: 1 / -1; }
   .pgrid, .wgrid { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 640px) { .pulse-tabs .nt-n { display: none; } }
+@media (max-width: 640px) { .news-tabs .nt-n { display: none; } }
+
+/* ---------------------------------------------------------------- moves and features */
+.np-blurb .mv-filter { display: flex; margin-top: 10px; }
+.move-list { display: grid; gap: 0; max-width: 820px; }
+.move-item { padding: 12px 0; border-bottom: 1px solid var(--hair); display: grid; gap: 6px; }
+.move-item .ni-meta b { color: var(--ink); }
+.mv-kind { font-weight: 700; color: var(--ink-2); }
+.mv-trade, .mv-staff { color: var(--blue); }
+.mv-text { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink); }
+.mv-take { margin: 2px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); max-width: 70ch; }
+a.wchip { text-decoration: none; }
+a.wchip:hover { border-color: var(--blue); }
+.feat-item { border-left: 3px solid var(--blue); padding-left: 12px; }
+.feat-kind { font-weight: 700; color: var(--blue); }
+.feat-link { display: block; margin-top: 12px; padding: 10px 12px; background: var(--sheet); border: 1px solid var(--hair); border-left: 3px solid var(--blue);
+  border-radius: 6px; color: var(--ink); text-decoration: none; font-weight: 600; max-width: 72ch; }
+.feat-link .feat-kind { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.feat-link:hover { border-color: var(--blue); }
+.feature h1 { max-width: 22ch; }
+.feat-dek { font-size: 19px; }
+.byline { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+.feature-body h3 { font-size: 24px; margin: 26px 0 10px; }
+.feature .note { max-width: 68ch; margin-top: 20px; }
