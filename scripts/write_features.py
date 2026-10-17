@@ -153,7 +153,24 @@ def player_facts(pid):
                            season=pf["a3z"]["season"], tracked_games=pf["a3z"]["games"], tracked_5v5_minutes=pf["a3z"]["toi5"],
                            style=pf["a3z"].get("style"),
                            rates=[dict(stat=r["label"], value=r["v"], is_share=r["share"], percentile_among_position=r["pctile"],
-                                       league_typical=r["lg"]) for r in pf["a3z"]["rows"]]) if pf.get("a3z") else None))
+                                       league_typical=r["lg"]) for r in pf["a3z"]["rows"]]) if pf.get("a3z") else None,
+        value_and_impact=eh_facts(pf.get("eh"))))
+
+
+def eh_facts(c):
+    """Evolving-Hockey's value and impact models for one skater (shown with their permission; credit by name)."""
+    if not c:
+        return None
+    return dict(source="Evolving-Hockey (evolving-hockey.com) models. Credit Evolving-Hockey by name whenever you use these numbers. "
+                       "GAR/WAR: goals and wins above a replacement-level player; xGAR/xWAR: the same from chance quality instead of goals; "
+                       "RAPM: his effect on his team's expected goals for and against per 60 at even strength, adjusted for teammates, "
+                       "opponents, score and zone starts.",
+                season=c["season"], wins_above_replacement=c.get("war"), expected_wins_above_replacement=c.get("xwar"),
+                goals_above_replacement=c.get("gar"), war_rank_among_position=c.get("rank"), ranked_out_of=c.get("qual"),
+                goals_by_phase={p[0]: p[1] for p in c.get("parts", [])},
+                rapm_expected_goals_for_per_60=c.get("rapm_xgf60"), rapm_expected_goals_against_per_60=c.get("rapm_xga60"),
+                percentiles_among_position={r["label"]: r["pctile"] for r in c.get("rows", [])},
+                war_by_season=c.get("history"), plain_notes=c.get("notes"))
 
 
 def team_facts(abbr):
@@ -199,7 +216,21 @@ def team_facts(abbr):
         top_scorers=[sk_card(x) for x in sorted(sk, key=lambda x: (-x["pts"], -x["g"]))[:6]],
         most_chances=[sk_card(x) for x in sorted(sk, key=lambda x: -(x.get("ixg") or 0))[:4]],
         play_drivers=[sk_card(x) for x in sorted((x for x in sk if x.get("rel5") is not None and x["gp"] >= 3), key=lambda x: -x["rel5"])[:3]],
-        running_hot=on("hot"), running_cold=on("cold"), breakouts=on("breakouts"), due_for_more=on("due"), due_to_cool=on("cooling")))
+        running_hot=on("hot"), running_cold=on("cold"), breakouts=on("breakouts"), due_for_more=on("due"), due_to_cool=on("cooling"),
+        most_valuable_by_evolving_hockey_war=value_leaders(sk)))
+
+
+def value_leaders(sk):
+    """The roster's top skaters by Evolving-Hockey WAR in their newest season in the exports (credit Evolving-Hockey)."""
+    rows = []
+    for x in sk:
+        c = (load(f"players/{x['id']}.json", {}) or {}).get("eh")
+        if c and c.get("war") is not None:
+            rows.append(dict(name=x["name"], season=c["season"], wins_above_replacement=c["war"],
+                             expected_wins_above_replacement=c.get("xwar"), rapm_xgf_per_60=c.get("rapm_xgf60"),
+                             rapm_xga_per_60=c.get("rapm_xga60")))
+    rows.sort(key=lambda r: -r["wins_above_replacement"])
+    return dict(source="Evolving-Hockey (evolving-hockey.com); credit it by name.", players=rows[:6]) if rows else None
 
 
 # ------------------------------------------------------------------ choosing subjects

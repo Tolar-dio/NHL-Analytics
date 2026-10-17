@@ -719,3 +719,10 @@ img.mug { font-size: 0; color: transparent; }   /* a headshot that fails to load
   .reel-item { grid-template-columns: 34px minmax(0, 1fr); row-gap: 8px; }
   .reel-item .gi-acts { grid-column: 2; justify-content: flex-start; }
 }
+
+/* ---------------------------------------------------------------- value and impact (Evolving-Hockey) */
+.vbars { display: grid; gap: 6px; margin-bottom: 4px; }
+.vb-track { overflow: visible; }
+.vb-zero { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--axis); }
+.vb-fill { position: absolute; top: 0; bottom: 0; background: var(--blue); border-radius: 3px; }
+.vb-fill.vb-neg { background: var(--muted); }   /* red means goals on this site, so value given back is gray */

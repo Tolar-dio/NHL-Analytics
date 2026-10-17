@@ -572,6 +572,20 @@ def main():
     except Exception as e:
         print(f"  a3z cards skipped: {e!r}")
 
+    # ---- Evolving-Hockey (Tolar's exports, private repo; shown with credit by EH's permission, Oct 2026): a "value
+    # and impact" card per skater from his newest season in the exports, and the league table for its map
+    eh_cards = {}
+    try:
+        import eh as EH
+        if EH.available():
+            eh_cards, eh_league = EH.cards({int(k): v for k, v in names.items()})
+            if eh_cards:
+                meta["credit"] += " " + EH.CREDIT
+                dump("eh_league.json", eh_league)
+                print(f"  eh: {len(eh_cards)} skater value cards")
+    except Exception as e:
+        print(f"  eh cards skipped: {e!r}")
+
     # ---- each skater's goals and assists this season, for the player page's highlight reel: our replay of the
     # build-up (from the recorded events) and the NHL's official clip, linked, never rehosted
     reel = {}
@@ -729,7 +743,7 @@ def main():
         if pid in tonight_lines:
             story["tonight"] = tonight_lines[pid]
         with open(os.path.join(plog, f"{pid}.json"), "w") as f:
-            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid),
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid), eh=eh_cards.get(pid),
                            reel=sorted(reel.get(pid, []), key=lambda r: (r["date"], r["period"], r["t"]), reverse=True)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print(f"  players/: {len(plogs)} game logs")

@@ -1,4 +1,6 @@
 /* Player page extras.
+   "Value and impact": Evolving-Hockey's GAR/WAR, xGAR and RAPM (shown with their permission, credited and linked):
+   plain notes, a league map, where his value came from by phase, WAR by season, percentiles and context.
    "How he plays": All Three Zones hand tracking (Corey Sznajder), shown as an interactive style map of every forward or
    defenseman, percentile bars, where his shots and setups come from next to a typical player at his position, and a
    few plain sentences on what to watch for. Derived numbers only, credited.
@@ -66,7 +68,7 @@ function styleMapSVG(lg, card, pid, map, W) {
   const lead = [...pool].sort((a, b) => b[ix] - a[ix]).slice(0, 2).concat([...pool].sort((a, b) => b[iy] - a[iy]).slice(0, 2))
     .filter((r, i, a) => r[0] !== pid && a.findIndex((z) => z[0] === r[0]) === i);
   const hit = (b, list) => list.some((p) => b.x < p.x + p.w && b.x + b.w > p.x && b.y < p.y + p.h && b.y + b.h > p.y);
-  const meName = lg.rows.find((r) => r[0] === pid)?.[1]?.split(" ").slice(-1)[0] || "Him";
+  const meName = (lg.rows.find((r) => r[0] === pid)?.[1] || card.name || "Him").split(" ").slice(-1)[0];
   const halfW = meName.length * 4.2, lx = mx == null ? 0 : Math.min(Math.max(X(mx), m.l + halfW), W - m.r - halfW);
   const meBox = mx != null ? [{ x: Math.min(lx - halfW, X(mx) - 9) - 4, y: Y(my) - 27, w: Math.max(2 * halfW, 18) + 12, h: 37 }] : [];
   // quadrant names sit in the outer corner of each quadrant; if he is standing there, they move to the inner corner by the median line
@@ -93,7 +95,7 @@ function styleMapSVG(lg, card, pid, map, W) {
     }
     return "";
   }).join("");
-  const me = mx == null ? "" : `<g data-tip="${esc(`<b>${esc(lg.rows.find((r) => r[0] === pid)?.[1] || "Him")}</b><br>${esc(map.xl)}: ${playVal(map.x, mx)}<br>${esc(map.yl)}: ${playVal(map.y, my)}`)}">
+  const me = mx == null ? "" : `<g data-tip="${esc(`<b>${esc(lg.rows.find((r) => r[0] === pid)?.[1] || card.name || "Him")}</b><br>${esc(map.xl)}: ${playVal(map.x, mx)}<br>${esc(map.yl)}: ${playVal(map.y, my)}`)}">
       <circle cx="${X(mx)}" cy="${Y(my)}" r="8" class="sm-me"/>
       <text class="lbl sm-me-lbl" x="${lx}" y="${Y(my) - 13}" text-anchor="middle">${esc(meName)}</text></g>`;
   return `<svg class="chart style-map" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${map.label}: every ${pos === "D" ? "defenseman" : "forward"} with 150+ tracked minutes`)}">
@@ -179,6 +181,105 @@ async function renderPlays(el, card, pid, name) {
   el.querySelectorAll("[data-pmap]").forEach((b) => b.addEventListener("click", () => {
     S.playMap = b.dataset.pmap;
     el.querySelectorAll("[data-pmap]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.pmap === S.playMap));
+    draw();
+  }));
+}
+
+// ------------------------------------------------------------------ value and impact (Evolving-Hockey, with permission)
+const VALUE_MAPS = [
+  { k: "impact", label: "Impact both ways", x: "rapm_off", y: "rapm_def", xl: "Chances created (RAPM xGF/60)", yl: "Chances prevented (RAPM xGA/60, flipped)",
+    q: ["Drives play both ways", "Defense first", "Offense first", "Under water"] },
+  { k: "phase", label: "Value by phase", x: "evo60", y: "evd60", xl: "Even-strength offense (GAR per 60)", yl: "Even-strength defense (GAR per 60)",
+    q: ["Two-way value", "Defensive value", "Offensive value", "Gives value back"] },
+];
+const VALUE_GLOSSARY = [
+  ["GAR and WAR", "Goals Above Replacement adds up everything a skater does (even-strength offense and defense, power play, penalty kill, penalties drawn and taken) in goals, compared with a replacement-level player: the kind a team can call up or sign for the minimum. About six goals make one win, which is WAR."],
+  ["xGAR and xWAR", "The same totals built from the quality of chances instead of goals, so shooting and goaltending luck mostly drop out. When WAR runs well ahead of xWAR, some of the season was hot finishing or hot goaltending."],
+  ["RAPM", "Regularized adjusted plus-minus: a regression over every shift that separates a player's effect on his team's chances from his linemates', his opponents', the score and where the shift started. Shown per 60 minutes at even strength: +0.20 xGF/60 means his team creates about 0.2 more expected goals an hour with him out there."],
+  ["Teammate and competition quality", "The average impact (RAPM) of the players he shares the ice with and plays against, weighted by time together. Context, not talent: strong linemates flatter raw on-ice numbers, which is what RAPM and GAR correct for."],
+];
+
+function partBars(parts, posOne) {
+  const lim = Math.max(8, ...parts.map((p) => Math.abs(p[1])), ...parts.map((p) => Math.abs(p[2] || 0)));
+  const at = (v) => 50 + (50 * v) / lim;
+  return `<div class="vbars">${parts.map(([label, v, typ]) => `<div class="mix-row vb-row" data-tip="${esc(`<b>${esc(label)}</b><br>Him: ${signed(v, 1)} goals${typ != null ? `<br>Typical ${posOne}: ${signed(typ, 1)}` : ""}`)}">
+      <span class="mix-l">${esc(label)}</span>
+      <span class="mix-track vb-track"><span class="vb-zero"></span>
+        <span class="vb-fill ${v < 0 ? "vb-neg" : ""}" style="left:${Math.min(at(v), 50)}%;width:${Math.abs(at(v) - 50)}%"></span>
+        ${typ != null ? `<span class="mix-avg" style="left:${at(typ)}%"></span>` : ""}</span>
+      <span class="mix-v">${signed(v, 1)}</span></div>`).join("")}</div>`;
+}
+
+function warBars(hist) {
+  const lim = Math.max(3, ...hist.map((h) => Math.max(h.war || 0, h.xwar || 0)));
+  return `<div class="mix">${hist.map((h) => `<div class="mix-row" data-tip="${esc(`<b>${esc(h.season)}</b>${h.gp != null ? `, ${h.gp} games` : ""}<br>WAR ${h.war == null ? "not in the export" : num(h.war, 1)}<br>xWAR ${num(h.xwar, 1)}`)}">
+      <span class="mix-l">${esc(h.season)}</span>
+      <span class="mix-track">${h.war != null ? `<span class="mix-fill" style="width:${Math.max(0, (100 * h.war) / lim)}%"></span>` : ""}
+        ${h.xwar != null ? `<span class="mix-avg" style="left:${Math.min(100, Math.max(0, (100 * h.xwar) / lim))}%"></span>` : ""}</span>
+      <span class="mix-v">${h.war == null ? `<span class="dim">(${num(h.xwar, 1)})</span>` : num(h.war, 1)}</span></div>`).join("")}</div>`;
+}
+
+async function renderValue(el, card, pid) {
+  let lg = null;
+  try { lg = (await getJSON("data/eh_league.json"))[card.season]; } catch (e) { lg = null; }
+  const posName = card.pos === "D" ? "defensemen" : "forwards", posOne = card.pos === "D" ? "defenseman" : "forward";
+  const cur = String(D.meta.season || ""), curLab = cur ? `${cur.slice(0, 4)}-${cur.slice(6)}` : "";
+  const when = card.season === curLab ? `this season (${card.season})` : `${card.season}, his most recent season in their data`;
+  S.valueMap = VALUE_MAPS.some((m) => m.k === S.valueMap) ? S.valueMap : VALUE_MAPS[0].k;
+  const fmtRow = (r) => (r.unit === "wins" ? num(r.v, 1) : r.unit === "goals" ? signed(r.v, 1) : `${signed(r.v, 2)}/60`);
+  const fmtTyp = (r) => (r.lg == null ? "" : r.unit === "wins" ? num(r.lg, 1) : r.unit === "goals" ? signed(r.lg, 1) : `${signed(r.lg, 2)} per 60`);
+  const bar = (r) => `<div class="meter"><span>${esc(r.label)}</span>
+      <span class="bar-track" data-tip="${esc(`${r.pctile == null ? "Too few players to rank" : `${ordinal(Math.min(99, Math.max(1, Math.round(100 * r.pctile))))} percentile among ${posName}${r.lower_better ? " (fewer is better, so a long bar is good)" : ""}`}${r.lg != null ? `<br>Typical: ${fmtTyp(r)}` : ""}`)}"><span class="bar-fill" style="width:${r.pctile == null ? 0 : 100 * r.pctile}%"></span></span>
+      <span class="val">${fmtRow(r)}</span></div>`;
+  const impact = card.rows.filter((r) => !["qot", "qoc"].includes(r.k)), context = card.rows.filter((r) => ["qot", "qoc"].includes(r.k));
+  const shim = { pos: card.pos, name: card.name, rows: Object.entries(card.map || {}).map(([k, v]) => ({ k, v })) };
+  const poolN = (m) => (lg ? lg.rows.filter((r) => r[3] === card.pos && r[lg.keys.indexOf(m.x)] != null && r[lg.keys.indexOf(m.y)] != null).length : 0);
+  const mapOK = poolN(VALUE_MAPS[0]) >= 25;
+  const draw = () => {
+    const box = el.querySelector("#valueMap"), m = VALUE_MAPS.find((x) => x.k === S.valueMap);
+    if (box && lg && poolN(m) >= 25) box.innerHTML = styleMapSVG(lg, shim, pid, m, Math.max(300, box.clientWidth || 520));
+  };
+  el.innerHTML = `<h2>Value and impact</h2>
+    <p class="lede">Evolving-Hockey's models of what he's worth and what changes when he's on the ice, from ${esc(when)}. Unlike plus-minus or raw on-ice numbers, they adjust for teammates, opponents, score and zone starts.</p>
+    <div class="plays-notes">${(card.notes || []).map((n) => `<p>${esc(n)}</p>`).join("")}</div>
+    <div class="grid-2 plays-grid">
+      ${mapOK ? `<div class="figure">
+        <div class="chips" role="group" aria-label="Map">${VALUE_MAPS.map((m) => `<button type="button" class="chip" data-vmap="${m.k}" aria-pressed="${S.valueMap === m.k}">${esc(m.label)}</button>`).join("")}</div>
+        <div id="valueMap" class="play-map"></div>
+        <p class="note">Every ${posOne} with at least 500 minutes in ${esc(card.season)}; the lines are the middle of the pack. Hover or tap a dot for the player, tap again to open his page.</p>
+      </div>` : ""}
+      <div>
+        <h3>Where his ${card.gar == null ? "value" : `${num(card.gar, 1)} goals`} came from</h3>
+        ${partBars(card.parts || [], posOne)}
+        <h3 class="mix-h">Wins above replacement by season</h3>
+        ${warBars(card.history || [])}
+        <p class="note"><span class="mix-key"></span> marks a typical ${posOne} above, and his expected WAR (xWAR) by season.${(card.history || []).some((h) => h.war == null) ? " A number in brackets is xWAR only." : ""}</p>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div><h3>Percentiles among ${posName}</h3>${impact.map(bar).join("")}</div>
+      ${context.length ? `<div><h3>Context</h3>${context.map(bar).join("")}<p class="note">Higher means stronger teammates or tougher opponents, not a better player.</p></div>` : ""}
+    </div>
+    <details class="fold glossary"><summary>What these stats mean</summary>
+      <dl>${VALUE_GLOSSARY.map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join("")}</dl></details>
+    <p class="note">Models by <a href="https://evolving-hockey.com" target="_blank" rel="noopener">Evolving-Hockey</a>, used with their permission. ${esc(card.season)} regular season.</p>`;
+  el.hidden = false;
+  draw();
+  let armed = null, ptype = "mouse";
+  const box = el.querySelector("#valueMap");
+  box?.addEventListener("pointerdown", (e) => (ptype = e.pointerType));
+  box?.addEventListener("click", (e) => {
+    const link = e.target.closest("a");
+    if (!link || ptype === "mouse" || armed === link) return;
+    e.preventDefault();
+    e.stopPropagation();
+    armed = link;
+    const r = link.getBoundingClientRect();
+    showTip(link, r.left + r.width / 2, r.top);
+  });
+  el.querySelectorAll("[data-vmap]").forEach((b) => b.addEventListener("click", () => {
+    S.valueMap = b.dataset.vmap;
+    el.querySelectorAll("[data-vmap]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.vmap === S.valueMap));
     draw();
   }));
 }

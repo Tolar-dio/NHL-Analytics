@@ -751,6 +751,7 @@ function renderPlayers(view, param) {
         <div id="pEdge"></div>
       </div>
     </section>
+    <section class="zone plays" id="pValue" hidden></section>
     <section class="zone plays" id="pPlays" hidden></section>
     <section class="zone" id="pReel" hidden></section>
     <section class="zone"><h2>Game by game</h2><p class="lede">Every game this season, newest first. xG is his own shots' chances; on-ice ± is chances for minus against while he was out there. Tap a game to open it.</p>
@@ -783,6 +784,7 @@ function renderPlayers(view, param) {
     const rows = Array.isArray(file) ? file : file.log || [], ed = Array.isArray(file) ? null : file.edge;
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
     if (!Array.isArray(file) && file.story && $("#pBio")) $("#pBio").innerHTML = playerBio(file.story);
+    if (!Array.isArray(file) && file.eh && $("#pValue")) renderValue($("#pValue"), file.eh, p.id).catch(() => {});
     if (!Array.isArray(file) && file.a3z && $("#pPlays")) renderPlays($("#pPlays"), file.a3z, p.id, p.name).catch(() => {});
     if ($("#pReel")) renderReel($("#pReel"), Array.isArray(file) ? [] : file.reel, rows, p.name).catch(() => {});
     if (!Array.isArray(file) && file.story && $("#pStory")) $("#pStory").innerHTML = playerStory(file.story);
