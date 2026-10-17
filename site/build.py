@@ -286,8 +286,11 @@ def fetch_market(slate):
         print(f"  market lines unavailable ({e!r})")
         return out
     ids = {g["id"] for g in slate}
+    # once a game starts the feed carries in-game odds (a 3-0 lead reads as -15000), which aren't a pre-game market
+    now = dt.datetime.now(dt.timezone.utc)
+    started = {g["id"] for g in slate if g.get("start") and dt.datetime.fromisoformat(g["start"].replace("Z", "+00:00")) <= now}
     for g in js.get("games", []):
-        if g.get("gameId") not in ids:
+        if g.get("gameId") not in ids or g.get("gameId") in started:
             continue
         odds = {side: {(o["description"], o.get("qualifier") or ""): o["value"] for o in g[side + "Team"].get("odds", [])}
                 for side in ("home", "away")}
@@ -311,7 +314,14 @@ def fetch_market(slate):
                 (lo, hi) = (mid, hi) if d[np.arange(len(d)) > line].sum() < p_over else (lo, mid)
             m["implied_total"] = round((lo + hi) / 2, 2)
         out[g["gameId"]] = m
-    print(f"  market lines: {len(out)} of {len(ids)} games")
+    # games under way keep the last pre-game line the archive froze, if a build saw one
+    for g in slate:
+        if g["id"] in started and g.get("date"):
+            path = os.path.join(ARCHIVE, f"{g['date']}.json")
+            a = (json.load(open(path)).get("games", {}) if os.path.exists(path) else {}).get(str(g["id"])) or {}
+            if a.get("pregame") and a.get("market"):
+                out[g["id"]] = {k: v for k, v in a["market"].items() if not k.startswith("model_")}
+    print(f"  market lines: {len(out)} of {len(ids)} games ({len(started)} already started)")
     return out
 
 
@@ -544,17 +554,43 @@ def main():
 
     # ---- All Three Zones (hand tracking, from the private repo when the nightly could fetch it): a "how he creates
     # offense" card per skater; this season's card replaces last season's once he has enough tracked minutes
-    a3z_cards = {}
+    a3z_cards, a3z_league = {}, {}
     try:
         import a3z as A3
         for season in (PREV, CUR):
             if A3.available(season):
-                a3z_cards.update(A3.cards(season))
+                c, lg = A3.profiles(season, {int(k): v for k, v in names.items()})
+                a3z_cards.update(c)
+                if lg:
+                    a3z_league[lg["season"]] = lg
         if a3z_cards:
             meta["credit"] += " " + A3.CREDIT
+            dump("a3z_league.json", a3z_league)   # the style map on player pages (derived per-60 rates, credited)
             print(f"  a3z: {len(a3z_cards)} skater cards")
     except Exception as e:
         print(f"  a3z cards skipped: {e!r}")
+
+    # ---- each skater's goals and assists this season, for the player page's highlight reel: our replay of the
+    # build-up (from the recorded events) and the NHL's official clip, linked, never rehosted
+    reel = {}
+    for gi in game_index:
+        try:
+            with open(os.path.join(OUTD, "games", f"{gi['id']}.json")) as f:
+                G = json.load(f)
+        except Exception:
+            continue
+        seqs = G.get("seqs") or {}
+        for x in G.get("goals", []):
+            if x.get("ptype") == "SO":
+                continue
+            opp = G["home"] if x["team"] == G["away"] else G["away"]
+            base = dict(game=G["id"], date=G["date"], opp=opp, home=x["team"] == G["home"], period=x["period"], ptype=x.get("ptype"),
+                        t=x["t"], strength=x.get("strength"), shot=x.get("shot"), xg=x.get("xg"), clip=x.get("clip"), eid=x["eid"],
+                        seq=str(x["eid"]) in seqs, scorer=x["name"], score=x.get("score"))
+            reel.setdefault(int(x["pid"]), []).append(dict(base, role="G"))
+            for i, a_ in enumerate(x.get("assists") or []):
+                if a_.get("pid"):
+                    reel.setdefault(int(a_["pid"]), []).append(dict(base, role=f"A{i + 1}"))
 
     # ---- narrative layer: form, streaks, breakouts, regression, milestones (site/narrative.py)
     import narrative as N
@@ -691,7 +727,8 @@ def main():
         if pid in tonight_lines:
             story["tonight"] = tonight_lines[pid]
         with open(os.path.join(plog, f"{pid}.json"), "w") as f:
-            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid)), f, separators=(",", ":"),
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid),
+                           reel=sorted(reel.get(pid, []), key=lambda r: (r["date"], r["period"], r["t"]), reverse=True)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print(f"  players/: {len(plogs)} game logs")
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props, headlines=headlines,

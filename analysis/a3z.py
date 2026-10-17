@@ -123,6 +123,172 @@ def style(x):
     return (bits[0][0].upper() + bits[0][1:] + (", and " + ", and ".join(bits[1:2]) if len(bits) > 1 else "") + ".") if bits else None
 
 
+PASS_CAT = [("royal", "Across the royal road"), ("behind", "From behind the net"), ("point", "Low to high, to the point"),
+            ("oz", "Other O-zone pass"), ("transition", "Neutral or D-zone pass"), ("none", "No pass, his own play")]
+PLAY_CAT = [("r", "Off the rush"), ("f", "Off the forecheck"), ("c", "Off the cycle")]
+LEAGUE_KEYS = ["shots60", "chances60", "sa1_60", "chance_ast60", "hd_shots60", "entries60", "carry_pct", "exit_poss_pct", "denial_pct",
+               "rush_share"]
+
+
+def pass_cat(z):
+    """A3Z's A1 Zone code -> a pass family (see the Definitions tab and the Player List formulas)."""
+    z = (z or "").strip().lower() if isinstance(z, str) else ""
+    if not z:
+        return "none"
+    if "rr" in z:
+        return "royal"
+    if z.startswith("oelp") or z.startswith("op"):
+        return "point"
+    if z.startswith("oel"):
+        return "behind"
+    if z.startswith("n") or z.startswith("d"):
+        return "transition"
+    return "oz"
+
+
+def profiles(season, names=None):
+    """Everything the player page's "How he plays" section needs, for one season:
+    {player_id: card} (rates, percentiles, shot and pass mixes vs his position, notes for the fan) and the league table
+    behind the interactive style map."""
+    names = names or {}
+    pg = load(season)
+    if pg.empty:
+        return {}, None
+    T = season_totals(pg)
+    nm = pg.dropna(subset=["player_id"]).assign(player_id=lambda d: d.player_id.astype(int)).groupby("player_id").name.last()
+    S = load(season, "shots")
+    S = S[S.strength == "5v5"].copy()
+    S["cat"] = [pass_cat(z) if n == n else "none" for z, n in zip(S.a1_zone, S.a1_no)]
+    E = load(season, "entries")
+    E = E[E.strength == "5v5"]
+    # league context for the notes: how often each kind of shot goes in, and what a carry-in buys over a dump-in
+    ctx = dict(sh_by_cat={k: round(float(S[S.cat == k].goal.mean()), 4) for k, _ in PASS_CAT if (S.cat == k).sum() >= 200},
+               chance_carry=round(float(E[E.type == "c"].chance.mean()), 3) if len(E) else None,
+               chance_dump=round(float(E[E.type == "d"].chance.mean()), 3) if len(E) else None,
+               shots=int(len(S)), games=int(pg.game_id.nunique()))
+    shooter = S.dropna(subset=["shooter_id"]).assign(shooter_id=lambda d: d.shooter_id.astype(int))
+    passer = S.dropna(subset=["a1_id"]).assign(a1_id=lambda d: d.a1_id.astype(int))
+    shot_cat = shooter.groupby(["shooter_id", "cat"]).size().unstack(fill_value=0)
+    play = shooter.groupby(["shooter_id", "play"]).size().unstack(fill_value=0)
+    ast_cat = passer.groupby(["a1_id", "cat"]).size().unstack(fill_value=0)
+    T = T[T.toi5 >= MIN_TOI]
+    vals = pd.DataFrame(index=T.index)
+    for key, _, num, den, _ in CARD:
+        n = T[list(num)].sum(axis=1) if isinstance(num, tuple) else T[num]
+        vals[key] = (n / T[den].where(T[den] > 0)) if den else n / T.toi5 * 60
+    pool = T.toi5 >= PCTILE_TOI
+
+    def mix(tab, pid, cats):
+        if pid not in tab.index:
+            return None
+        row = tab.loc[pid]
+        tot = float(row.sum())
+        return dict(n=int(tot), shares={k: round(float(row.get(k, 0)) / tot, 3) for k, _ in cats}) if tot else None
+
+    def pos_mix(tab, cats, pos):
+        ids = [i for i in T.index[pool & (T.pos == pos)] if i in tab.index]
+        if not ids:
+            return None
+        tot = tab.loc[ids].sum()
+        return {k: round(float(tot.get(k, 0)) / float(tot.sum()), 3) for k, _ in cats}
+
+    avg = {pos: dict(shot=pos_mix(shot_cat, PASS_CAT, pos), play=pos_mix(play, PLAY_CAT, pos), ast=pos_mix(ast_cat, PASS_CAT, pos))
+           for pos in ("F", "D")}
+    out = {}
+    for pid, x in T.iterrows():
+        same = pool & (T.pos == x.pos)
+        rows = []
+        for key, label, num, den, hib in CARD:
+            v = vals.at[pid, key]
+            if pd.isna(v) or (den and T.at[pid, den] < 8):
+                continue
+            ref = vals.loc[same, key].dropna()
+            pct = float((ref < v).mean() + 0.5 * (ref == v).mean()) if len(ref) >= 20 else None
+            rows.append(dict(k=key, label=label, v=round(float(v), 3 if den else 2), share=bool(den),
+                             pctile=None if pct is None else round(pct, 2), hib=hib, lg=round(float(ref.median()), 3 if den else 2) if len(ref) else None))
+        card = dict(season=LABEL.get(season, season), games=int(x.games), toi5=round(float(x.toi5), 1), pos=x.pos, rows=rows, style=style(x),
+                    mix=dict(shot=mix(shot_cat, pid, PASS_CAT), play=mix(play, pid, PLAY_CAT), ast=mix(ast_cat, pid, PASS_CAT)),
+                    avg=avg.get(x.pos))
+        card["notes"] = watch_notes(card, ctx)
+        out[int(pid)] = card
+    league = dict(season=LABEL.get(season, season), keys=["id", "name", "team", "pos"] + LEAGUE_KEYS, ctx=ctx,
+                  pass_cats=PASS_CAT, play_cats=PLAY_CAT,
+                  rows=[[int(pid), names.get(int(pid)) or str(nm.get(pid, "")).replace("\xa0", " "), T.at[pid, "team"], T.at[pid, "pos"]] +
+                        [None if pd.isna(vals.at[pid, k]) else round(float(vals.at[pid, k]), 3) for k in LEAGUE_KEYS]
+                        for pid in T.index[pool]])
+    return out, league
+
+
+def watch_notes(c, ctx):
+    """Two to four plain sentences for a fan watching him: his clearest strengths in the tracked numbers, what they look
+    like on the ice and why they matter, plus one weak spot when there is a clear one. Deterministic, from the card."""
+    R = {r["k"]: r for r in c["rows"]}
+    pos = "defensemen" if c["pos"] == "D" else "forwards"
+    one = "defenseman" if c["pos"] == "D" else "forward"
+    P = lambda k: (R.get(k) or {}).get("pctile")
+    V = lambda k: (R.get(k) or {}).get("v")
+    def ordn(p):
+        n = min(99, max(1, round(100 * p)))
+        return f"{n}{'th' if 11 <= n % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+    pc = lambda v: f"{round(100 * v)}%"
+    sh = ctx.get("sh_by_cat", {})
+    good = []   # (strength, sentence)
+    if (P("sa1_60") or 0) >= 0.8:
+        good.append((P("sa1_60"), f"He's a setup man: {V('sa1_60'):.1f} primary shot assists per 60, {ordn(P('sa1_60'))} percentile among {pos}. "
+                                    f"Watch where the puck goes when he has it in the offensive zone; the next shot is often his teammate's, "
+                                    f"and shot assists are the earliest sign of assists to come."))
+    if (P("chances60") or 0) >= 0.8:
+        good.append((P("chances60"), f"He gets to the dangerous ice: {V('chances60'):.1f} scoring chances per 60 from the home-plate area in front "
+                                       f"of the net ({ordn(P('chances60'))} percentile). Chances, not shot volume, are what turn into goals."))
+    elif (P("shots60") or 0) >= 0.8 and (P("chances60") or 1) <= 0.5:
+        good.append((P("shots60") - 0.1, f"He shoots a lot ({V('shots60'):.1f} attempts per 60, {ordn(P('shots60'))} percentile), but fewer of them "
+                                           f"come from the slot than his volume suggests. Watch whether he gets inside or settles for the outside."))
+    if (P("hd_shots60") or 0) >= 0.8 and sh.get("royal") and sh.get("none"):
+        good.append((P("hd_shots60"), f"He's on the receiving end of the best passes: {V('hd_shots60'):.1f} shots per 60 come off passes across the "
+                                        f"slot or from behind the net. In tracked games, shots off a royal-road pass went in {pc(sh['royal'])} of the "
+                                        f"time, against {pc(sh['none'])} when the shooter made his own play."))
+    if (P("carry_pct") or 0) >= 0.8 and ctx.get("chance_carry") and ctx.get("chance_dump"):
+        good.append((P("carry_pct"), f"Watch him at the offensive blue line: he carries the puck in on {pc(V('carry_pct'))} of his entries "
+                                       f"instead of dumping it. Carry-ins led to a scoring chance {pc(ctx['chance_carry'])} of the time, "
+                                       f"dump-ins {pc(ctx['chance_dump'])}."))
+    if (P("exit_poss_pct") or 0) >= 0.8:
+        good.append((P("exit_poss_pct"), f"He breaks the puck out cleanly: {pc(V('exit_poss_pct'))} of his exits leave the zone with possession, "
+                                           f"which means fewer shifts pinned in his own end."))
+    if (P("denial_pct") or 0) >= 0.8 and c["pos"] == "D":
+        good.append((P("denial_pct"), f"He's hard to beat at his own blue line: he stops {pc(V('denial_pct'))} of the entries aimed at him "
+                                        f"(typical {pc(R['denial_pct']['lg'])}). Watch how often opponents dump it in on his side instead."))
+    if (P("rush_share") or 0) >= 0.8:
+        good.append((P("rush_share") - 0.15, f"His offense lives in transition: {pc(V('rush_share'))} of his shots come off the rush. The first "
+                                               f"few seconds after his team wins the puck back are when he's most dangerous."))
+    ast = (c.get("mix") or {}).get("ast")
+    avg_ast = ((c.get("avg") or {}).get("ast")) or {}
+    if ast and ast["n"] >= 12:
+        for k, label in (("behind", "from behind the net"), ("royal", "across the royal road")):
+            mine, typ = ast["shares"].get(k, 0), avg_ast.get(k, 0)
+            if typ and mine >= 1.6 * typ and mine >= 0.18:
+                good.append((0.79, f"A signature: {pc(mine)} of his setups come {label}, against {pc(typ)} for a typical {one}. "
+                                    + ("Goalies have to turn and find the puck on those passes." if k == "behind"
+                                       else "That's the pass that moves a goalie side to side, the hardest kind to stop.")))
+                break
+    good.sort(key=lambda t: -t[0])
+    notes = [t[1] for t in good[:3]]
+    weak = None
+    if c["pos"] == "D" and (P("exit_poss_pct") or 1) <= 0.2:
+        weak = (f"The weak spot: only {pc(V('exit_poss_pct'))} of his exits keep possession, so watch for clears off the glass and icings "
+                f"when the forecheck comes.")
+    elif (P("chances60") or 1) <= 0.15 and (P("sa1_60") or 1) <= 0.3:
+        weak = "The tracked numbers say his game isn't built on creating offense at five on five; his value, if it's there, shows up elsewhere."
+    elif (P("carry_pct") or 1) <= 0.15 and c["pos"] == "F":
+        weak = f"He rarely carries the puck in ({pc(V('carry_pct'))} of his entries), so his line leans on dump-ins and the forecheck."
+    if weak:
+        notes.append(weak)
+    if not notes:
+        notes.append(f"Nothing in his tracked game sits far from the typical {one}: no clear strength or weakness yet.")
+    if c["games"] < 10:
+        notes.append(f"Small sample: {c['games']} tracked games.")
+    return notes
+
+
 # ------------------------------------------------------------------ test 1: passing features on top of MoneyPuck xG
 
 def mp_shots(season):

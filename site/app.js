@@ -424,12 +424,12 @@ function renderTonight(view) {
   const gameCard = (g) => {
     const side = (abbr, xg, key) => {
       const opts = g[key + "_goalies"] || [], chosen = goalieFor(g, key);
-      return `<div class="side"><span class="abbr">${abbr}${g[key + "_b2b"] ? `<span class="tag tag-b2b" data-tip="${esc("Second night of a back-to-back. Tired teams averaged 47.4% of the expected goals in 2025-26 (286 games).")}">B2B</span>` : ""}</span>
+      return `<div class="side"><span class="abbr">${abbr}</span>
         <span class="bar-track" data-tip="${esc(`${abbr} expected goals tonight: ${xg.toFixed(2)}`)}"><span class="bar-fill" style="width:${(100 * xg) / maxXg}%"></span></span>
         <span class="xg">${xg.toFixed(2)}</span></div>
         <label class="goalie"><select data-game="${g.id}" data-side="${key}" aria-label="${abbr} goalie">
           ${opts.map((o) => `<option value="${o.id}" ${o.id === chosen.id ? "selected" : ""}>${esc(o.name)} (${o.starts} start${o.starts === 1 ? "" : "s"})</option>`).join("")}
-        </select><span class="g-src">${esc(goalieSource(g, key))}</span></label>`;
+        </select><span class="g-src">${esc(goalieSource(g, key))}${g[key + "_b2b"] ? `<span class="tag tag-b2b" data-tip="${esc("Second night of a back-to-back. Tired teams averaged 47.4% of the expected goals in 2025-26 (286 games).")}">Back-to-back</span>` : ""}</span></label>`;
     };
     return `<article class="game ${S.game === g.id ? "is-picked" : ""}">
       <div class="game-time"><span>${timeMT(g.start)}</span><span class="row" style="gap:12px"><a class="preview-link" href="#preview/${g.id}">Preview</a><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></span></div>
@@ -703,18 +703,6 @@ function edgeBlock(ed, log) {
       <p class="note">The NHL's own tracked shot locations (EDGE), his six busiest areas this season. A handful of shots per area is noise; it settles over a few months.</p>` : ""}
     ${hard ? `<h3 style="margin-top:18px">Hardest shots</h3><ul class="plist">${hard}</ul>` : ""}`;
 }
-// All Three Zones (Corey Sznajder's hand tracking, 5v5): how a skater creates offense and moves the puck, as
-// percentiles among his position. Derived numbers only, credited; the tracking itself stays private.
-function a3zBlock(c) {
-  const val = (r) => (r.share ? pct(r.v, 0) : `${num(r.v, 2)}/60`);
-  const rows = c.rows.map((r) => `<div class="meter"><span>${esc(r.label)}</span>
-      <span class="bar-track" data-tip="${esc(`${r.pctile == null ? "Too few tracked players to rank" : `${Math.round(100 * r.pctile)}th percentile among ${c.pos === "D" ? "defensemen" : "forwards"}`}${r.lg != null ? `<br>Typical: ${r.share ? pct(r.lg, 0) : num(r.lg, 2) + "/60"}` : ""}`)}"><span class="bar-fill" style="width:${r.pctile == null ? 0 : 100 * r.pctile}%"></span></span>
-      <span class="val">${val(r)}</span></div>`).join("");
-  return `<h3 style="margin-top:22px">How he creates offense</h3>
-    ${c.style ? `<p class="verdict" style="margin-top:4px">${esc(c.style)}</p>` : ""}
-    ${rows}
-    <p class="note">Hand-tracked 5v5 play from ${c.games} of his games (${Math.round(c.toi5)} minutes) in ${esc(c.season)}. Bars are his percentile among ${c.pos === "D" ? "defensemen" : "forwards"} with at least 150 tracked minutes. Primary shot assists are passes that led directly to a shot; high-danger passes cross the slot or come from behind the net. Data: All Three Zones (Corey Sznajder).</p>`;
-}
 function renderPlayers(view, param) {
   const byPts = [...D.skaters].sort((a, b) => b.pts - a.pts);
   const id = param ? +param : (byPts.find((s) => s.team === D.meta.favorite_team) || byPts[0]).id;
@@ -727,8 +715,12 @@ function renderPlayers(view, param) {
     <section class="zone">
       <div class="controls"><input type="search" id="pq" placeholder="Search any skater" aria-label="Search any skater" autocomplete="off"></div>
       <ul class="suggest" id="sugg" hidden></ul>
-      <div class="card-head"><span class="num">${p.num ?? ""}</span><div><h1>${esc(p.name)}</h1>
-        <div class="meta">${p.team}, ${p.pos === "D" ? "defense" : "forward"}, ${p.gp} games, ${num(p.toi_pg, 1)} minutes a night</div></div></div>
+      <div class="phead">
+        <div class="ph-photo"><img src="https://assets.nhle.com/mugs/nhl/${esc(D.meta.season)}/${esc(p.team)}/${p.id}.png" alt="" width="128" height="128"
+          onerror="this.parentNode.classList.add('ph-none'); this.remove()">${p.num != null ? `<span class="ph-num">${p.num}</span>` : ""}</div>
+        <div class="ph-text"><h1>${esc(p.name)}</h1>
+          <div class="meta">${p.team}, ${p.pos === "D" ? "defense" : "forward"}, ${p.gp} games, ${num(p.toi_pg, 1)} minutes a night</div></div>
+        <div class="meta ph-bio" id="pBio"></div></div>
       <div class="stat-row">
         ${tile(p.g, "Goals", `${num(p.ixg, 1)} expected`)}${tile(p.a, "Assists")}${tile(p.pts, "Points", `${p.ppp} on the power play`)}
         ${tile(signed(p.g_minus_xg), "Goals vs chances", p.g_minus_xg >= 0 ? "scoring above" : "scoring below")}
@@ -738,7 +730,7 @@ function renderPlayers(view, param) {
       <p class="verdict">${esc(verdictFor(p))}</p>
       <div id="pStory"></div>
     </section>
-    <section class="zone grid-2">
+    <section class="zone grid-2 grid-top">
       <div class="figure"><h3>Shot map</h3><p class="note">${shots.length} unblocked shots this season. Bigger dots were better chances; red went in. Tap one for the details.</p>
         ${shotMap(rinkSVG(shots, { label: `${p.name} shot map` }), shots, { kind: "player", id: p.id, name: p.name })}
         <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
@@ -757,9 +749,10 @@ function renderPlayers(view, param) {
           ${meter("Distance skated", p.distance_pctile, `${Math.round(100 * p.distance_pctile)}th pct`)}
           <p class="note">Bars show his percentile among all NHL skaters this season.</p>`}
         <div id="pEdge"></div>
-        <div id="pA3z"></div>
       </div>
     </section>
+    <section class="zone plays" id="pPlays" hidden></section>
+    <section class="zone" id="pReel" hidden></section>
     <section class="zone"><h2>Game by game</h2><p class="lede">Every game this season, newest first. xG is his own shots' chances; on-ice ± is chances for minus against while he was out there. Tap a game to open it.</p>
       <div id="pLog"><p class="note">Loading his games…</p></div></section>
     <div id="pMedia"></div>
@@ -789,7 +782,9 @@ function renderPlayers(view, param) {
     if (location.hash !== here || !$("#pLog")) return;
     const rows = Array.isArray(file) ? file : file.log || [], ed = Array.isArray(file) ? null : file.edge;
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
-    if (!Array.isArray(file) && file.a3z && $("#pA3z")) $("#pA3z").innerHTML = a3zBlock(file.a3z);
+    if (!Array.isArray(file) && file.story && $("#pBio")) $("#pBio").innerHTML = playerBio(file.story);
+    if (!Array.isArray(file) && file.a3z && $("#pPlays")) renderPlays($("#pPlays"), file.a3z, p.id, p.name).catch(() => {});
+    if ($("#pReel")) renderReel($("#pReel"), Array.isArray(file) ? [] : file.reel, rows, p.name).catch(() => {});
     if (!Array.isArray(file) && file.story && $("#pStory")) $("#pStory").innerHTML = playerStory(file.story);
     getJSON("data/features.json").then((fs) => {   // a deep dive on him, if there is one
       const f = (fs || []).find((x) => x.kind === "player" && x.subject && x.subject.id === p.id);

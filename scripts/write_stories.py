@@ -200,12 +200,15 @@ def write(client, task, facts):
     return text, getattr(msg, "usage", None)
 
 
-def cached(path):
-    """True when a good story is already saved; blank or cut-off ones count as missing."""
+def cached(path, goalies=None):
+    """True when a good story is already saved; blank or cut-off ones count as missing, and so does a preview
+    written for different starting goalies (the 2:37 PM build often has ESPN's confirmed starters)."""
     if not os.path.exists(path):
         return False
     try:
         d = json.load(open(path))
+        if goalies and d.get("goalies") and d["goalies"] != goalies:
+            return False
         return d.get("v", 1) >= STORY_VERSION and finished(d.get("text"))
     except Exception:
         return False
@@ -245,7 +248,8 @@ def main(client=None):
             break
         p = json.load(open(path))
         out = os.path.join(pdir, f"{p['id']}.json")
-        if cached(out):
+        goalies = [((p.get("goalies") or {}).get(t) or {}).get("id") for t in (p["away"], p["home"])]
+        if cached(out, goalies):
             continue
         try:
             text, usage = write(client, PREVIEW_TASK, preview_facts(p))
@@ -255,7 +259,8 @@ def main(client=None):
                 break
             continue
         fails[0] = 0
-        json.dump(dict(text=text, v=STORY_VERSION, model=MODEL, written=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')), open(out, "w"))
+        json.dump(dict(text=text, v=STORY_VERSION, model=MODEL, goalies=goalies,
+                       written=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')), open(out, "w"))
         p["story"] = text
         json.dump(p, open(path, "w"), separators=(",", ":"))
         budget -= 1

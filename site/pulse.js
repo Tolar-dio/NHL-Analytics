@@ -27,7 +27,7 @@ function formTag(r) {
 function storyList(lines, opts = {}) {
   if (!lines || !lines.length) return "";
   return `<ul class="slines${opts.compact ? " compact" : ""}">${lines.map((x) => {
-    const eff = x.effect ? (opts.compact ? "" : `<p class="sl-eff"><span class="sl-priced ${x.priced ? "in" : "out"}">${x.priced ? "In the model" : "Not in the model"}</span> ${esc(x.effect)}</p>`) : "";
+    const eff = opts.compact || x.priced == null ? "" : `<p class="sl-eff"><span class="sl-priced ${x.priced ? "in" : "out"}">${x.priced ? "In the model" : "Not in the model"}</span> ${x.effect ? esc(x.effect) : ""}</p>`;
     const where = opts.game ? `<a class="sl-game" href="#preview/${x.game}">${x.away} at ${x.home}</a>` : "";
     return `<li class="sl"${opts.compact && x.effect ? ` data-tip="${esc(`<b>${x.priced ? "In the model" : "Not in the model"}</b><br>${x.effect}`)}"` : ""}>
       <span class="sl-team">${x.team || "Both"}</span>
@@ -139,33 +139,37 @@ async function renderPulse(view, tab) {
 const svPct = (x) => (x == null ? "–" : x.toFixed(3).replace(/^0/, ""));
 
 // the story block on a player page: who he is, his form, and what's around him
-function playerStory(st) {
-  if (!st) return "";
-  const b = st.bio || {}, f = st.form || {}, bits = [];
+// the bio line in the player page header: age, birthplace, size, draft, and his NHL teams when there are several
+function playerBio(st) {
+  const b = st.bio || {}, bits = [];
   if (b.age) bits.push(`Age ${b.age}`);
   if (b.born) bits.push(`born in ${esc(b.born)}`);
   if (b.height) bits.push(`${b.height}${b.weight ? `, ${b.weight} lb` : ""}`);
   if (b.shoots) bits.push(`shoots ${b.shoots === "L" ? "left" : "right"}`);
   const draft = b.draft ? (b.draft === "Undrafted" ? "Undrafted" : `Drafted ${esc(b.draft)}`) : "";
   const teams = (b.teams || []).length > 1 ? `NHL teams: ${b.teams.map(([t, n]) => `${t} (${n})`).join(", ")}` : "";
-  const career = st.career ? `Career with this season: ${st.career.gp.toLocaleString()} games, ${st.career.g} goals, ${st.career.pts.toLocaleString()} points` : "";
+  const career = st.career ? `Career: ${st.career.gp.toLocaleString()} games, ${st.career.g} goals, ${st.career.pts.toLocaleString()} points` : "";
+  return [bits.join(", "), draft].filter(Boolean).join(". ") + (st.rookie ? ` <span class="tag">Rookie</span>` : "") +
+    ((teams || career) ? `<br><span class="dim">${[teams, career].filter(Boolean).join(". ")}</span>` : "");
+}
+// the story block under the stat tiles: his form, streaks, flags, milestones and tonight's storylines
+function playerStory(st) {
+  if (!st) return "";
+  const f = st.form || {};
   let form = "";
   if (f.state) {
     const v = VERDICT[f.verdict] || ["", ""];
     form = `<p class="ps-form"><span class="tag tag-form tag-${f.state}">${f.state === "hot" ? "Hot" : "Cold"}</span><span class="tag tag-v tag-v-${f.verdict}">${v[0]}</span> ${esc(f.text)}</p>`;
   } else if (f.n >= 3) {
-    form = `<p class="ps-form">${f.pts} points (${f.g} G) in his last ${f.n} games, about ${f.xpts >= f.pts ? "what" : "a touch more than"} the model expected (${num(f.xpts, 1)}). ${f.ixg != null ? `${num(f.ixg, 1)} expected goals on his own shots.` : ""}</p>`;
+    const near = Math.abs(f.pts - f.xpts) < 1.5;
+    form = `<p class="ps-form">${f.pts} points (${f.g} G) in his last ${f.n} games, ${near ? "right about where" : f.pts > f.xpts ? "a little above where" : "a little below where"} the model expected (${num(f.xpts, 1)}).${f.ixg != null ? ` ${num(f.ixg, 1)} expected goals on his own shots.` : ""}</p>`;
   }
   const streaks = (f.streaks || []).map((s) => `<span class="wchip wchip-${s.k === "points" || s.k === "goals" ? "streak" : "due"}">${esc(s.text)}</span>`).join("");
   const flags = (st.flags || []).map((x) => `<li><b>${esc(x.label)}.</b> ${esc(x.text)}</li>`).join("");
   const ms = (st.milestones || []).map((m) => `<li><b>Milestone.</b> ${esc(m.text)}${m.stat === "gp" || m.stat.startsWith("first") ? "" : "."}</li>`).join("");
   const tonight = (st.tonight || []).map((t) => `<li><b>Tonight.</b> ${esc(t)}</li>`).join("");
-  return `<div class="pstory">
-      <p class="ps-bio">${bits.join(", ")}${bits.length ? "." : ""} ${draft}${draft ? "." : ""}${st.rookie ? ` <span class="tag">Rookie</span>` : ""}</p>
-      ${teams || career ? `<p class="note">${[teams, career].filter(Boolean).join(". ")}.</p>` : ""}
-      ${form}${streaks ? `<div class="wc-chips">${streaks}</div>` : ""}
-      ${flags || ms || tonight ? `<ul class="notes">${tonight}${flags}${ms}</ul>` : ""}
-    </div>`;
+  return `<div class="pstory">${form}${streaks ? `<div class="wc-chips">${streaks}</div>` : ""}
+      ${flags || ms || tonight ? `<ul class="notes">${tonight}${flags}${ms}</ul>` : ""}</div>`;
 }
 
 // ------------------------------------------------------------------ Ice Sheet's own writing (scripts/write_features.py)

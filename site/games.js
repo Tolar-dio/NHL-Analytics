@@ -329,7 +329,9 @@ async function renderPreview(view, id) {
       <p class="lede">${timeMT(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "unknown"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "unknown"}.</p>
       <div class="game-open">
         <div>${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>` : ""}
-          ${p.notes && p.notes.length ? `<h3 class="kicker">Where it tilts</h3><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}</div>
+          ${p.notes && p.notes.length ? (p.story
+            ? `<details class="fold"><summary>The numbers behind it</summary><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul></details>`
+            : `<h3 class="kicker">Where it tilts</h3><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`) : ""}</div>
         <div>
           <h3 class="kicker">Model's expected goals tonight</h3>
           ${xgBar(p.away, p.away_xg)}${xgBar(p.home, p.home_xg)}
