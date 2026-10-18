@@ -35,7 +35,10 @@ K = dict(Kx=300, Ko=600, Ki=20, Kf=30, Kt=600, Kg=300,      # current-season shr
          alpha=0.7,                                       # weight on last season vs role prior
          Kt_prior=1200, beta=0.7, Kg0=600)                # team/goalie prior settings
 MAXG = 15
-PTS_CAL = 1.015      # overall points scale; 1.03 before on-ice finishing (Kof) was modelled, refit Oct 2026
+PTS_CAL = 1.015
+# 1+ points ran high at the low end (depth players: 17% priced, 15% happened). A Platt correction on the logit, fit
+# on the 2025-26 walk-forward backtest (44k player-games), held on 2026-27 with priors (3k): log loss 0.58915 -> 0.58796.
+P1_CAL = (0.0033, 1.0924)      # overall points scale; 1.03 before on-ice finishing (Kof) was modelled, refit Oct 2026
 # Overdispersion (gamma-Poisson / negative binomial shape r; None = plain Poisson). Game-to-game swings in a
 # team's scoring rate make a player's points burstier than Poisson, which is what thins the 3+ tail.
 DISP = dict(g=None, p=None)
@@ -280,6 +283,9 @@ def price_players(rows, p, tm):
     d["p_goal"] = nb_tail(d.lam_g, DISP["g"], 1)
     d["p_1pt"] = nb_tail(d.lam_p, DISP["p"], 1)
     d["p_2pts"] = nb_tail(d.lam_p, DISP["p"], 2)
+    if P1_CAL:
+        q = np.clip(d.p_1pt.astype(float), 1e-4, 1 - 1e-4)
+        d["p_1pt"] = np.maximum(1 / (1 + np.exp(-(P1_CAL[0] + P1_CAL[1] * np.log(q / (1 - q))))), d.p_2pts)
     d["p_3pts"] = nb_tail(d.lam_p, DISP["p"], 3)
     return d
 

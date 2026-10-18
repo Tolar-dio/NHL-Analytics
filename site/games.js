@@ -300,7 +300,7 @@ async function renderPreview(view, id) {
       <b class="res res-${res}">${res}</b><span class="bar-track"><span class="bar-fill" style="width:${100 * x.xg_share}%"></span></span><span class="dim">${x.home ? "vs" : "@"} ${x.opp}</span></a></li>`;
   }).join("")}</ol>`;
   const goalieCard = (gc, team) => !gc ? `<div class="gcard"><h3>${team}</h3><p class="note">No projected goalie yet.</p></div>` :
-    `<div class="gcard"><h3>${team}</h3><b>${esc(gc.name)}</b> <span class="dim">projected</span>
+    `<div class="gcard"><h3>${team}</h3><b>${gc.id ? `<a href="#goalie/${gc.id}">${esc(gc.name)}</a>` : esc(gc.name)}</b> <span class="dim">projected</span>
       <div>This season: ${gc.gp} games, ${pct(gc.sv_pct, 1)} save rate, ${signed(gc.gsax)} saves above expected</div>
       ${gc.hd_sv != null ? `<div>High-danger saves: ${pct(gc.hd_sv, 1)} <span class="dim">(league ${pct(gc.hd_sv_lg, 1)}, ${ordinal(Math.round(100 * gc.hd_sv_pctile))} percentile, NHL EDGE)</span></div>` : ""}
       <div class="dim">Last season: ${gc.prev_gp ? `${gc.prev_gp} games, ${signed(gc.prev_gsax)} saves above expected` : "no NHL games"}</div></div>`;

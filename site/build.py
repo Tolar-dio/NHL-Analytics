@@ -209,7 +209,8 @@ def archive_tonight(day, games, props, lu):
     path = os.path.join(ARCHIVE, f"{day}.json")
     arc = json.load(open(path)) if os.path.exists(path) else dict(date=day, games={})
     now = dt.datetime.now(dt.timezone.utc)
-    keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_1pt", "p_2pts", "p_3pts", "proj_toi", "g_f"]
+    keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_1pt", "p_2pts", "p_3pts", "exp_sog", "p_sog2", "p_sog3",
+            "proj_toi", "g_f"]
     for g in games:
         gid = str(g["id"])
         start = dt.datetime.fromisoformat(g["start"].replace("Z", "+00:00")) if g.get("start") else None
@@ -633,6 +634,75 @@ def main():
                                                                              grp.time_in_period)]
     dump("shots.json", shots)
 
+    # ---- goalie pages (site/goalies.py): danger bands, rebounds, shots-against map, start log, EDGE areas, EH history
+    try:
+        import goalies as GP
+        eh_g = None
+        try:
+            import eh as EH
+            eh_g = EH.load("goalies") if EH.available() else None
+        except Exception:
+            eh_g = None
+        gareas = pd.read_csv(os.path.join(ROOT, "data", "external", "edge", CUR, "goalie_areas.csv.gz")) \
+            if os.path.exists(os.path.join(ROOT, "data", "external", "edge", CUR, "goalie_areas.csv.gz")) else None
+        gsum = GP.build(all_shots, cur["gg"], prev["gg"], games, names, os.path.join(OUTD, "goalies"), box=N.goalie_box(CUR),
+                        edge_areas=gareas, eh=eh_g, shot_code=SHOT_CODE)
+        for g in goalie_rows:
+            g.update({k: v for k, v in (gsum.get(g["id"]) or {}).items() if v is not None})
+        dump("goalies.json", goalie_rows)
+        print(f"  goalies/: {len(gsum)} goalie pages")
+    except Exception as e:
+        print(f"  goalie pages skipped: {e!r}")
+
+    # ---- defense (analysis/defense.py output): this season next to last season, percentiles, notes, league map
+    def_cards = {}
+    try:
+        import defense as DF
+        cur_def = os.path.join(AN, CUR, "defense.csv")
+        if not os.path.exists(cur_def):
+            DF.build(CUR)
+        prev_def = os.path.join(ROOT, "data", "derived", f"defense_{PREV}.csv")
+        if not os.path.exists(prev_def):
+            prev_def = os.path.join(AN, PREV, "defense.csv")
+        def_cards, def_league = DF.cards(cur_def, prev_def, {int(k): v for k, v in names.items()}, CUR, PREV)
+        dump("defense_league.json", def_league)
+        print(f"  defense: {len(def_cards)} skater cards")
+    except Exception as e:
+        print(f"  defense cards skipped: {e!r}")
+
+    # ---- tactics (site/tactics.py): lines, pairs, special-teams units, deployment, team style
+    try:
+        import tactics as TX
+        evr = ev[ev.game_type == "regular"].copy()
+        evr["psec"] = evr.game_seconds - (evr.period.clip(upper=4) - 1) * 1200
+        att = evr[evr.event.isin(["shot-on-goal", "missed-shot", "goal", "blocked-shot"])][["game_id", "period", "psec", "team", "event", "event_id"]]
+        att = att.merge(all_shots[["game_id", "event_id", "xgv"]], on=["game_id", "event_id"], how="left")
+        att["xgv"] = att.xgv.fillna(0.0)
+        shf = pd.read_csv(TBL(CUR, "shifts.csv.gz")).dropna(subset=["player_id"])
+        shf["player_id"] = shf.player_id.astype(int)
+        shf = shf[shf.game_id.isin(evr.game_id.unique())]
+        posmap = {int(i): ("D" if p == "D" else ("G" if p == "G" else "F")) for i, p in plist.position.items()}
+        TG, TP = TX.build(evr, shf, posmap, att)
+        dfn = pd.read_csv(os.path.join(AN, CUR, "defense.csv"), index_col=0) if os.path.exists(os.path.join(AN, CUR, "defense.csv")) else None
+        style, style_lg, style_season = None, None, None
+        try:
+            for ssn in ("2026-27", "2025-26"):
+                st_, lg_ = TX.a3z_style(ssn)
+                if st_ and len(st_) >= 20 and min(v["games"] for v in st_.values()) >= 8:
+                    style, style_lg, style_season = st_, lg_, ssn
+                    break
+        except Exception as e:
+            print(f"  team style skipped: {e!r}")
+        os.makedirs(os.path.join(OUTD, "tactics"), exist_ok=True)
+        for team in sorted(set(shf.team)):
+            tv = TX.team_view(team, TG, TP, {int(k): v for k, v in names.items()}, dfn, style, style_lg)
+            tv["style_season"] = style_season
+            with open(os.path.join(OUTD, "tactics", f"{team}.json"), "w") as f:
+                json.dump(tv, f, separators=(",", ":"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
+        print(f"  tactics/: {len(set(shf.team))} teams")
+    except Exception as e:
+        print(f"  tactics skipped: {e!r}")
+
     # ---- tonight
     sched = fetch_schedule(today)
     slate = [g for g in sched if g["date"] == str(today)]
@@ -693,6 +763,11 @@ def main():
             print(f"  a3z points nudge skipped: {e!r}")
         d = M.price_players(pd.DataFrame(rows).set_index("player_id"), fpt, tm).reset_index()
         d["name"] = d.player_id.map(names)
+        try:      # shots on goal (analysis/sog.py): this season blended with last, ice time, opponent shots allowed
+            import sog as SOG
+            d = SOG.prices(d, cur["pg"], prev["pg"], str(today))
+        except Exception as e:
+            print(f"  shot prices skipped: {e!r}")
         # under the radar: real chances, goals lagging, outside the slate's top 12 favourites
         rank = d.p_goal.rank(ascending=False)
         regular = d.lineup == "last"
@@ -701,7 +776,8 @@ def main():
         d["radar"] = d.player_id.isin(set(fwd.player_id) | set(dmen.player_id))
         d = d.rename(columns={"player_id": "id"}).sort_values("p_goal", ascending=False)
         props = records(d, ["id", "name", "team", "opp", "game", "pos", "gp", "g", "pts", "ixg", "proj_toi",
-                            "pp_share", "p_goal", "p_1pt", "p_2pts", "p_3pts", "lam_g", "lam_p", "g_f", "radar",
+                            "pp_share", "p_goal", "p_1pt", "p_2pts", "p_3pts", "exp_sog", "p_sog2", "p_sog3", "p_sog4",
+                            "lam_g", "lam_p", "g_f", "radar",
                             "lineup", "lineup_note"])
         archive_tonight(str(today), gm_out, props, lu)
         for p in props:
@@ -743,12 +819,12 @@ def main():
         if pid in tonight_lines:
             story["tonight"] = tonight_lines[pid]
         with open(os.path.join(plog, f"{pid}.json"), "w") as f:
-            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid), eh=eh_cards.get(pid),
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid), eh=eh_cards.get(pid), defense=def_cards.get(pid),
                            reel=sorted(reel.get(pid, []), key=lambda r: (r["date"], r["period"], r["t"]), reverse=True)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print(f"  players/: {len(plogs)} game logs")
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props, headlines=headlines,
-                              lineup_source=lu["source"], disp=M.DISP,
+                              lineup_source=lu["source"], disp=M.DISP, p1cal=list(M.P1_CAL) if M.P1_CAL else None,
                               goalie_note="Goalies are ESPN's probable starters where posted, otherwise most starts in "
                                           "each team's last five games. Check confirmations before betting."))
 

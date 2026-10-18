@@ -56,7 +56,9 @@ def track(cur, season=M.CUR):
                 rows.append(dict(date=day, game=gid, lineup=p.get("lineup") or "last", p_goal=p["p_goal"], p_2pts=p["p_2pts"],
                                  p_1pt=p.get("p_1pt"), p_3pts=p.get("p_3pts"), y_1=int(d.pts >= 1), y_3=int(d.pts >= 3),
                                  base_g=1 - np.exp(-rg * p["proj_toi"]), base_2=1 - np.exp(-lp) * (1 + lp),
-                                 y_goal=int(d.g >= 1), y_2=int(d.pts >= 2)))
+                                 y_goal=int(d.g >= 1), y_2=int(d.pts >= 2),
+                                 p_sog2=p.get("p_sog2"), p_sog3=p.get("p_sog3"), exp_sog=p.get("exp_sog"),
+                                 sog=int(d.sog) if "sog" in d and not pd.isna(d.sog) else None))
             unpriced = [i for i in dressed.index if i not in priced]
             lineup += [dict(tag="unpriced", dressed=True) for _ in unpriced]
             gm = games.loc[gid]
@@ -86,7 +88,7 @@ def track(cur, season=M.CUR):
                   cal=[dict(n=int(r.n), pred=round(float(r.pred), 3), act=round(float(r.act), 3)) for r in cal.itertuples()]),
         pts=dict(pred=round(float(P.p_2pts.sum()), 1), act=int(P.y_2.sum()), ll=round(ll(P.y_2, P.p_2pts), 4),
                  ll_base=round(ll(P.y_2, P.base_2), 4)),
-        **tails(P),
+        **tails(P), **shots(P),
         lineup=dict(lu, unpriced=int((L.tag == "unpriced").sum())),
         goalies=dict(n=int(len(Q)), hits=int(Q.hit.sum()) if len(Q) else 0,
                      espn_n=int((Q.src == "espn").sum()) if len(Q) else 0,
@@ -106,6 +108,17 @@ def tails(P):
         return {}
     return dict(pts1=dict(pred=round(float(q.p_1pt.sum()), 1), act=int(q.y_1.sum()), ll=round(ll(q.y_1, q.p_1pt), 4)),
                 pts3=dict(pred=round(float(q.p_3pts.sum()), 1), act=int(q.y_3.sum()), ll=round(ll(q.y_3, q.p_3pts), 4)))
+
+
+def shots(P):
+    """2+ and 3+ shots on goal, graded where the archive has them (added Oct 18, 2026)."""
+    q = P.dropna(subset=["p_sog2", "sog"]) if "p_sog2" in P else P.iloc[0:0]
+    if q.empty:
+        return {}
+    y2, y3 = (q.sog >= 2).astype(int), (q.sog >= 3).astype(int)
+    return dict(sog=dict(n=int(len(q)), exp=round(float(q.exp_sog.sum()), 1), act=int(q.sog.sum()),
+                         p2=round(float(q.p_sog2.sum()), 1), act2=int(y2.sum()), ll2=round(ll(y2, q.p_sog2), 4),
+                         p3=round(float(q.p_sog3.sum()), 1), act3=int(y3.sum()), ll3=round(ll(y3, q.p_sog3), 4)))
 
 
 def market_grade(G):

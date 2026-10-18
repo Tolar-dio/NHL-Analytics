@@ -79,7 +79,7 @@ function styleMapSVG(lg, card, pid, map, W) {
     const [x, anchor, yOut, yIn] = qPos[i], w = txt.length * 6.2 + 4, bx = anchor === "end" ? x - w : x;
     for (const y of [yOut, yIn]) {
       const b = { x: bx, y: y - 11, w, h: 14 };
-      if (!hit(b, meBox)) { qBoxes.push(b); return `<text class="lbl sm-q" x="${x}" y="${y}" text-anchor="${anchor}">${esc(txt)}</text>`; }
+      if (!hit(b, meBox) && !hit(b, qBoxes)) { qBoxes.push(b); return `<text class="lbl sm-q" x="${x}" y="${y}" text-anchor="${anchor}">${esc(txt)}</text>`; }
     }
     return "";
   }).join("");

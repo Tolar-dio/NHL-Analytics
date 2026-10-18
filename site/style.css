@@ -726,3 +726,31 @@ img.mug { font-size: 0; color: transparent; }   /* a headshot that fails to load
 .vb-zero { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--axis); }
 .vb-fill { position: absolute; top: 0; bottom: 0; background: var(--blue); border-radius: 3px; }
 .vb-fill.vb-neg { background: var(--muted); }   /* red means goals on this site, so value given back is gray */
+
+/* ---------------------------------------------------------------- defense, goalies, tactics */
+.plays-notes p.cross { border-left-color: var(--axis); color: var(--ink-2); font-size: 15px; }
+.def-table td .bar-track { display: block; min-width: 90px; }
+.def-table td:first-child { color: var(--ink-2); }
+table.mini td.tnum, table.mini th.tnum { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sv-dots .mix-track { display: block; }
+.sv-dot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; }
+.sv-dot.me { background: var(--blue); box-shadow: 0 0 0 2px var(--sheet); z-index: 1; }
+.sv-dot.lg { background: var(--sheet); border: 2px solid var(--ink-2); }
+.sv-key { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin: 0 4px 0 2px; }
+.sv-key.me { background: var(--blue); }
+.sv-key.lg { border: 2px solid var(--ink-2); }
+.share-cell { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.share-bar { position: relative; width: 70px; height: 8px; border-radius: 4px; background: var(--neutral); overflow: hidden; }
+.share-bar span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue); }
+.share-bar::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-2); }
+.zs-bar { display: flex; width: 120px; height: 10px; border-radius: 5px; overflow: hidden; background: var(--neutral); }
+.zs-oz { background: var(--blue); }
+.zs-dz { background: var(--muted); margin-left: auto; }
+.zs-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 3px 0 8px; }
+.zs-key.oz { background: var(--blue); }
+.zs-key.dz { background: var(--muted); }
+@media (max-width: 640px) { .zs-bar { width: 80px; } .share-bar { width: 44px; } .dep-table th:last-child { font-size: 0; } .dep-table th:last-child::before { content: "Starts"; font-size: 13px; } }
+@media (max-width: 640px) {
+  .def-table th:nth-child(4), .def-table td:nth-child(4), .hide-sm { display: none; }
+  .def-table td .bar-track { min-width: 60px; }
+}
