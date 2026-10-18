@@ -22,7 +22,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
+      # main as it is now, not the commit that triggered the run: scheduled and workflow_run runs otherwise start
+      # from a stale commit, rewrite files the previous run already pushed, and the rebase below conflicts
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -47,5 +51,11 @@ jobs:
           for p in data/news data/injuries; do if [ -e "$p" ]; then git add "$p"; fi; done
           if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
           git commit -q -m "News $(date -u +%Y-%m-%dT%H:%MZ)"
-          for i in 1 2 3; do git pull -q --rebase origin main && git push -q && exit 0; sleep 10; done
+          # this job is the only writer of data/news and data/injuries/history.json, so on a conflict its own,
+          # newer files win (-X theirs keeps the commit being replayed); a failed rebase is aborted before retrying
+          for i in 1 2 3; do
+            if git pull -q --rebase -X theirs origin main && git push -q; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
           exit 1
