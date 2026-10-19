@@ -321,7 +321,7 @@ def skater_form(pid, grp, rate, prev_toi, n_max=10):
     ice = ""
     if dtoi is not None and abs(dtoi) >= 1.5:
         ice = f" His ice time is {'up' if dtoi > 0 else 'down'} {mmss(abs(dtoi))} a night over that stretch."
-    head = f"{P} points ({G} G) in his last {nw(n)} games; the model expected about {num(ep)} at his ice time."
+    head = f"{P} points ({G} G) in his last {nw(n)} games; we'd expect about {num(ep)} at his ice time."
     # the process check uses one measure, named in the text: his own shots' xG for a goal-only run, otherwise
     # whichever of his own chances and his team's chances with him on the ice moved more
     own = lambda: f"{num(ixg)} xG on his own shots against {num(e_ix)} usual"
@@ -507,8 +507,8 @@ def season_pulse(season, prev_season, cur, prev, names, fp, pri_players, sk, sta
     P["sample_note"] = (f"Early season: teams have played about {nw(round(gp_med))} games. Streaks this short are mostly noise, "
                         f"so every verdict here leans on chances, which settle faster than goals."
                         if gp_med < 20 else
-                        f"Teams have played about {round(gp_med)} games. Form is the last ten games, judged against what the model "
-                        f"expected at each player's ice time.")
+                        f"Teams have played about {round(gp_med)} games. Form is the last ten games, judged against what we'd "
+                        f"expect at each player's ice time.")
     return P
 
 
@@ -826,7 +826,7 @@ def _vs_history(pid, opp, ptg, name):
     allp = mine.pts.sum() / max(len(mine), 1)
     if n >= 4 and pts >= 6 and pts / n >= max(1.5 * allp, 1.0):
         return dict(k="vs", text=f"{name} has {pts} points in {n} games against {the(opp)} since the start of last season. "
-                                 f"A small sample, and not something the model uses.", w=16, chip=f"{pts} pts in {n} vs {opp}")
+                                 f"A small sample, and not something our numbers use.", w=16, chip=f"{pts} pts in {n} vs {opp}")
     return None
 
 
@@ -867,8 +867,8 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
             ot = " in overtime" if last.decided_in == "OT" else " in a shootout" if last.decided_in == "SO" else ""
             out.append(dict(team=team, k="b2b", w=46, priced=True,
                             text=f"{cap(the(team))} are on the second night of a back-to-back after a {gf}-{ga} {res}{ot} {where} last night.",
-                            effect=f"Priced: the model trims {team}'s scoring 2.5% and gives {opp} 2.5% more. Tired teams got 47.4% "
-                                   f"of the expected goals in 2025-26."))
+                            effect=f"Priced: we trim {team}'s expected scoring 2.5% and give {opp} 2.5% more. Last season, teams "
+                                   f"on the second night got 47.4% of the expected goals."))
         elif rest is not None and orest is not None and rest >= 2 and orest == 0:
             out.append(dict(team=team, k="rest", w=30, priced=False,
                             text=f"Rest edge: {the(team)} have had {pl(rest, 'day')} off; {the(opp)} played last night.",
@@ -900,7 +900,7 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                         rs.append("W" if gf > ga else ("OTL" if x.decided_in != "REG" else "L"))
                     text += f" They're {record(rs)} on it so far."
                 out.append(dict(team=team, k="trip", w=16 + 3 * n, priced=False, text=text,
-                                effect="Not priced; the model treats every road game the same."))
+                                effect="Not priced; we treat every road game the same."))
         else:
             if run_back == 0 and len(side) >= 3:
                 away_run = next((i for i, v in enumerate(side[::-1]) if v), len(side))
@@ -1035,8 +1035,8 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
             return out
         opt = next((o for o in g.get(side + "_goalies", []) if o["id"] == gid), None)
         f = opt["factor"] if opt else 1.0
-        eff = (f"Priced: the model has {opp} scoring {round(100 * abs(1 - f))}% {'fewer' if f < 1 else 'more'} goals than against "
-               f"an average goalie." if abs(1 - f) >= 0.03 else "Priced: the model rates him close to an average goalie.")
+        eff = (f"Priced: we expect {opp} to score {round(100 * abs(1 - f))}% {'fewer' if f < 1 else 'more'} goals than against "
+               f"an average goalie." if abs(1 - f) >= 0.03 else "Priced: we rate him close to an average goalie.")
         tag = "" if src == "espn" else " (projected)"
         others = [x for x in P["goalie"].values() if x["team"] == team and x["id"] != gid and x["starts"] >= 1]
         top = max(others, key=lambda x: x["starts"], default=None)
@@ -1050,8 +1050,8 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                             effect=eff, pid=gid))
         elif G.get("state"):
             out.append(dict(team=team, k="goalie", w=40, priced=True, text=G["text"].replace(G["name"], G["name"] + tag, 1),
-                            effect=eff + " Recent form only counts through his whole season, which the model shrinks hard; goalie "
-                                         "seasons barely repeat.", pid=gid))
+                            effect=eff + " Recent form counts only as part of his whole season, which we pull hard toward average; "
+                                         "goalie seasons barely repeat.", pid=gid))
         return out
 
     def special_lines(a, h):
@@ -1066,8 +1066,8 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                 out.append(dict(team=t, k="special", w=30, priced=True,
                                 text=f"Power play against penalty kill: {t}'s power play ({ordinalw(pr)} in chances) meets {o}'s kill "
                                      f"({ordinalw(kr)} in chances allowed){extra}.",
-                                effect="Partly priced: power-play chances are in each team's rating and in each player's role; the "
-                                       "number of penalties isn't projected."))
+                                effect="Partly priced: power-play chances are in each team's rating and each player's role, but we "
+                                       "don't project how many penalties there will be."))
         return out
 
     def market_lines(g):
@@ -1080,17 +1080,17 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                 mp = m["model_p_home"] if d > 0 else 1 - m["model_p_home"]
                 kp = m["p_home"] if d > 0 else 1 - m["p_home"]
                 out.append(dict(team=t, k="market", w=26, priced=True,
-                                text=f"The model is higher on {the(t)} than DraftKings is: {round(100 * mp)}% to win against the "
-                                     f"market's {round(100 * kp)}%.",
-                                effect="The model's win numbers are still being graded against the market on the Trust page. "
+                                text=f"We're higher on {the(t)} than DraftKings is: {round(100 * mp)}% to win against the "
+                                     f"sportsbook's {round(100 * kp)}%.",
+                                effect="Our win numbers are still being graded against the sportsbook on the Track record page. "
                                        "Read a gap as a question, not a pick."))
         if m.get("implied_total") is not None and g.get("total") is not None:
             d = g["total"] - m["implied_total"]
             if abs(d) >= 0.5:
                 out.append(dict(team=None, k="market", w=14, priced=True,
-                                text=f"The model sees {'more' if d > 0 else 'fewer'} goals than the market: {num(g['total'])} against "
+                                text=f"We see {'more' if d > 0 else 'fewer'} goals than the sportsbook: {num(g['total'])} against "
                                      f"about {num(m['implied_total'])}.",
-                                effect="Totals have never beaten the market or a league average in testing. Context only."))
+                                effect="Our game totals haven't beaten the sportsbook or a league average in testing. Context only."))
         return out
 
     def player_items(g):
@@ -1164,11 +1164,11 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
             T = P["team"].get(t, {})
             if T.get("streak"):
                 lines.append(dict(team=t, k="streak", w=28 + 4 * T["streak"]["n"], priced=False, text=T["streak"]["text"],
-                                  effect="Not priced as a streak: the model rates teams on a season of chances, so a run counts "
+                                  effect="Not priced as a streak: we rate teams on a season of chances, so a run counts "
                                          "only as much as the chances behind it."))
             if T.get("luck_text") and abs(T.get("luck", 0)) >= 5:
                 lines.append(dict(team=t, k="luck", w=20 + 1.5 * abs(T["luck"]), priced=True, text=T["luck_game"],
-                                  effect=f"The model goes by chances, so it already rates {t} {'below' if T['luck'] > 0 else 'above'} "
+                                  effect=f"We go by chances, so we already rate {t} {'below' if T['luck'] > 0 else 'above'} "
                                          f"what the record says."))
             lines += schedule_lines(t, o, h)
             lines += injury_lines(t, o)
@@ -1212,12 +1212,12 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                 S = hot[0]
                 lines.append(dict(team=t, k="hot", w=24 + 3 * S["form"]["z"], priced=False, pid=S["id"],
                                   text=f"{S['name']} is rolling: {S['form']['text']}",
-                                  effect="The model only moves on a streak through his chances, shrunk hard toward his longer record."))
+                                  effect="A streak only moves our numbers through his chances, and even then we lean on his longer record."))
             if cold:
                 S = cold[0]
                 lines.append(dict(team=t, k="cold", w=22 + 2 * abs(S["form"]["z"]), priced=False, pid=S["id"],
                                   text=f"{S['name']} is in a rut: {S['form']['text']}",
-                                  effect="The model prices his chances, not the slump."))
+                                  effect="We go by his chances, not the slump."))
         lines.sort(key=lambda x: -x["w"])
         seen, keep = set(), []
         for x in lines:
@@ -1225,7 +1225,7 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
             if key in seen:
                 continue
             seen.add(key)
-            if x.get("effect"):   # the page tags each line "In the model" or not, so the effect drops its own label
+            if x.get("effect"):   # the page tags each line "Factored in" or "Story only", so the effect drops its own label
                 e = re.sub(r"^(Not priced|Priced|Partly priced)( as playing)?[:;,.]?\s*", lambda m: "As playing: " if m.group(2) else "", x["effect"])
                 x = dict(x, effect=cap(e) if e else None)
             keep.append({k: (r(v, 1) if k == "w" else v) for k, v in x.items()})

@@ -1,5 +1,5 @@
 {
-  "_note": "Feeds the hourly news job reads (scripts/media.py). Headlines, teasers and links only are shown; never republish full text. Add or remove entries freely.",
+  "_note": "Feeds the hourly news job reads (scripts/media.py). League-wide sources only: the site serves every fan base, so no single-team outlets. Headlines, teasers and links only are shown; never republish full text.",
   "news": [
     {
       "name": "The Athletic",
@@ -19,11 +19,6 @@
     {
       "name": "Virtual Hockey Scout",
       "url": "https://virtualhockeyscout.substack.com/feed"
-    },
-    {
-      "name": "Dater on Avalanche",
-      "url": "https://adriandater.substack.com/feed",
-      "team": "COL"
     },
     {
       "name": "JFresh",
@@ -83,18 +78,6 @@
       "name": "The Wraparound (THN)",
       "url": "https://feeds.megaphone.fm/the-hockey-news-action-show",
       "apple": 1771866042
-    },
-    {
-      "name": "DNVR Avalanche",
-      "url": "https://rss.pdrl.fm/16e49c/feeds.simplecast.com/UvRsLzkH",
-      "apple": 1069497109,
-      "team": "COL"
-    },
-    {
-      "name": "Locked On Avalanche",
-      "url": "https://feeds.simplecast.com/pDiYqYj1",
-      "apple": 1485902260,
-      "team": "COL"
     }
   ],
   "youtube": [
@@ -131,16 +114,6 @@
     {
       "name": "The Hockey News",
       "channel": "UCTSsWKqTXwOK9THxs1pq4PQ"
-    },
-    {
-      "name": "Colorado Avalanche",
-      "channel": "UCM715eqbBCk1JE4zlAwYLqw",
-      "team": "COL"
-    },
-    {
-      "name": "DNVR Sports",
-      "channel": "UC8aOXvlqQqMlTFvbbAarD-A",
-      "only_team": "COL"
     }
   ]
 }

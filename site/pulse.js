@@ -20,16 +20,16 @@ const SL_KIND = { streak: "Streak", luck: "Luck", b2b: "Schedule", rest: "Schedu
 function formTag(r) {
   if (!r || !r.form) return "";
   const v = VERDICT[r.fv] || ["", ""];
-  return `<span class="tag tag-form tag-${r.form}" data-tip="${esc(`<b>${r.form === "hot" ? "Hot" : "Cold"}: ${v[0]}</b><br>${v[1]}<br><span class='dim'>Last ten games against what the model expected at his ice time.</span>`)}">${r.form === "hot" ? "Hot" : "Cold"}</span>`;
+  return `<span class="tag tag-form tag-${r.form}" data-tip="${esc(`<b>${r.form === "hot" ? "Hot" : "Cold"}: ${v[0]}</b><br>${v[1]}<br><span class='dim'>His last ten games compared with what we'd expect at his ice time.</span>`)}">${r.form === "hot" ? "Hot" : "Cold"}</span>`;
 }
 
 // storylines: what's going on, and whether the model already accounts for it
 function storyList(lines, opts = {}) {
   if (!lines || !lines.length) return "";
   return `<ul class="slines${opts.compact ? " compact" : ""}">${lines.map((x) => {
-    const eff = opts.compact || x.priced == null ? "" : `<p class="sl-eff"><span class="sl-priced ${x.priced ? "in" : "out"}">${x.priced ? "In the model" : "Not in the model"}</span> ${x.effect ? esc(x.effect) : ""}</p>`;
+    const eff = opts.compact || x.priced == null ? "" : `<p class="sl-eff"><span class="sl-priced ${x.priced ? "in" : "out"}">${x.priced ? "Factored in" : "Story only"}</span> ${x.effect ? esc(x.effect) : ""}</p>`;
     const where = opts.game ? `<a class="sl-game" href="#preview/${x.game}">${x.away} at ${x.home}</a>` : "";
-    return `<li class="sl"${opts.compact && x.effect ? ` data-tip="${esc(`<b>${x.priced ? "In the model" : "Not in the model"}</b><br>${x.effect}`)}"` : ""}>
+    return `<li class="sl"${opts.compact && x.effect ? ` data-tip="${esc(`<b>${x.priced ? "Factored into our numbers" : "Story only, not in our numbers"}</b><br>${x.effect}`)}"` : ""}>
       <span class="sl-team">${x.team || "Both"}</span>
       <div><span class="sl-kind">${SL_KIND[x.k] || ""}</span>${where}<p class="sl-text">${esc(x.text)}</p>${eff}</div></li>`;
   }).join("")}</ul>`;
@@ -81,13 +81,13 @@ async function renderPulse(view, tab) {
       <div class="pc-stat"><b>${signed(g.gsax5, 1)}</b> goals saved above expected <span class="dim">in his last ${g.n5} starts (${g.rec5}), ${svPct(g.sv5)}</span></div></article>`;
   const panels = {
     tonight: () => (P.headlines || []).length ? `
-      <h2>Tonight's storylines</h2><p class="lede">The biggest story lines across the slate. Each preview has the full list and whether the model already prices it in.</p>
+      <h2>Tonight's storylines</h2><p class="lede">The biggest storylines across tonight's games. "Factored in" means it moves our numbers (rest, injuries, goalies, special teams); "Story only" means it's worth knowing but doesn't.</p>
       ${storyList(P.headlines, { game: true })}
-      <h2 class="mt">One to watch from each team</h2><p class="lede">The likeliest producer on each side once the stories around him are counted: streaks, old teams, milestones, chances that haven't gone in yet.</p>
+      <h2 class="mt">One to watch from each team</h2><p class="lede">One player per team: the likeliest producer, with the story around him (a streak, his old team, a milestone, chances that haven't gone in yet).</p>
       <div class="wlist wgrid">${watchCards(P.watch)}</div>`
-      : `<p class="empty">No games tonight. Form, breakouts and luck are in the other tabs.</p>`,
+      : `<p class="empty">No games tonight. Who's hot, who's rising and who's due are in the other tabs.</p>`,
     form: () => `
-      <h2>Who's hot</h2><p class="lede">Points over the last ten games against what the model expected at each player's ice time, and whether the chances back it.</p>
+      <h2>Who's hot</h2><p class="lede">Points over the last ten games compared with what we'd expect at each player's ice time, and whether his chances back it up. "Earned" means they do; "Bounces" means the puck is going in more than the chances say it should.</p>
       ${pulseGrid(P.hot, "form", "Nobody is far enough above expectation to call hot yet.")}
       <h2 class="mt">Who's cold</h2><p class="lede">"Due" means the chances are still coming and the goals usually follow. "Real dip" means the chances have dried up too.</p>
       ${pulseGrid(P.cold, "form", "Nobody is far enough below expectation to call cold yet.")}
@@ -105,18 +105,18 @@ async function renderPulse(view, tab) {
       ${pulseGrid(P.due, "", "Nobody far enough behind the chances yet.")}`,
     league: () => `
       <div class="grid-2"><div><h2>Goalies on a heater</h2><p class="lede">Last five starts, goals saved above expected.</p>${P.goalies_hot.length ? `<div class="wlist">${P.goalies_hot.map(goalieCard).join("")}</div>` : `<p class="empty">None yet.</p>`}</div>
-        <div><h2>Goalies struggling</h2><p class="lede">Goalie form barely carries from season to season, so the model shrinks it hard.</p>${P.goalies_cold.length ? `<div class="wlist">${P.goalies_cold.map(goalieCard).join("")}</div>` : `<p class="empty">None yet.</p>`}</div></div>
+        <div><h2>Goalies struggling</h2><p class="lede">Last five starts. Goalie form swings hard and barely carries over from one season to the next, so our projections lean on it only a little.</p>${P.goalies_cold.length ? `<div class="wlist">${P.goalies_cold.map(goalieCard).join("")}</div>` : `<p class="empty">None yet.</p>`}</div></div>
       <h2 class="mt">Teams</h2><p class="lede">Streaks, and records that run ahead of or behind the chances.</p>
       <div class="pgrid">${P.teams.filter((t) => t.streak || t.luck_text).map(teamCard).join("")}</div>
       <h2 class="mt">Milestones in reach</h2><p class="lede">Career numbers before each player's next game.</p>
       ${pulseRows(P.milestones, "Nothing within reach this week.")}`,
   };
   view.innerHTML = `<section class="zone news-head"><h1>The pulse</h1>
-      <p class="lede">Who's hot, who's not, and whether it's real. ${esc(P.note)}</p></section>
+      <p class="lede">Who's hot, who's not, and whether it's real. We judge every streak against the chances behind it, so you can tell a player who's earning it from one riding the bounces. ${esc(P.note)}</p></section>
     <div class="news-bar" id="pulseBar"><div class="news-tabs pulse-tabs" role="tablist" aria-label="Pulse sections">${PULSE_TABS.map(([k, l, sh]) => `<button type="button" role="tab" id="pt-${k}" aria-controls="pp-${k}"
       aria-selected="${S.pTab === k}" tabindex="${S.pTab === k ? 0 : -1}" data-ptab="${k}"><span class="nt-long">${l}</span><span class="nt-short">${sh}</span><span class="nt-n">${count[k]}</span></button>`).join("")}</div></div>
     ${PULSE_TABS.map(([k]) => `<section class="zone news-panel pulse-panel" role="tabpanel" id="pp-${k}" aria-labelledby="pt-${k}" ${S.pTab === k ? "" : "hidden"}>${panels[k]()}</section>`).join("")}
-    <p class="note">Built nightly from this site's numbers through ${esc(dateLabel(P.through))}.</p>`;
+    <p class="note">Updated every morning, through ${esc(dateLabel(P.through))}'s games.</p>`;
   const bar = $("#pulseBar"), m = $(".masthead");
   bar.style.top = m && getComputedStyle(m).position === "sticky" ? `${m.offsetHeight}px` : "0px";
   const pick = (k, focus) => {
@@ -162,7 +162,7 @@ function playerStory(st) {
     form = `<p class="ps-form"><span class="tag tag-form tag-${f.state}">${f.state === "hot" ? "Hot" : "Cold"}</span><span class="tag tag-v tag-v-${f.verdict}">${v[0]}</span> ${esc(f.text)}</p>`;
   } else if (f.n >= 3) {
     const near = Math.abs(f.pts - f.xpts) < 1.5;
-    form = `<p class="ps-form">${f.pts} points (${f.g} G) in his last ${f.n} games, ${near ? "right about where" : f.pts > f.xpts ? "a little above where" : "a little below where"} the model expected (${num(f.xpts, 1)}).${f.ixg != null ? ` ${num(f.ixg, 1)} expected goals on his own shots.` : ""}</p>`;
+    form = `<p class="ps-form">${f.pts} points (${f.g} G) in his last ${f.n} games, ${near ? "right about what" : f.pts > f.xpts ? "a little above what" : "a little below what"} we'd expect at his ice time (${num(f.xpts, 1)}).${f.ixg != null ? ` ${num(f.ixg, 1)} expected goals on his own shots.` : ""}</p>`;
   }
   const streaks = (f.streaks || []).map((s) => `<span class="wchip wchip-${s.k === "points" || s.k === "goals" ? "streak" : "due"}">${esc(s.text)}</span>`).join("");
   const flags = (st.flags || []).map((x) => `<li><b>${esc(x.label)}.</b> ${esc(x.text)}</li>`).join("");
@@ -187,7 +187,7 @@ async function renderFeature(view, slug) {
   view.innerHTML = `<p class="empty">Loading…</p>`;
   let f;
   try { f = await getJSON(`data/features/${slug}.json`); } catch (e) {
-    view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news/features">Features</a></p><h1>Not found</h1><p class="lede">That piece isn't published. The list is on the Features tab.</p></section>`;
+    view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news/features">Features</a></p><h1>Not found</h1><p class="lede">We couldn't find that piece. Everything we've published is on the <a href="#news/features">Features</a> tab.</p></section>`;
     return;
   }
   const body = f.text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean)
@@ -199,8 +199,8 @@ async function renderFeature(view, slug) {
       <p class="kicker">${FEATURE_KIND[f.kind] || "Feature"}</p>
       <h1>${esc(f.title)}</h1>
       ${f.dek ? `<p class="lede feat-dek">${esc(f.dek)}</p>` : ""}
-      <p class="byline">Written by Claude from Ice Sheet's numbers · ${new Date(f.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${readMins(f.words)}</p>
+      <p class="byline">Ice Sheet · Written with AI from our data · ${new Date(f.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${readMins(f.words)}</p>
       <div class="story feature-body">${body}</div>
-      <p class="note">Every number here comes from this site's data: shot data and expected goals courtesy of MoneyPuck.com, game, shift and tracking data from the NHL. Nothing is reported: no interviews, no inside information. More on ${subj}.</p>
+      <p class="note ai-note">How this was made: an AI model (Claude, by Anthropic) wrote this piece from Ice Sheet's data only. Shot data and expected goals courtesy of MoneyPuck.com; game, shift and tracking data from the NHL. There's no outside reporting: no interviews, quotes or inside information. More on ${subj}, and on <a href="#about/ai">how we use AI</a>.</p>
     </article>`;
 }

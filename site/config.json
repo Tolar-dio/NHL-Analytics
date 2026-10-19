@@ -1,31 +1,118 @@
 {
-  "favorite_team": "COL",
   "fantasy": {
     "team_name": "Schaefer? I Hardly Know Her",
     "league": "SMNIHL",
     "roster": [
-      {"id": 8484153, "slot": "F", "name": "Leo Carlsson"},
-      {"id": 8483431, "slot": "F", "name": "Logan Cooley"},
-      {"id": 8476432, "slot": "F", "name": "Boone Jenner"},
-      {"id": 8484390, "slot": "F", "name": "Roman Kantserov"},
-      {"id": 8478864, "slot": "F", "name": "Kirill Kaprizov"},
-      {"id": 8480039, "slot": "F", "name": "Martin Necas"},
-      {"id": 8482149, "slot": "F", "name": "Cole Perfetti"},
-      {"id": 8484210, "slot": "F", "name": "Gabe Perreault"},
-      {"id": 8485702, "slot": "F", "name": "Maxim Shabanov"},
-      {"id": 8483457, "slot": "D", "name": "Lane Hutson"},
-      {"id": 8482095, "slot": "D", "name": "Tyler Kleven"},
-      {"id": 8485366, "slot": "D", "name": "Matthew Schaefer"},
-      {"id": 8481542, "slot": "D", "name": "Moritz Seider"},
-      {"id": 8483521, "slot": "D", "name": "Noah Warren"},
-      {"id": 8474716, "slot": "UTIL", "name": "Jared Spurgeon"},
-      {"id": 8483398, "slot": "BE", "name": "Declan Carlile"},
-      {"id": 8484873, "slot": "BE", "name": "Cole Hutson"},
-      {"id": 8477476, "slot": "BE", "name": "Artturi Lehkonen"},
-      {"id": 8484186, "slot": "BE", "name": "Ryan Leonard"},
-      {"id": 8482193, "slot": "G", "name": "Dylan Garand"},
-      {"id": 8482661, "slot": "G", "name": "Jesper Wallstedt"},
-      {"id": 8478406, "slot": "BE", "name": "Mackenzie Blackwood"}
+      {
+        "id": 8484153,
+        "slot": "F",
+        "name": "Leo Carlsson"
+      },
+      {
+        "id": 8483431,
+        "slot": "F",
+        "name": "Logan Cooley"
+      },
+      {
+        "id": 8476432,
+        "slot": "F",
+        "name": "Boone Jenner"
+      },
+      {
+        "id": 8484390,
+        "slot": "F",
+        "name": "Roman Kantserov"
+      },
+      {
+        "id": 8478864,
+        "slot": "F",
+        "name": "Kirill Kaprizov"
+      },
+      {
+        "id": 8480039,
+        "slot": "F",
+        "name": "Martin Necas"
+      },
+      {
+        "id": 8482149,
+        "slot": "F",
+        "name": "Cole Perfetti"
+      },
+      {
+        "id": 8484210,
+        "slot": "F",
+        "name": "Gabe Perreault"
+      },
+      {
+        "id": 8485702,
+        "slot": "F",
+        "name": "Maxim Shabanov"
+      },
+      {
+        "id": 8483457,
+        "slot": "D",
+        "name": "Lane Hutson"
+      },
+      {
+        "id": 8482095,
+        "slot": "D",
+        "name": "Tyler Kleven"
+      },
+      {
+        "id": 8485366,
+        "slot": "D",
+        "name": "Matthew Schaefer"
+      },
+      {
+        "id": 8481542,
+        "slot": "D",
+        "name": "Moritz Seider"
+      },
+      {
+        "id": 8483521,
+        "slot": "D",
+        "name": "Noah Warren"
+      },
+      {
+        "id": 8474716,
+        "slot": "UTIL",
+        "name": "Jared Spurgeon"
+      },
+      {
+        "id": 8483398,
+        "slot": "BE",
+        "name": "Declan Carlile"
+      },
+      {
+        "id": 8484873,
+        "slot": "BE",
+        "name": "Cole Hutson"
+      },
+      {
+        "id": 8477476,
+        "slot": "BE",
+        "name": "Artturi Lehkonen"
+      },
+      {
+        "id": 8484186,
+        "slot": "BE",
+        "name": "Ryan Leonard"
+      },
+      {
+        "id": 8482193,
+        "slot": "G",
+        "name": "Dylan Garand"
+      },
+      {
+        "id": 8482661,
+        "slot": "G",
+        "name": "Jesper Wallstedt"
+      },
+      {
+        "id": 8478406,
+        "slot": "BE",
+        "name": "Mackenzie Blackwood"
+      }
     ]
   }
 }

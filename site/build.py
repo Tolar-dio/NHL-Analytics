@@ -434,7 +434,9 @@ def main():
 
     # ---- meta
     last_game = games.date.max()
-    meta = dict(updated=dt.datetime.now(ZoneInfo("America/Denver")).strftime("%Y-%m-%d %H:%M"),
+    now = dt.datetime.now(dt.timezone.utc)
+    meta = dict(updated=now.astimezone(ZoneInfo("America/Denver")).strftime("%Y-%m-%d %H:%M"),
+                updated_utc=now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 slate_date=str(today), season=CUR, games_played=int(len(games)), last_game=last_game,
                 credit="Shot data and expected goals courtesy of MoneyPuck.com. Game data from the NHL API.")
 
@@ -825,8 +827,8 @@ def main():
     print(f"  players/: {len(plogs)} game logs")
     dump("tonight.json", dict(date=str(today), games=gm_out, props=props, headlines=headlines,
                               lineup_source=lu["source"], disp=M.DISP, p1cal=list(M.P1_CAL) if M.P1_CAL else None,
-                              goalie_note="Goalies are ESPN's probable starters where posted, otherwise most starts in "
-                                          "each team's last five games. Check confirmations before betting."))
+                              goalie_note="Starting goalies are ESPN's probable starters once posted; until then we use whoever has "
+                                          "started most of the team's last five games. Starters are often confirmed only an hour or two before puck drop."))
 
     # ---- model report: full-season backtest (static) + this season walk-forward
     bt_static = os.path.join(SITE, "static", "backtest_20252026.json")
@@ -867,7 +869,6 @@ def main():
                            sched={d: team_days.get(team, {}).get(d) for d in week}))
     write_fantasy(dict(team_name=cfg["fantasy"]["team_name"], league=cfg["fantasy"]["league"],
                        days=week, roster=roster))
-    meta["favorite_team"] = cfg.get("favorite_team", "COL")
     dump("meta.json", meta)
 
 

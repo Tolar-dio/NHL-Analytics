@@ -32,7 +32,73 @@ const dateLabel = (iso) => {
   const d = new Date(iso + "T12:00:00");
   return d.toLocaleDateString("en-US", { weekday: "short" }) + " " + d.getDate();
 };
-const timeMT = (utc) => (utc ? new Date(utc).toLocaleTimeString("en-US", { timeZone: "America/Denver", hour: "numeric", minute: "2-digit" }) + " MT" : "");
+// game times in the visitor's own time zone ("7:00 PM EDT")
+const gameTime = (utc) => (utc ? new Date(utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" }) : "");
+
+// ------------------------------------------------------------------ teams, your team, players you follow
+const TEAM_NAME = { ANA: "Anaheim Ducks", BOS: "Boston Bruins", BUF: "Buffalo Sabres", CAR: "Carolina Hurricanes", CBJ: "Columbus Blue Jackets",
+  CGY: "Calgary Flames", CHI: "Chicago Blackhawks", COL: "Colorado Avalanche", DAL: "Dallas Stars", DET: "Detroit Red Wings", EDM: "Edmonton Oilers",
+  FLA: "Florida Panthers", LAK: "Los Angeles Kings", MIN: "Minnesota Wild", MTL: "Montréal Canadiens", NJD: "New Jersey Devils",
+  NSH: "Nashville Predators", NYI: "New York Islanders", NYR: "New York Rangers", OTT: "Ottawa Senators", PHI: "Philadelphia Flyers",
+  PIT: "Pittsburgh Penguins", SEA: "Seattle Kraken", SJS: "San Jose Sharks", STL: "St. Louis Blues", TBL: "Tampa Bay Lightning",
+  TOR: "Toronto Maple Leafs", UTA: "Utah Mammoth", VAN: "Vancouver Canucks", VGK: "Vegas Golden Knights", WPG: "Winnipeg Jets", WSH: "Washington Capitals" };
+const DIVISIONS = [["Atlantic", "BOS BUF DET FLA MTL OTT TBL TOR"], ["Metropolitan", "CAR CBJ NJD NYI NYR PHI PIT WSH"],
+  ["Central", "CHI COL DAL MIN NSH STL UTA WPG"], ["Pacific", "ANA CGY EDM LAK SEA SJS VAN VGK"]].map(([d, t]) => [d, t.split(" ")]);
+const teamName = (abbr) => TEAM_NAME[abbr] || abbr;
+// the visitor's team and the players they follow live in this browser only
+const myTeam = () => { const t = store.get("ice-team"); return t && TEAM_NAME[t] ? t : null; };
+const FOLLOW_KEY = "ice-follow";
+const follows = {
+  list() { try { const v = JSON.parse(store.get(FOLLOW_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } },
+  has(id) { return this.list().some((x) => x.id === +id); },
+  toggle(x) {
+    const l = this.list(), i = l.findIndex((y) => y.id === +x.id);
+    if (i >= 0) l.splice(i, 1); else l.push({ id: +x.id, kind: x.kind, name: x.name, team: x.team });
+    store.set(FOLLOW_KEY, l.length ? JSON.stringify(l) : "");
+    return i < 0;
+  },
+};
+// a Follow button for player and goalie pages
+function followBtn(x) {
+  const on = follows.has(x.id);
+  return `<button type="button" class="follow ${on ? "on" : ""}" data-follow="${x.id}" data-kind="${x.kind}" data-name="${esc(x.name)}" data-team="${esc(x.team || "")}"
+    aria-pressed="${on}">${on ? "Following" : "Follow"}</button>`;
+}
+document.addEventListener("click", (e) => {
+  if (e.target.closest?.("[data-pickteam]")) { openTeamPicker(); return; }
+  const b = e.target.closest?.("[data-follow]");
+  if (!b) return;
+  const on = follows.toggle({ id: b.dataset.follow, kind: b.dataset.kind, name: b.dataset.name, team: b.dataset.team });
+  b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); b.textContent = on ? "Following" : "Follow";
+});
+function setMyTeam(t) {
+  store.set("ice-team", t || "");
+  applyTeamButton();
+}
+function applyTeamButton() {
+  const b = $("#teamBtn"), t = myTeam();
+  if (!b) return;
+  b.textContent = t ? t : "Your team";
+  b.classList.toggle("set", !!t);
+  b.setAttribute("aria-label", t ? `Your team: ${teamName(t)}. Change it` : "Pick your team");
+}
+// the team picker: a dialog of all 32 teams by division
+function openTeamPicker(after) {
+  let dlg = $("#teamDlg");
+  if (!dlg) { dlg = document.createElement("dialog"); dlg.id = "teamDlg"; dlg.className = "team-dlg"; document.body.appendChild(dlg); }
+  const cur = myTeam();
+  dlg.innerHTML = `<form method="dialog" class="td-head"><h2>Pick your team</h2><button class="chip" value="close" aria-label="Close">Close</button></form>
+    <p class="note">We'll put your team first on Tonight, highlight it on the league chart, and open it when you tap Teams. It's saved in this browser only.</p>
+    <div class="td-grid">${DIVISIONS.map(([d, ts]) => `<div><h3>${d}</h3>${ts.map((t) => `<button type="button" class="td-team ${t === cur ? "on" : ""}" data-myteam="${t}">
+      <b>${t}</b><span>${esc(TEAM_NAME[t])}</span></button>`).join("")}</div>`).join("")}</div>
+    ${cur ? `<p class="note"><button type="button" class="linkish" data-myteam="">Clear my team</button></p>` : ""}`;
+  dlg.onclick = (e) => {
+    const b = e.target.closest("[data-myteam]");
+    if (b) { setMyTeam(b.dataset.myteam); dlg.close(); if (after) after(b.dataset.myteam); else route(); return; }
+    if (e.target === dlg) dlg.close();   // click on the backdrop
+  };
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+}
 
 // Poisson helpers for client-side recomputation when a goalie is swapped
 function poisPmf(l, n) { const out = [Math.exp(-l)]; for (let k = 1; k <= n; k++) out.push((out[k - 1] * l) / k); return out; }
@@ -322,12 +388,12 @@ function calibrationChart(cal, label) {
   const grid = t.map((v) => `<line class="grid" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/>
     <text x="${X(v)}" y="${H - m.b + 15}" text-anchor="middle">${Math.round(v * 100)}%</text><text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`);
   const nMax = Math.max(...cal.map((c) => c.n));
-  const pts = cal.map((c) => `<g data-tip="${esc(`Model said ${pct(c.pred, 1)}, it happened ${pct(c.act, 1)}<br>${c.n.toLocaleString()} player-games`)}">
+  const pts = cal.map((c) => `<g data-tip="${esc(`We said ${pct(c.pred, 1)}, it happened ${pct(c.act, 1)}<br>${c.n.toLocaleString()} player-games`)}">
     <circle cx="${X(c.pred)}" cy="${Y(c.act)}" r="${4 + 6 * Math.sqrt(c.n / nMax)}" fill="var(--blue)" stroke="var(--sheet)" stroke-width="2"/></g>`);
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${grid.join("")}
     <line class="axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(top)}" y2="${Y(top)}"/>
     ${pts.join("")}
-    <text x="${(m.l + W - m.r) / 2}" y="${H - 6}" text-anchor="middle">What the model said</text>
+    <text x="${(m.l + W - m.r) / 2}" y="${H - 6}" text-anchor="middle">What we said</text>
     <text transform="translate(11 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">What happened</text></svg>`;
 }
 
@@ -407,11 +473,11 @@ function liveProps() {
 // the model's game numbers next to DraftKings' (published free by the NHL), so totals are read against the
 // market, not a league average: the model's totals have never beaten either
 function marketLine(g) {
-  const m = g.market, mine = `Model: ${g.home} ${pct(winHome(g))}, total ${g.total.toFixed(1)}`;
-  if (!m || m.total == null) return `<div class="game-foot" data-tip="${esc("Game totals did not beat a league-average guess in testing. Context only.")}">${mine}. No market line yet. Context, not a pick.</div>`;
+  const m = g.market, mine = `Our model: ${g.home} ${pct(winHome(g))}, ${g.total.toFixed(1)} goals`;
+  if (!m || m.total == null) return `<div class="game-foot" data-tip="${esc("Our game totals haven't beaten a simple league-average guess in testing, so read them as context.")}">${mine}. No sportsbook line yet.</div>`;
   const ml = (o) => (o > 0 ? `+${o}` : `${o}`);
-  const tip = `<b>DraftKings, via the NHL</b><br>${g.away} ${ml(m.ml_away)}, ${g.home} ${ml(m.ml_home)} (${pct(m.p_home)} ${g.home} once the margin is removed)<br>Over/under ${m.total}: over ${ml(m.over)}, under ${ml(m.under)}; the over price implies about ${num(m.implied_total, 1)} goals<br><span class="dim">The model's totals haven't beaten the market or a league average in testing.</span>`;
-  return `<div class="game-foot mkt" data-tip="${esc(tip)}"><span><b>Market</b> ${g.home} ${pct(m.p_home)}, O/U ${m.total}</span><span class="dim">${mine}</span></div>`;
+  const tip = `<b>DraftKings, via the NHL</b><br>${g.away} ${ml(m.ml_away)}, ${g.home} ${ml(m.ml_home)} (${pct(m.p_home)} ${g.home} once the margin is removed)<br>Over/under ${m.total}: over ${ml(m.over)}, under ${ml(m.under)}; the over price implies about ${num(m.implied_total, 1)} goals<br><span class="dim">Our totals haven't beaten the sportsbook line or a league-average guess in testing.</span>`;
+  return `<div class="game-foot mkt" data-tip="${esc(tip)}"><span><b>Sportsbook</b> ${g.home} ${pct(m.p_home)}, O/U ${m.total}</span><span class="dim">${mine}</span></div>`;
 }
 function winHome(g) {
   const a = poisPmf(g.away_xg, 15), h = poisPmf(g.home_xg, 15);
@@ -419,13 +485,35 @@ function winHome(g) {
   a.forEach((pa, i) => h.forEach((ph, j) => { if (j > i) w += pa * ph; else if (i === j) t += pa * ph; }));
   return w + t / 2;
 }
+// first visit: what the site is, and a prompt to pick a team
+function welcomeCard() {
+  if (store.get("ice-welcome")) return "";
+  return `<section class="welcome" id="welcome" aria-label="Welcome">
+    <div><h2>Welcome to Ice Sheet</h2>
+      <p>Every NHL game, explained with the numbers behind it: who's most likely to score tonight, which teams are better or worse than their record says, how every goal happened, and how coaches are using their players. Updated every morning, with live scores at night.</p>
+      <p class="row" style="gap:10px;flex-wrap:wrap"><button type="button" class="chip chip-solid" data-welcome="team">${myTeam() ? "Change your team" : "Pick your team"}</button><a class="chip" href="#about">How it works</a></p></div>
+    <button type="button" class="welcome-x" data-welcome="close" aria-label="Dismiss">×</button></section>`;
+}
+function bindWelcome(view) {
+  const w = $("#welcome", view);
+  if (!w) return;
+  w.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-welcome]");
+    if (!b) return;
+    store.set("ice-welcome", "1");
+    if (b.dataset.welcome === "team") openTeamPicker(() => route());
+    else w.remove();
+  });
+}
 function renderTonight(view) {
-  const T = D.tonight;
+  const T = D.tonight, mine = myTeam(), followed = follows.list();
   if (!T.games.length) {
-    view.innerHTML = `<section class="zone"><h1>No games on ${esc(T.date)}</h1><p class="lede">The next slate shows up here the morning of game day.</p></section>`;
+    view.innerHTML = `${welcomeCard()}<section class="zone"><h1>No games today</h1><p class="lede">The next slate appears here on the morning of game day. Meanwhile, every finished game is on the <a href="#games">Games</a> page.</p></section>`;
+    bindWelcome(view);
     return;
   }
-  const games = T.games.map(liveGame);
+  // your team's game goes first
+  const games = T.games.map(liveGame).sort((a, b) => (mine ? (b.away === mine || b.home === mine) - (a.away === mine || a.home === mine) : 0));
   const maxXg = Math.max(...games.flatMap((g) => [g.away_xg, g.home_xg]), 3.5);
   const gameCard = (g) => {
     const side = (abbr, xg, key) => {
@@ -435,42 +523,45 @@ function renderTonight(view) {
         <span class="xg">${xg.toFixed(2)}</span></div>
         <label class="goalie"><select data-game="${g.id}" data-side="${key}" aria-label="${abbr} goalie">
           ${opts.map((o) => `<option value="${o.id}" ${o.id === chosen.id ? "selected" : ""}>${esc(o.name)} (${o.starts} start${o.starts === 1 ? "" : "s"})</option>`).join("")}
-        </select><span class="g-src">${esc(goalieSource(g, key))}${g[key + "_b2b"] ? `<span class="tag tag-b2b" data-tip="${esc("Second night of a back-to-back. Tired teams averaged 47.4% of the expected goals in 2025-26 (286 games).")}">Back-to-back</span>` : ""}</span></label>`;
+        </select><span class="g-src">${esc(goalieSource(g, key))}${g[key + "_b2b"] ? `<span class="tag tag-b2b" data-tip="${esc("Second night of a back-to-back. Last season, teams in that spot got 47.4% of the expected goals (286 games), and our numbers account for it.")}">Back-to-back</span>` : ""}</span></label>`;
     };
-    return `<article class="game ${S.game === g.id ? "is-picked" : ""}">
-      <div class="game-time"><span>${timeMT(g.start)}</span><span class="row" style="gap:12px"><a class="preview-link" href="#preview/${g.id}">Preview</a><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></span></div>
+    const yours = mine && (g.away === mine || g.home === mine);
+    return `<article class="game ${S.game === g.id ? "is-picked" : ""} ${yours ? "is-mine" : ""}">
+      <div class="game-time"><span>${gameTime(g.start)}</span><span class="row" style="gap:12px"><a class="preview-link" href="#preview/${g.id}">Preview</a><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></span></div>
       ${side(g.away, g.away_xg, "away")}${side(g.home, g.home_xg, "home")}
       ${marketLine(g)}
       <div class="live-line" data-live="${g.id}"></div>
     </article>`;
   };
-  view.innerHTML = `
+  view.innerHTML = `${welcomeCard()}
     <section class="zone">
       <h1>${esc(new Date(T.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))}: ${games.length} game${games.length === 1 ? "" : "s"}</h1>
-      <p class="lede">Bars show each team's expected goals tonight. Goalies follow ESPN's probable starters once they're posted (recent starts until then); switch any of them and every number on this page updates. Live scores update every 30 seconds.</p>
+      <p class="lede">Each bar is how many goals we expect that team to score tonight, based on the chances both teams create and allow and who's in net. Choose a different goalie and every number on this page updates. Scores update live once the puck drops.</p>
       <div class="slate">${games.map(gameCard).join("")}</div>
     </section>
     ${(T.headlines || []).length ? `<section class="zone">
       <h2>Tonight's storylines</h2>
-      <p class="lede">What's going on around tonight's games. Tap one for the preview; hover or tap the line for whether the model already prices it. More on the <a href="#pulse">Pulse</a> page.</p>
+      <p class="lede">What's happening around tonight's games. Tap one for the full preview, which also says whether each storyline is factored into our numbers. More on the <a href="#pulse">Pulse</a> page.</p>
       ${storyList(T.headlines.slice(0, 6), { game: true, compact: true })}
     </section>` : ""}
     <section class="zone">
       <h2>Who scores, who stacks points</h2>
-      <p class="lede">Chance of a goal or of 1, 2 or 3+ points, with the fair price. Pick the market your book is offering, type its odds and the return shows; positive means the book is paying more than the model thinks it should.</p>
+      <p class="lede">Every skater's chance to score, to reach 1, 2 or 3+ points, or to put 2 or 3+ shots on goal tonight, with the fair odds each chance works out to. Have a sportsbook price? Type it in and we'll show the expected return. Positive means the book pays more than our number says it should.</p>
       <div class="controls">
         <input type="search" id="q" placeholder="Find a player" value="${esc(S.q)}" aria-label="Find a player">
         <div class="chips" role="group" aria-label="Position">
           ${["all", "F", "D"].map((p) => `<button type="button" class="chip" data-pos="${p}" aria-pressed="${S.pos === p}">${p === "all" ? "All skaters" : p === "F" ? "Forwards" : "Defense"}</button>`).join("")}
         </div>
         <label class="check"><input type="checkbox" id="radar" ${S.radar ? "checked" : ""}> Under the radar only</label>
+        ${followed.length ? `<label class="check"><input type="checkbox" id="followOnly" ${S.followOnly ? "checked" : ""}> Players I follow</label>` : ""}
       </div>
       <div class="controls"><span class="dim">Market</span>
         <div class="chips" role="group" aria-label="Market">
           ${MARKETS.map(([k, l]) => `<button type="button" class="chip" data-mkt="${k}" aria-pressed="${S.mkt === k}">${l}</button>`).join("")}
         </div></div>
       <div id="propsTable"></div>
-      <p class="note">Under the radar marks players getting real chances whose goal totals lag behind them, outside the night's top dozen favourites. Lineups: everyone who dressed in a team's last three games, minus ESPN's injured list, plus players coming back; anyone who missed the last game is tagged, and every price assumes the player dresses. ${esc(T.goalie_note)}</p>
+      <p class="note">Under the radar: players getting real chances whose goals haven't caught up yet, outside the night's dozen likeliest scorers. Lineups: everyone who dressed in any of the team's last three games, minus players listed as injured, plus players returning; anyone who missed the last game is tagged, and every number assumes the player dresses. ${esc(T.goalie_note)}</p>
+      <p class="note gamble-note">For information and entertainment, not betting advice. Odds you type stay in this browser. If you bet, do it only where it's legal and you're of age. Gambling problem? Call 1-800-GAMBLER.</p>
     </section>`;
 
   const drawTable = () => {
@@ -478,11 +569,12 @@ function renderTonight(view) {
     if (S.game) rows = rows.filter((r) => r.game === S.game);
     if (S.pos !== "all") rows = rows.filter((r) => r.pos === S.pos);
     if (S.radar) rows = rows.filter((r) => r.radar);
+    if (S.followOnly && followed.length) { const ids = new Set(followed.map((x) => x.id)); rows = rows.filter((r) => ids.has(r.id)); }
     if (S.q) rows = rows.filter((r) => r.name.toLowerCase().includes(S.q.toLowerCase()));
     // players ESPN lists as out or on IR sink to the bottom (still shown, flagged)
     const out = (r) => { const x = injuryOf(r.name); return x && x.abbr !== "DTD" ? 1 : 0; };
     const all = sortRows(rows, S.sort).sort((a, b) => out(a) - out(b));
-    rows = all.slice(0, S.game || S.q || S.radar ? 400 : S.tLimit);
+    rows = all.slice(0, S.game || S.q || S.radar || S.followOnly ? 400 : S.tLimit);
     const mk = S.mkt, mkLabel = MARKETS.find(([k]) => k === mk)[1];
     const oddsKey = (id) => (mk === "p_goal" ? `odds:${T.date}:${id}` : `odds:${T.date}:${mk}:${id}`);
     const evCell = (r) => {
@@ -504,7 +596,7 @@ function renderTonight(view) {
       { key: "ev", label: "Return", nosort: true, fmt: evCell, cls: "ev" },
       { key: other[0], label: other[1], fmt: (r) => cellBar(r[other[0]], 0.5), cls: "hide-sm" },
     ];
-    $("#propsTable").innerHTML = (rows.length ? table(rows, cols, S.sort, "props") : `<p class="empty">No skaters match. Clear the search or switch filters.</p>`) +
+    $("#propsTable").innerHTML = (rows.length ? table(rows, cols, S.sort, "props") : `<p class="empty">${S.followOnly ? "None of the players you follow are in tonight's games." : "No skaters match. Clear the search or change the filters."}</p>`) +
       (all.length > rows.length ? `<div class="controls" style="margin-top:10px"><button type="button" class="chip" id="tMore">Show ${Math.min(40, all.length - rows.length)} more of ${all.length}</button></div>` : "");
     $("#tMore")?.addEventListener("click", () => { S.tLimit += 40; drawTable(); });
     bindSort($("#propsTable"), S.sort, drawTable);
@@ -518,6 +610,8 @@ function renderTonight(view) {
 
   $("#q").addEventListener("input", (e) => { S.q = e.target.value; drawTable(); });
   $("#radar").addEventListener("change", (e) => { S.radar = e.target.checked; drawTable(); });
+  $("#followOnly")?.addEventListener("change", (e) => { S.followOnly = e.target.checked; drawTable(); });
+  bindWelcome(view);
   $$("[data-pos]", view).forEach((b) => b.addEventListener("click", () => { S.pos = b.dataset.pos; renderTonight(view); }));
   $$("[data-mkt]", view).forEach((b) => b.addEventListener("click", () => {
     S.mkt = b.dataset.mkt; S.sort = { key: S.mkt, dir: -1 };
@@ -535,25 +629,25 @@ function renderTonight(view) {
 
 // ------------------------------------------------------------------ LEAGUE
 function renderLeague(view) {
-  const teams = D.teams, fav = D.meta.favorite_team;
+  const teams = D.teams, fav = myTeam();
   const goalies = D.goalies.filter((g) => g.sa >= 60).sort((a, b) => b.gsax - a.gsax);
   const sorted = sortRows(teams.map((t) => ({ ...t, id: t.team })), S.lSort ||= { key: "pts", dir: -1 });
   view.innerHTML = `
     <section class="zone">
       <h1>Who's actually good</h1>
-      <p class="lede">Every team placed by the quality of chances it creates and allows, per 60 minutes. Up and to the right is where you want to be. ${fav} is the dark dot. Tap any team to open it.</p>
+      <p class="lede">Records can flatter a team for a while. Chances don't lie for long. Every team is placed by the quality of the chances it creates (left to right) and allows (fewer is higher), per 60 minutes. Up and to the right is where you want to be. ${fav ? `${esc(teamName(fav))}, your team, is the dark dot.` : `<button type="button" class="linkish" data-pickteam>Pick your team</button> to highlight it.`} Tap any team to open it.</p>
       <div class="figure">${scatterTeams(teams, fav)}</div>
     </section>
     <section class="zone">
       <h2>Standings, with the luck shown</h2>
-      <p class="lede">Finishing compares goals scored to the chances behind them. Goaltending compares goals allowed to the chances against, so positive means the goalie is stealing. Both swing hard early and tend to drift back toward zero.</p>
+      <p class="lede">The standings, plus the two things that make a record misleading. Finishing is goals scored minus what the team's chances usually produce. Goaltending is the chances against minus goals allowed, so positive means the goalies are stealing games. Both swing hard over a few weeks and usually drift back toward zero; a team winning on both is due for a cooler stretch.</p>
       <div id="standings"></div>
     </section>
     <section class="zone">
       <h2>Goalies: saves above expected</h2>
-      <p class="lede">Goals the shots deserved minus goals actually allowed. Goalies who have faced at least 60 unblocked shots. Tap a goalie for his page: save rate by shot danger, rebounds, every shot he has faced.</p>
+      <p class="lede">How many goals each goalie has saved compared with an average goalie facing the same shots. Goalies with at least 60 shots against (blocked shots excluded). Tap one for his full page: save rate by shot danger, rebounds and every shot he has faced.</p>
       <div class="figure">${divergingBars(goalies, "gsax", (g) => `${g.name} ${g.team}`,
-        (g) => `<b>${esc(g.name)}</b> ${g.team}<br>${g.gp} GP, ${pct(g.sv_pct, 1)} save rate<br>Allowed ${g.ga} on ${num(g.xga, 1)} expected${g.prev_gsax != null ? `<br>Last season ${signed(g.prev_gsax)}` : ""}<br><span class="dim">Click for his page</span>`,
+        (g) => `<b>${esc(g.name)}</b> ${g.team}<br>${g.gp} GP, ${pct(g.sv_pct, 1)} save rate<br>Allowed ${g.ga} on ${num(g.xga, 1)} expected${g.prev_gsax != null ? `<br>Last season ${signed(g.prev_gsax)}` : ""}<br><span class="dim">Tap for his page</span>`,
         (g) => `#goalie/${g.id}`)}</div>
     </section>`;
   const draw = () => {
@@ -566,6 +660,7 @@ function renderLeague(view) {
       { key: "g_minus_xg", label: "Finishing", fmt: (r) => divCell(r.g_minus_xg, 8) },
       { key: "gaLuck", label: "Goaltending", fmt: (r) => divCell(r.gaLuck, 8) },
     ], S.lSort, "standings-t");
+    if (fav) $(`#standings tr[data-id="${fav}"]`)?.classList.add("is-mine");
     bindSort($("#standings"), S.lSort, draw);
   };
   draw();
@@ -612,9 +707,29 @@ function trendChart(team, idx) {
     <div class="legend"><span><i style="background:var(--blue)"></i>Chances created (xG)</span><span><i style="background:var(--axis)"></i>Chances allowed</span></div>`;
 }
 
+// Teams landing: all 32 by division, with record and share of the chances
+function renderTeamsHome(view) {
+  const mine = myTeam(), by = Object.fromEntries(D.teams.map((t) => [t.team, t]));
+  const card = (abbr) => {
+    const t = by[abbr]; if (!t) return "";
+    const share = t.xg_pct / 100;
+    return `<a class="tcard ${abbr === mine ? "is-mine" : ""}" href="#teams/${abbr}">
+      <span class="tc-name">${esc(teamName(abbr))}</span>
+      <span class="tc-rec">${t.w}-${t.l}-${t.otl}, <b>${t.pts}</b> pts</span>
+      <span class="tc-share" data-tip="${esc(`Share of expected goals: ${pct(share, 1)}<br>Above 50% means they out-chance their opponents`)}"><span class="share-bar"><span style="width:${Math.min(100, Math.max(0, (share - 0.35) / 0.3 * 100))}%"></span></span>${pct(share)}</span></a>`;
+  };
+  view.innerHTML = `<section class="zone">
+      <h1>Teams</h1>
+      <p class="lede">Every team's season: record, the chances behind it, shot maps, lines and deployment, special teams, goalies and every game. The bar is each team's share of expected goals; past the middle mark means they out-chance their opponents. ${mine ? "" : `<button type="button" class="linkish" data-pickteam>Pick your team</button> and Teams will open straight to it.`}</p>
+      <div class="tgrid">${DIVISIONS.map(([d, ts]) => `<div><h3>${d}</h3>${[...ts].sort((a, b) => (by[b]?.pts ?? 0) - (by[a]?.pts ?? 0) || (by[a]?.gp ?? 0) - (by[b]?.gp ?? 0)).map(card).join("")}</div>`).join("")}</div>
+    </section>`;
+}
 function renderTeams(view, param) {
-  const fav = D.meta.favorite_team;
-  const team = (param || fav).toUpperCase();
+  if (!param || param === "all" || !TEAM_NAME[param.toUpperCase()]) {
+    if (!param && myTeam()) { history.replaceState(null, "", "#teams/" + myTeam()); param = myTeam(); }
+    else return renderTeamsHome(view);
+  }
+  const team = param.toUpperCase(), mine = myTeam();
   const t = D.teams.find((x) => x.team === team);
   const abbrs = D.teams.map((x) => x.team).sort();
   const sk = D.skaters.filter((s) => s.team === team);
@@ -623,17 +738,18 @@ function renderTeams(view, param) {
   const rank = [...D.teams].sort((a, b) => b.pts - a.pts || a.gp - b.gp).findIndex((x) => x.team === team) + 1;
   const finishing = t ? t.g_minus_xg : 0, keeping = t ? t.xga - t.ga : 0;
   const story = !t ? "" : [
-    `${team} is getting ${pct(t.xg_pct / 100)} of the expected goals in its games.`,
-    Math.abs(finishing) >= 3 ? `Its shooters are ${finishing > 0 ? "running hot" : "running cold"}: ${signed(finishing)} goals against what their chances deserved.` : `Its finishing is close to what the chances deserve.`,
-    Math.abs(keeping) >= 3 ? `Its goaltending is ${keeping > 0 ? "stealing goals" : "leaking goals"} (${signed(keeping)}).` : `Its goaltending is close to expected.`,
+    `${team} is getting ${pct(t.xg_pct / 100)} of the expected goals in its games (50% is an even split of the chances).`,
+    Math.abs(finishing) >= 3 ? `Its shooters are ${finishing > 0 ? "running hot" : "running cold"}: ${signed(finishing)} goals compared with what their chances usually produce.` : `Its shooters are scoring about what their chances usually produce.`,
+    Math.abs(keeping) >= 3 ? `Its goalies are ${keeping > 0 ? "stealing goals" : "letting in extra goals"} (${signed(keeping)} against the shots they've faced).` : `Its goaltending is about average for the shots faced.`,
   ].join(" ");
   S.tSort ||= { key: "pts", dir: -1 };
   view.innerHTML = `
     <section class="zone">
-      <div class="controls"><label for="teamPick" class="check">Team</label>
-        <select id="teamPick">${abbrs.map((a) => `<option ${a === team ? "selected" : ""}>${a}</option>`).join("")}</select></div>
-      <h1>${team}${t ? `: ${t.w}-${t.l}-${t.otl}, ${t.pts} points` : ""}</h1>
-      <p class="lede">${t ? `${ordinal(rank)} in the league by points. ` : ""}${story}</p>
+      <div class="controls"><a class="crumbs-a" href="#teams/all">All teams</a>
+        <select id="teamPick" aria-label="Team">${abbrs.map((a) => `<option value="${a}" ${a === team ? "selected" : ""}>${esc(teamName(a))}</option>`).join("")}</select>
+        ${mine === team ? `<span class="tag tag-mine">Your team</span>` : `<button type="button" class="follow" data-setteam="${team}">Make this my team</button>`}</div>
+      <h1>${esc(teamName(team))}</h1>
+      <p class="lede">${t ? `<b>${t.w}-${t.l}-${t.otl}, ${t.pts} points</b>, ${ordinal(rank)} in the league. ` : ""}${story}</p>
       <div id="teamStory"></div>
       <div class="stat-row" id="teamTiles"></div>
     </section>
@@ -652,7 +768,7 @@ function renderTeams(view, param) {
       </div>
     </section>
     <section class="zone" id="teamTactics" hidden></section>
-    <section class="zone"><h2>Skaters</h2><p class="lede">"Team better with him" is how much larger a share of 5v5 expected goals the team gets with this player on the ice than without him.</p><div id="teamSk"></div></section>
+    <section class="zone"><h2>Skaters</h2><p class="lede">Tap a column to sort. xG is the expected goals from a player's own shots. "Team better with him" compares the team's share of five-on-five chances with him on the ice to its share without him: +5 means five points better.</p><div id="teamSk"></div></section>
     <div id="teamNews"></div>`;
   const draw = () => { $("#teamSk").innerHTML = table(sortRows(sk, S.tSort), skaterCols(), S.tSort, "tsk"); bindSort($("#teamSk"), S.tSort, draw); };
   draw();
@@ -687,17 +803,18 @@ function renderTeams(view, param) {
   teamLog(team).then((html) => { if (location.hash === here) view.insertAdjacentHTML("beforeend", html); }).catch(() => {});
   renderTactics($("#teamTactics"), team).catch(() => {});
   $("#teamPick").addEventListener("change", (e) => (location.hash = "#teams/" + e.target.value));
+  $("[data-setteam]", view)?.addEventListener("click", (e) => { setMyTeam(e.target.dataset.setteam); route(); });
 }
 
 // ------------------------------------------------------------------ PLAYERS
 function verdictFor(p) {
   const bits = [];
-  if (p.g_minus_xg >= 2) bits.push(`He has scored ${signed(p.g_minus_xg)} more goals than his chances usually produce, so expect fewer to go in.`);
-  else if (p.g_minus_xg <= -1.5) bits.push(`He has ${signed(p.g_minus_xg)} fewer goals than his chances deserve, so goals should come if the chances keep coming.`);
-  if (p.oi_luck >= 4) bits.push(`His team has outscored expectations by ${signed(p.oi_luck)} goals while he's on the ice, which tends not to last.`);
-  if (p.oi_luck <= -4) bits.push(`His team has been unlucky with him on the ice (${signed(p.oi_luck)} goals against expectation).`);
-  if (p.rel5 != null && Math.abs(p.rel5) >= 10) bits.push(`At 5v5 his team gets ${signed(p.rel5, 0)} points more of the expected goal share with him on the ice than without him.`);
-  return bits.length ? bits.join(" ") : "Nothing unusual yet: his results line up with his underlying play.";
+  if (p.g_minus_xg >= 2) bits.push(`He has scored ${num(p.g_minus_xg, 1)} more goals than his chances usually produce, so expect fewer to go in from here.`);
+  else if (p.g_minus_xg <= -1.5) bits.push(`He has ${num(-p.g_minus_xg, 1)} fewer goals than his chances usually produce, so goals should come if the chances keep coming.`);
+  if (p.oi_luck >= 4) bits.push(`His team has scored ${num(p.oi_luck, 1)} more goals than expected while he's on the ice, which tends not to last.`);
+  if (p.oi_luck <= -4) bits.push(`His team has been unlucky with him on the ice, ${num(-p.oi_luck, 1)} goals worse than the chances say.`);
+  if (p.rel5 != null && Math.abs(p.rel5) >= 10) bits.push(`At five on five his team's share of the chances is ${Math.round(Math.abs(p.rel5))} points ${p.rel5 > 0 ? "higher" : "lower"} with him on the ice than without him.`);
+  return bits.length ? bits.join(" ") : "Nothing unusual yet: his results line up with how he's playing.";
 }
 // NHL EDGE extras for one skater: where his shots come from (the NHL's 17 tracked areas) and his hardest shots
 function edgeBlock(ed, log) {
@@ -712,23 +829,102 @@ function edgeBlock(ed, log) {
       <p class="note">The NHL's own tracked shot locations (EDGE), his six busiest areas this season. A handful of shots per area is noise; it settles over a few months.</p>` : ""}
     ${hard ? `<h3 style="margin-top:18px">Hardest shots</h3><ul class="plist">${hard}</ul>` : ""}`;
 }
+// search over skaters and goalies; used on the Players landing and on every player page
+function bindPlayerSearch(view) {
+  const q = $("#pq", view), sugg = $("#sugg", view);
+  if (!q) return;
+  q.addEventListener("input", () => {
+    const t = q.value.trim().toLowerCase();
+    if (t.length < 2) { sugg.hidden = true; return; }
+    const hits = D.skaters.filter((s) => s.name.toLowerCase().includes(t)).map((s) => ({ ...s, kind: "players" }))
+      .concat((D.goalies || []).filter((g) => (g.name || "").toLowerCase().includes(t)).map((g) => ({ ...g, kind: "goalie" }))).slice(0, 8);
+    sugg.innerHTML = hits.map((s) => `<li><button type="button" data-go="${s.kind}/${s.id}">${esc(s.name)} <span class="dim">${s.team}${s.kind === "goalie" ? ", G" : ""}</span></button></li>`).join("") || `<li><button type="button" disabled>No player by that name has played this season</button></li>`;
+    sugg.hidden = false;
+    $$("[data-go]", sugg).forEach((b) => b.addEventListener("click", () => (location.hash = "#" + b.dataset.go)));
+  });
+  q.addEventListener("keydown", (e) => { if (e.key === "Enter") $("[data-go]", sugg)?.click(); });
+}
+const searchBox = (ph = "Search any skater or goalie") => `<div class="controls"><input type="search" id="pq" placeholder="${ph}" aria-label="${ph}" autocomplete="off"></div>
+      <ul class="suggest" id="sugg" hidden></ul>`;
+
+// Players landing: search, the players you follow, league leaders, and the full skater table
+function renderPlayersHome(view) {
+  const fl = follows.list(), props = Object.fromEntries((D.tonight.props || []).map((x) => [x.id, x]));
+  const gl = Object.fromEntries((D.goalies || []).map((g) => [g.id, g]));
+  const sk = Object.fromEntries(D.skaters.map((x) => [x.id, x]));
+  const followCard = (f) => {
+    const x = f.kind === "goalie" ? gl[f.id] : sk[f.id], tn = props[f.id];
+    const href = f.kind === "goalie" ? `#goalie/${f.id}` : `#players/${f.id}`;
+    const line = !x ? "No games this season" : f.kind === "goalie" ? `${x.gp} GP, ${pct(x.sv_pct, 1)}, ${signed(x.gsax)} saved above expected` : `${x.g} G, ${x.a} A in ${x.gp} GP`;
+    return `<a class="fcard" href="${href}"><b>${esc(f.name)}</b> <span class="dim">${esc(x?.team || f.team || "")}</span><span>${line}</span>
+      ${tn ? `<span class="fc-tonight">Tonight vs ${tn.opp}: ${pct(tn.p_goal)} to score</span>` : ""}</a>`;
+  };
+  const min = Math.max(1, Math.round((D.meta.games_played || 0) / 32 * 0.4));   // about 40% of team games
+  const qual = D.skaters.filter((x) => x.gp >= min);
+  const board = (title, rows, val, note) => `<div class="board"><h3>${title}</h3><ol>${rows.map((r) => `<li>${playerLink(r.id, r.name)} <span class="dim">${r.team}</span><b>${val(r)}</b></li>`).join("")}</ol>${note ? `<p class="note">${note}</p>` : ""}</div>`;
+  const top = (arr, k, n = 5, dir = -1) => [...arr].filter((x) => x[k] != null).sort((a, b) => (a[k] - b[k]) * dir).slice(0, n);
+  const goalies = (D.goalies || []).filter((g) => g.sa >= 60).sort((a, b) => b.gsax - a.gsax).slice(0, 5);
+  view.innerHTML = `<section class="zone">
+      <h1>Players</h1>
+      <p class="lede">Every skater and goalie in the league: shot maps, game logs, how they're used, how they defend and what they're worth. Search for anyone, or start with the leaders.</p>
+      ${searchBox()}
+    </section>
+    <section class="zone"><h2>Players you follow</h2>
+      ${fl.length ? `<div class="fgrid">${fl.map(followCard).join("")}</div>` : `<p class="lede">Tap <b>Follow</b> on any player's page and they'll show up here, with tonight's numbers when they play. You can also filter Tonight's table to them. Saved in this browser only.</p>`}
+    </section>
+    <section class="zone"><h2>Leaders</h2>
+      <div class="boards">
+        ${board("Points", top(D.skaters, "pts"), (r) => r.pts)}
+        ${board("Goals", top(D.skaters, "g"), (r) => r.g)}
+        ${board("Most dangerous shooters", top(D.skaters, "ixg"), (r) => num(r.ixg, 1), "Expected goals from their own shots: the quality and number of their chances.")}
+        ${board("Due for more goals", top(qual, "g_minus_xg", 5, 1), (r) => signed(r.g_minus_xg), "Goals minus expected goals. The chances are there; the goals usually follow.")}
+        ${board("Goalies", goalies, (r) => signed(r.gsax), "Goals saved above what an average goalie would allow on the same shots.")}
+      </div>
+    </section>
+    <section class="zone"><h2>Every skater</h2>
+      <div class="controls">
+        <div class="chips" role="group" aria-label="Position">${["all", "F", "D"].map((x) => `<button type="button" class="chip" data-ppos="${x}" aria-pressed="${S.pPos === x}">${x === "all" ? "All" : x === "F" ? "Forwards" : "Defense"}</button>`).join("")}</div>
+        <select id="pTeam" aria-label="Team"><option value="all">All teams</option>${D.teams.map((t) => t.team).sort().map((a) => `<option value="${a}" ${S.pTeam === a ? "selected" : ""}>${esc(teamName(a))}</option>`).join("")}</select>
+        <label class="check">Min games <input type="text" id="pMin" value="${S.pMin}" style="width:48px" inputmode="numeric"></label>
+      </div>
+      <div id="allSk"></div><div class="controls" style="margin-top:10px"><button type="button" class="chip" id="more">Show more</button></div>
+    </section>`;
+  const draw = () => {
+    let rows = D.skaters.filter((x) => x.gp >= S.pMin && (S.pPos === "all" || x.pos === S.pPos) && (S.pTeam === "all" || x.team === S.pTeam));
+    rows = sortRows(rows, S.pSort).slice(0, S.pLimit);
+    const cols = skaterCols(); cols.splice(1, 0, { key: "team", label: "Team" });
+    $("#allSk").innerHTML = table(rows, cols, S.pSort, "allsk");
+    bindSort($("#allSk"), S.pSort, draw);
+  };
+  draw();
+  $("#more").addEventListener("click", () => { S.pLimit += 100; draw(); });
+  $$("[data-ppos]", view).forEach((b) => b.addEventListener("click", () => { S.pPos = b.dataset.ppos; $$("[data-ppos]", view).forEach((x) => x.setAttribute("aria-pressed", x === b)); draw(); }));
+  $("#pTeam").addEventListener("change", (e) => { S.pTeam = e.target.value; draw(); });
+  $("#pMin").addEventListener("input", (e) => { S.pMin = +e.target.value || 0; draw(); });
+  bindPlayerSearch(view);
+}
 function renderPlayers(view, param) {
-  const byPts = [...D.skaters].sort((a, b) => b.pts - a.pts);
-  const id = param ? +param : (byPts.find((s) => s.team === D.meta.favorite_team) || byPts[0]).id;
-  const p = D.skaters.find((s) => s.id === id) || byPts[0];
+  if (!param) return renderPlayersHome(view);
+  const p = D.skaters.find((s) => s.id === +param);
+  if (!p) {
+    if ((D.goalies || []).some((g) => g.id === +param)) { location.replace("#goalie/" + param); return; }
+    view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#players">Players</a></p><h1>Player not found</h1><p class="lede">He hasn't played an NHL game this season. Try the search on the <a href="#players">Players</a> page.</p></section>`;
+    return;
+  }
   const shots = D.shots[p.id] || [];
   const tile = (v, label, sub) => `<div class="stat"><b>${v}</b><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}</div>`;
   const meter = (label, pctl, val) => pctl == null ? "" : `<div class="meter"><span>${label}</span><span class="bar-track" data-tip="${esc(`${Math.round(100 * pctl)}th percentile in the league`)}"><span class="bar-fill" style="width:${100 * pctl}%"></span></span><span class="val">${val}</span></div>`;
   const last = p.p_gp ? `Last season${p.p_team && p.p_team !== p.team ? ` with ${p.p_team}` : ""}: ${p.p_g} G, ${p.p_pts} P in ${p.p_gp} GP` : "No NHL games last season";
   view.innerHTML = `
     <section class="zone">
-      <div class="controls"><input type="search" id="pq" placeholder="Search any skater or goalie" aria-label="Search any skater or goalie" autocomplete="off"></div>
-      <ul class="suggest" id="sugg" hidden></ul>
+      <p class="crumbs"><a href="#players">Players</a></p>
+      ${searchBox()}
       <div class="phead">
         <div class="ph-photo"><img src="https://assets.nhle.com/mugs/nhl/${esc(D.meta.season)}/${esc(p.team)}/${p.id}.png" alt="" width="128" height="128"
           onerror="this.parentNode.classList.add('ph-none'); this.remove()">${p.num != null ? `<span class="ph-num">${p.num}</span>` : ""}</div>
         <div class="ph-text"><h1>${esc(p.name)}</h1>
-          <div class="meta">${p.team}, ${p.pos === "D" ? "defense" : "forward"}, ${p.gp} games, ${num(p.toi_pg, 1)} minutes a night</div></div>
+          <div class="meta"><a href="#teams/${p.team}">${esc(teamName(p.team))}</a>, ${p.pos === "D" ? "defense" : "forward"}, ${p.gp} games, ${num(p.toi_pg, 1)} minutes a night</div>
+          ${followBtn({ id: p.id, kind: "skater", name: p.name, team: p.team })}</div>
         <div class="meta ph-bio" id="pBio"></div></div>
       <div class="stat-row">
         ${tile(p.g, "Goals", `${num(p.ixg, 1)} expected`)}${tile(p.a, "Assists")}${tile(p.pts, "Points", `${p.ppp} on the power play`)}
@@ -744,19 +940,19 @@ function renderPlayers(view, param) {
         ${shotMap(rinkSVG(shots, { label: `${p.name} shot map` }), shots, { kind: "player", id: p.id, name: p.name })}
         <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>Shot or miss</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
       <div>
-        <h3>What the model believes</h3>
+        <h3>What we expect from him</h3>
         <p class="note">${esc(last)}.</p>
-        ${meter("Shooting threat", Math.min(1, (p.m_ixg60 || 0) / 1.6), `${num(p.m_ixg60, 2)} xG/60`)}
+        ${meter("Our estimate", Math.min(1, (p.m_ixg60 || 0) / 1.6), `${num(p.m_ixg60, 2)} xG/60`)}
         ${meter("This season", Math.min(1, (p.ixg60 || 0) / 1.6), `${num(p.ixg60, 2)} xG/60`)}
         ${meter("Last season", p.p_ixg60 == null ? null : Math.min(1, p.p_ixg60 / 1.6), `${num(p.p_ixg60, 2)} xG/60`)}
-        <p class="note">The top bar is the blend the prop odds use: this season pulled toward last season and his role, because a dozen games is too few to trust on its own.</p>
+        <p class="note">Expected goals from his own shots per 60 minutes. Our estimate is what tonight's odds use: this season's rate, pulled toward last season and his role, because a few weeks of games is too few to trust on their own.</p>
         <h3 style="margin-top:22px">Skating and shooting, tracked</h3>
         ${p.max_speed_pctile == null ? `<p class="note">No NHL Edge tracking for him yet.</p>` : `
           ${meter("Top speed", p.max_speed_pctile, `${num(p.max_speed_mph, 1)} mph`)}
           ${meter("20+ mph bursts", p.bursts_pctile, `${p.bursts_20mph}`)}
           ${meter("Hardest shot", p.top_shot_pctile, `${num(p.top_shot_mph, 1)} mph`)}
           ${meter("Distance skated", p.distance_pctile, `${Math.round(100 * p.distance_pctile)}th pct`)}
-          <p class="note">Bars show his percentile among all NHL skaters this season.</p>`}
+          <p class="note">From the NHL's player tracking (EDGE). Bars show his percentile among all NHL skaters this season.</p>`}
         <div id="pEdge"></div>
       </div>
     </section>
@@ -764,30 +960,10 @@ function renderPlayers(view, param) {
     <section class="zone plays" id="pDef" hidden></section>
     <section class="zone plays" id="pPlays" hidden></section>
     <section class="zone" id="pReel" hidden></section>
-    <section class="zone"><h2>Game by game</h2><p class="lede">Every game this season, newest first. xG is his own shots' chances; on-ice ± is chances for minus against while he was out there. Tap a game to open it.</p>
+    <section class="zone"><h2>Game by game</h2><p class="lede">Every game this season, newest first. xG is the expected goals from his own shots; on-ice xG ± is chances for minus chances against while he was on the ice. Tap a game to open it.</p>
       <div id="pLog"><p class="note">Loading his games…</p></div></section>
-    <div id="pMedia"></div>
-    <section class="zone"><h2>Every skater</h2>
-      <div class="controls">
-        <div class="chips" role="group" aria-label="Position">${["all", "F", "D"].map((x) => `<button type="button" class="chip" data-ppos="${x}" aria-pressed="${S.pPos === x}">${x === "all" ? "All" : x === "F" ? "Forwards" : "Defense"}</button>`).join("")}</div>
-        <select id="pTeam" aria-label="Team"><option value="all">All teams</option>${D.teams.map((t) => t.team).sort().map((a) => `<option ${S.pTeam === a ? "selected" : ""}>${a}</option>`).join("")}</select>
-        <label class="check">Min games <input type="text" id="pMin" value="${S.pMin}" style="width:48px" inputmode="numeric"></label>
-      </div>
-      <div id="allSk"></div><div class="controls" style="margin-top:10px"><button type="button" class="chip" id="more">Show more</button></div>
-    </section>`;
+    <div id="pMedia"></div>`;
 
-  const draw = () => {
-    let rows = D.skaters.filter((s) => s.gp >= S.pMin && (S.pPos === "all" || s.pos === S.pPos) && (S.pTeam === "all" || s.team === S.pTeam));
-    rows = sortRows(rows, S.pSort).slice(0, S.pLimit);
-    const cols = skaterCols(); cols.splice(1, 0, { key: "team", label: "Team" });
-    $("#allSk").innerHTML = table(rows, cols, S.pSort, "allsk");
-    bindSort($("#allSk"), S.pSort, draw);
-  };
-  draw();
-  $("#more").addEventListener("click", () => { S.pLimit += 100; draw(); });
-  $$("[data-ppos]", view).forEach((b) => b.addEventListener("click", () => { S.pPos = b.dataset.ppos; $$("[data-ppos]", view).forEach((x) => x.setAttribute("aria-pressed", x === b)); draw(); }));
-  $("#pTeam").addEventListener("change", (e) => { S.pTeam = e.target.value; draw(); });
-  $("#pMin").addEventListener("input", (e) => { S.pMin = +e.target.value || 0; draw(); });
   const here = location.hash;
   getJSON(`data/players/${p.id}.json`).then((file) => {
     if (location.hash !== here || !$("#pLog")) return;
@@ -824,17 +1000,7 @@ function renderPlayers(view, param) {
     el.outerHTML = r ? r.html : "";
     const blk = view.querySelector(".media-block"); if (r && blk) bindMedia(blk, r.listen);
   }).catch(() => {});
-  const q = $("#pq"), sugg = $("#sugg");
-  q.addEventListener("input", () => {
-    const t = q.value.trim().toLowerCase();
-    if (t.length < 2) { sugg.hidden = true; return; }
-    const hits = D.skaters.filter((s) => s.name.toLowerCase().includes(t)).map((s) => ({ ...s, kind: "players" }))
-      .concat((D.goalies || []).filter((g) => (g.name || "").toLowerCase().includes(t)).map((g) => ({ ...g, kind: "goalie" }))).slice(0, 8);
-    sugg.innerHTML = hits.map((s) => `<li><button type="button" data-go="${s.kind}/${s.id}">${esc(s.name)} <span class="dim">${s.team}${s.kind === "goalie" ? ", G" : ""}</span></button></li>`).join("") || `<li><button type="button" disabled>No player by that name has played this season</button></li>`;
-    sugg.hidden = false;
-    $$("[data-go]", sugg).forEach((b) => b.addEventListener("click", () => (location.hash = "#" + b.dataset.go)));
-  });
-  q.addEventListener("keydown", (e) => { if (e.key === "Enter") $("[data-go]", sugg)?.click(); });
+  bindPlayerSearch(view);
 }
 
 // ------------------------------------------------------------------ FANTASY
@@ -949,47 +1115,47 @@ function drawFantasy(view, F) {
 // Unlike the backtest, these had to guess lineups and goalies.
 function liveRecord(L) {
   const head = `<h2>Live record</h2>`;
-  if (!L || !L.nights) return `<section class="zone">${head}<p class="lede">Starting with the October 16 slate, every game's prices are saved at puck drop, along with the lineups and goalies the site had to guess, and graded here the next morning. The backtest above was handed the real lineups and starting goalies; this record isn't, so expect it to look a little worse.</p></section>`;
+  if (!L || !L.nights) return `<section class="zone">${head}<p class="lede">Since October 16, every number on the Tonight page is saved at puck drop, along with the lineups and goalies we expected, and graded here the next morning. The season replay above knew the real lineups and starting goalies; this record doesn't, so it's the tougher test.</p></section>`;
   const pc = (a, b) => (b ? `${Math.round((100 * a) / b)}%` : "–");
   const lu = L.lineup, small = L.nights < 14;
   return `<section class="zone">${head}
-    <p class="lede">${L.nights} night${L.nights === 1 ? "" : "s"} (${shortDate(L.first)} to ${shortDate(L.last)}), ${L.games} games, ${L.player_games.toLocaleString()} player-games, graded exactly as shown before puck drop.${small ? " That's a small sample: one hot night swings these numbers." : ""}</p>
+    <p class="lede">Every number on the Tonight page is saved at puck drop, with the lineups and goalies we expected, and graded the next morning. So far: ${L.nights} night${L.nights === 1 ? "" : "s"} (${shortDate(L.first)} to ${shortDate(L.last)}), ${L.games} games, ${L.player_games.toLocaleString()} player-games.${small ? " That's a small sample: one hot night swings these numbers." : ""}</p>
     <div class="grid-3">
-      <div><div class="bignum">${L.goal.pred.toFixed(0)} <span class="dim">vs</span> ${L.goal.act}</div><p>goal scorers predicted vs actual. The model beat the naive guess on ${L.goal.nights_beat} of ${L.nights} nights (log loss ${L.goal.ll.toFixed(4)} vs ${L.goal.ll_base.toFixed(4)}; lower is better).</p></div>
-      <div><div class="bignum">${pc(lu.last.dressed, lu.last.priced)}</div><p>of players from each team's last lineup dressed. Of the ones tagged as missing the last game, ${pc(lu.recent.dressed, lu.recent.priced)} played${lu.returning.priced ? `; of those coming back, ${pc(lu.returning.dressed, lu.returning.priced)}` : ""}. ${lu.unpriced} dressed without a price.</p></div>
+      <div><div class="bignum">${L.goal.pred.toFixed(0)} <span class="dim">vs</span> ${L.goal.act}</div><p>goal scorers predicted vs actual. We beat a simple baseline (league scoring rates times ice time) on ${L.goal.nights_beat} of ${L.nights} nights. Error score (log loss, lower is better): ${L.goal.ll.toFixed(4)} vs ${L.goal.ll_base.toFixed(4)}.</p></div>
+      <div><div class="bignum">${pc(lu.last.dressed, lu.last.priced)}</div><p>of players from each team's last lineup dressed. Of the ones tagged as missing the last game, ${pc(lu.recent.dressed, lu.recent.priced)} played${lu.returning.priced ? `; of those coming back, ${pc(lu.returning.dressed, lu.returning.priced)}` : ""}. ${lu.unpriced} dressed without a projection.</p></div>
       <div><div class="bignum">${pc(L.goalies.hits, L.goalies.n)}</div><p>of starting goalies called right (${L.goalies.espn_n ? `${pc(L.goalies.espn_hits, L.goalies.espn_n)} when ESPN had posted a probable starter` : "no ESPN probables yet"}).</p></div>
     </div>
     <p class="note">Two or more points: ${L.pts.pred.toFixed(0)} predicted, ${L.pts.act} actual.${L.pts1 ? ` One or more: ${L.pts1.pred.toFixed(0)} predicted, ${L.pts1.act} actual. Three or more: ${L.pts3.pred.toFixed(0)} predicted, ${L.pts3.act} actual.` : ""}${L.sog ? ` Shots on goal (tracked since Oct 18): ${L.sog.exp.toFixed(0)} expected, ${L.sog.act} taken; two or more ${L.sog.p2.toFixed(0)} predicted, ${L.sog.act2} actual; three or more ${L.sog.p3.toFixed(0)} predicted, ${L.sog.act3} actual.` : ""} Game totals missed by ${L.totals.mae} goals on average (projected ${L.totals.mean_pred}, actual ${L.totals.mean_act}).</p>
-    ${L.market && L.market.games ? `<p class="note"><b>Against DraftKings</b> (${L.market.games} games, lines the NHL publishes): totals missed by ${L.market.total_mae_model} goals for the model vs ${L.market.total_mae_market} for the market; over/under log loss ${L.market.over_ll_model.toFixed(3)} vs ${L.market.over_ll_market.toFixed(3)}; winner Brier score ${L.market.win_brier_model.toFixed(3)} vs ${L.market.win_brier_market.toFixed(3)}. Lower is better on all three; the market is the bar to clear.</p>` : ""}
+    ${L.market && L.market.games ? `<p class="note"><b>Against the sportsbook</b> (DraftKings game lines published by the NHL, ${L.market.games} games): totals missed by ${L.market.total_mae_model} goals for us vs ${L.market.total_mae_market} for the book; over/under log loss ${L.market.over_ll_model.toFixed(3)} vs ${L.market.over_ll_market.toFixed(3)}; winner Brier score ${L.market.win_brier_model.toFixed(3)} vs ${L.market.win_brier_market.toFixed(3)}. Lower is better on all three; the sportsbook is the bar to clear.</p>` : ""}
   </section>`;
 }
 function renderModel(view) {
   const M = D.model, ts = M.this_season;
   view.innerHTML = `
     <section class="zone">
-      <h1>Can you trust these odds?</h1>
-      <p class="lede">The model was replayed across all of ${esc(M.season)} the honest way: every night predicted using only games played before it. Here is what that showed.</p>
+      <h1>Can you trust these numbers?</h1>
+      <p class="lede">We'd rather show you than tell you. We replayed all of ${esc(M.season)} the honest way, predicting each night using only the games played before it, and checked every prediction against what happened. Since this season began we also grade everything we publish, the morning after.</p>
       <div class="grid-3">
         <div><div class="bignum">${M.goal.pred.toLocaleString()}</div><p>goal scorers predicted across ${M.player_games.toLocaleString()} player-games. ${M.goal.act.toLocaleString()} actually scored.</p></div>
         <div><div class="bignum">${M.pts.pred.toLocaleString()}</div><p>two-point games predicted. ${M.pts.act.toLocaleString()} actually happened.</p></div>
-        <div><div class="bignum">${M.totals.corr.toFixed(2)}</div><p>correlation between projected and actual game totals over ${M.games.toLocaleString()} games. That is essentially no signal, so totals here are context only.</p></div>
+        <div><div class="bignum">${M.totals.corr.toFixed(2)}</div><p>correlation between our projected game totals and the actual totals over ${M.games.toLocaleString()} games. That's close to no signal, so we show totals as context, not as a prediction.</p></div>
       </div>
     </section>
     ${liveRecord(M.live)}
     <section class="zone grid-2">
-      <div class="figure narrow"><h3>Goal chances</h3><p class="note">Each dot groups player-games by what the model said. On the line means the model was right on average. Bigger dots hold more games.</p>${calibrationChart(M.goal.cal, "Goal probability calibration")}</div>
+      <div class="figure narrow"><h3>Goal chances</h3><p class="note">Each dot groups player-games by the chance we gave. On the diagonal means that when we said 20%, it happened about 20% of the time. Bigger dots hold more games.</p>${calibrationChart(M.goal.cal, "Goal probability calibration")}</div>
       <div class="figure narrow"><h3>Two or more points</h3><p class="note">Same check for multi-point games.</p>${calibrationChart(M.pts.cal, "Two point probability calibration")}</div>
     </section>
     <section class="zone">
       <h2>What this does and doesn't prove</h2>
-      <p class="lede">It beats a naive guess (league scoring rates times ice time) in every month of last season. It has not been tested against sportsbook prices, which are much sharper than a naive guess. The only real test is logging the model's price next to the closing line for a few weeks.</p>
+      <p class="lede">Our player numbers beat a simple baseline (league scoring rates times ice time) in every month of last season, and they're well calibrated. That's the floor, not the finish line. Sportsbooks are much sharper than a baseline, and the free odds we can check against cover game lines only, not player markets. Read our numbers as an honest starting point and compare them with the price you're offered.</p>
       ${ts ? `<p class="lede">This season so far: ${ts.goal_pred} scorers predicted and ${ts.goal_actual} actual across ${ts.player_games.toLocaleString()} player-games.</p>` : ""}
     </section>`;
 }
 
 // ------------------------------------------------------------------ router
 const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, feature: renderFeature, pulse: renderPulse, league: renderLeague,
-  teams: renderTeams, players: renderPlayers, goalie: renderGoalie, fantasy: renderFantasy, model: renderModel };
+  teams: renderTeams, players: renderPlayers, goalie: renderGoalie, fantasy: renderFantasy, model: renderModel, about: renderAbout };
 const TAB_OF = { game: "games", goals: "games", preview: "tonight", live: "tonight", feature: "news", goalie: "players" };
 function route(e) {
   const rerender = e === "resize";
@@ -1001,12 +1167,13 @@ function route(e) {
   const view = $("#view");
   view.onclick = view.onkeydown = view.onchange = null;   // pages that delegate events set these; start clean
   const p = fn(view, param);
-  if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">Something failed to load (${esc(e.message)}). Reload to try again.</p>`));
+  if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">This page didn't load (${esc(e.message)}). Reload to try again.</p>`));
   tip.hidden = true;
   if (rerender) {
     // Same page at a new width: put the reader back where they were once the async render settles.
     Promise.resolve(p).then(() => requestAnimationFrame(() => scrollTo(0, keepY)));
-  } else if (param || tab === "game" || tab === "preview" || tab === "goals" || tab === "live" || tab === "news" || tab === "pulse" || tab === "feature") scrollTo(0, 0);
+  } else if (tab === "about" && param) requestAnimationFrame(() => document.getElementById("about-" + param)?.scrollIntoView());
+  else scrollTo(0, 0);   // a new page starts at the top
 }
 
 function applyThemeLabel() {
@@ -1040,11 +1207,15 @@ async function boot() {
     const got = await Promise.all(files.map((f) => fetch(`data/${f}.json`, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(f); return r.json(); })));
     files.forEach((f, i) => (D[f] = got[i]));
   } catch (e) {
-    $("#view").innerHTML = `<p class="empty">The data files didn't load (${esc(e.message)}). The nightly build may still be running; reload in a few minutes.</p>`;
+    $("#view").innerHTML = `<p class="empty">We couldn't load today's data (${esc(e.message)}). We may be mid-update; try again in a few minutes.</p>`;
     return;
   }
   try { S.goalies = JSON.parse(store.get("goalies:" + D.tonight.date) || "{}"); } catch (e) { S.goalies = {}; }
-  $("#freshness").textContent = `Updated ${D.meta.updated} MT with games through ${dateLabel(D.meta.last_game)}`;
+  const up = D.meta.updated_utc ? new Date(D.meta.updated_utc) : null;
+  const upTxt = up && !isNaN(up) ? up.toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" }) : `${D.meta.updated} MT`;
+  $("#freshness").textContent = `Updated ${upTxt} · results through ${dateLabel(D.meta.last_game)}`;
+  applyTeamButton();
+  $("#teamBtn").addEventListener("click", () => openTeamPicker());
   showFantasyTab(!!store.get(FKEY));
   addEventListener("hashchange", route);
   route();

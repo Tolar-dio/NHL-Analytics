@@ -68,7 +68,7 @@ function liveStart() {
 // ESPN writes "7:07 - 1st" (time left) and "20:00 - 2nd" (period about to start)
 function liveStatus(L) {
   if (!L) return "";
-  if (L.state === "pre") return timeMT(L.start);
+  if (L.state === "pre") return gameTime(L.start);
   if (L.state === "post") return L.detail || "Final";
   const m = /^(\d+:\d+) - (.+)$/.exec(L.detail || "");
   if (!m) return L.detail || "Live";
@@ -113,7 +113,7 @@ function goalieSource(game, side) {
   if (S.goalies[game.id]?.[side] != null) return "Your pick";
   const L = LIVE.byNhl[game.id], name = L?.prob?.[game[side]];
   if (probableId(game, side) != null) return "ESPN probable starter";
-  if (name) return `ESPN lists ${name}, who isn't in the model's options`;
+  if (name) return `ESPN lists ${name}; we don't have numbers on him yet`;
   return game[side + "_goalie_src"] === "espn" ? "ESPN probable starter" : "Projected from recent starts";
 }
 
@@ -254,7 +254,7 @@ async function renderLive(view, id) {
     const L = LIVE.byNhl[g0.id];
     if (!L || L.state === "pre") {
       view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#tonight">Tonight</a></p><h1>${g0.away} at ${g0.home}</h1>
-        <p class="lede">Puck drop ${timeMT(g0.start)}. This page goes live when the game starts. <a href="#preview/${g0.id}">Read the preview</a>.</p></section>`;
+        <p class="lede">Puck drop ${gameTime(g0.start)}. This page goes live when the game starts. <a href="#preview/${g0.id}">Read the preview</a>.</p></section>`;
       LIVE.gameTimer = setTimeout(draw, 60000);
       return;
     }
@@ -279,7 +279,7 @@ async function renderLive(view, id) {
       <section class="zone">
         <p class="crumbs"><a href="#tonight">Tonight</a></p>
         <h1>${G.away} ${L.a}, ${G.home} ${L.h}</h1>
-        <p class="lede">${done ? `<b>${esc(L.detail || "Final")}.</b> The full breakdown with shifts, goal replays and MoneyPuck's chance ratings arrives with tomorrow morning's build.`
+        <p class="lede">${done ? `<b>${esc(L.detail || "Final")}.</b> The full breakdown, with shifts, goal replays and MoneyPuck's chance ratings, is published tomorrow morning.`
           : `<i class="live-dot" aria-hidden="true"></i><b>${esc(liveStatus(L))}.</b> Updates every minute (last ${updated}).`} Chances below are rated by our in-game model.</p>
         <div class="game-open">
           <div>
@@ -313,7 +313,7 @@ async function renderLive(view, id) {
               ${stat("Hits", bx(G.away, "hits"), bx(G.home, "hits"))}
               ${stat("Blocked shots", bx(G.away, "blockedShots"), bx(G.home, "blockedShots"))}
             </div>
-            <p class="note">Score, shots and game stats from ESPN. ${model ? `In-game chance model: trained on ${model.shots.toLocaleString()} shots from the last two seasons. It ranks shots a little less sharply than MoneyPuck's model, which the morning page uses (AUC ${model.auc} vs about 0.78).` : ""}</p>
+            <p class="note">Score, shots and game stats from ESPN. ${model ? `Live chance ratings come from our in-game model, trained on ${model.shots.toLocaleString()} shots from the last two seasons. It's a little less sharp than MoneyPuck's model, which we use for the full breakdown the next morning.` : ""}</p>
           </div>
         </div>
       </section>
@@ -359,6 +359,7 @@ async function newsIndex() {
 const tagged = (x, team, pid) => (!team || (x.teams || []).includes(team)) && (!pid || (x.players || []).some((p) => p.id === pid));
 const teamChips = (teams) => (teams || []).length ? ` · ${teams.slice(0, 3).join(", ")}` : "";
 
+const AI_CHIP = `<span class="ai-chip" data-tip="Written with AI from the reports' headlines and Ice Sheet's numbers">AI</span>`;
 function storyCard(st) {
   // one link per outlet (an outlet often files a news brief and a follow-up on the same story); its latest piece
   const byOutlet = new Map();
@@ -369,7 +370,7 @@ function storyCard(st) {
     <div class="ni-meta">${ago(st.latest || st.published)}${teamChips(st.teams)}</div>
     <h3>${st.take ? `<a href="#news/${esc(st.id)}">${esc(st.title)}</a>` : esc(st.title)}</h3>
     ${st.desc ? `<p class="ni-desc">${esc(st.desc)}</p>` : ""}
-    ${st.take ? `<div class="ni-take"><b>Our take.</b> ${esc(first)} <a href="#news/${esc(st.id)}">Read it</a></div>` : ""}
+    ${st.take ? `<div class="ni-take"><b>Our take</b>${AI_CHIP} ${esc(first)} <a href="#news/${esc(st.id)}">Read it</a></div>` : ""}
     <div class="ni-src">${outlets.length > 1 ? `Covered by ${outlets.length} outlets:` : st.items.length > 1 ? `${st.items.length} reports:` : "Report:"} ${outlets.join(" · ")}</div>
   </article>`;
 }
@@ -450,7 +451,7 @@ function moveCard(m) {
     <div class="ni-meta">${shortDate(m.date)} · <b>${(m.teams || []).join(" / ")}</b> · <span class="mv-kind mv-${m.kind}">${MOVE_KIND[m.kind] || "Roster"}</span></div>
     ${m.items.map((i) => `<p class="mv-text">${m.items.length > 1 ? `<b>${esc(i.team)}:</b> ` : ""}${esc(i.text)}</p>`).join("")}
     ${chips ? `<div class="wc-chips">${chips}</div>` : ""}
-    ${m.take ? `<p class="mv-take"><b>What it means.</b> ${esc(m.take)}</p>` : ""}
+    ${m.take ? `<p class="mv-take"><b>What it means</b>${AI_CHIP} ${esc(m.take)}</p>` : ""}
   </article>`;
 }
 
@@ -472,12 +473,12 @@ async function renderNews(view, id) {
   const cards = { stories: storyCard, moves: moveCard, features: (x) => (x.slug ? featureCard(x) : readCard(x)), listen: listenCard, watch: videoCard };
   const empty = { stories: "No stories", moves: "No moves", features: "Nothing new to read", listen: "No new episodes", watch: "No new videos" };
   const blurb = {
-    stories: "ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Stories about players or teams we track get a short take from Claude using this site's numbers.",
-    moves: `Every call-up, assignment, signing, trade, waiver move and front-office change from the last 30 days, as the teams announced them (via ESPN's transactions feed). Trades and staff changes get a short note from Claude using this site's numbers.
+    stories: "Headlines from ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Many stories get a short Ice Sheet take on what our numbers say about the players and teams involved. Takes are written with AI from those headlines and our data; links go to the original reporting.",
+    moves: `Every call-up, assignment, signing, trade, waiver move and front-office change from the last 30 days, as the teams announced them (via ESPN). Trades and staff changes get a short note on what our numbers say, written with AI.
       <span class="chips mv-filter" role="group" aria-label="Kind of move">${MOVE_FILTERS.map(([k, l]) => `<button type="button" class="chip" data-mkind="${k}" aria-pressed="${S.mKind === k}">${l}</button>`).join("")}</span>`,
-    features: "Our own writing first: a weekly column and deep dives on players and teams, written by Claude from this site's numbers. Then analysis, features and newsletters from elsewhere; links go to the writer's site, and some need a subscription.",
-    listen: "32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.",
-    watch: "The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.",
+    features: "Ice Sheet's own pieces first: a weekly around-the-league column and deep dives on players and teams, written with AI from our data. Then analysis and newsletters from around hockey; links go to the writer's site, and some need a subscription.",
+    listen: "The latest from league-wide shows: 32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.",
+    watch: "Analysis and talk from The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.",
   };
   const listClass = { stories: "news-list", moves: "move-list", features: "read-list", listen: "listen-list", watch: "watch-grid" };
   let sets = {}, shown = {};
@@ -489,7 +490,7 @@ async function renderNews(view, id) {
     shown = Object.fromEntries(NEWS_TABS.map(([k]) => [k, Math.min(NEWS_PAGE[k], sets[k].length)]));
     view.innerHTML = `<section class="zone news-head">
         <div class="news-title"><h1>News</h1>
-          <label class="news-team"><span class="sr-only">Team</span><select id="nTeam"><option value="all">All teams</option>${teams.map((t) => `<option ${S.nTeam === t ? "selected" : ""}>${t}</option>`).join("")}</select></label></div>
+          <label class="news-team"><span class="sr-only">Team</span><select id="nTeam"><option value="all">All teams</option>${myTeam() ? `<option value="${myTeam()}" ${S.nTeam === myTeam() ? "selected" : ""}>Your team: ${esc(teamName(myTeam()))}</option>` : ""}${teams.map((t) => `<option value="${t}" ${S.nTeam === t && t !== myTeam() ? "selected" : ""}>${esc(teamName(t))}</option>`).join("")}</select></label></div>
         <p class="lede">Updated hourly${d.updated ? `, last ${ago(d.updated)}` : ""}.</p>
       </section>
       <div class="news-bar" id="newsBar">
@@ -557,16 +558,16 @@ async function renderNews(view, id) {
 }
 async function renderTake(view, id) {
   const d = await newsIndex(), st = d.stories.find((x) => x.id === String(id) || (x.ids || []).includes(String(id)));
-  if (!st || !st.take) { view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news">News</a></p><h1>Not written yet</h1><p class="lede">There's no take on that story yet. They're written every hour or two.</p></section>`; return; }
+  if (!st || !st.take) { view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#news">News</a></p><h1>Not written yet</h1><p class="lede">We haven't written a take on that story yet. New ones go up every hour or two.</p></section>`; return; }
   view.innerHTML = `<section class="zone take">
       <p class="crumbs"><a href="#news">News</a></p>
       <h1>${esc(st.title)}</h1>
       <p class="ni-meta">${ago(st.latest || st.published)}${teamChips(st.teams)}</p>
       <div class="story">${st.take.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>
       ${st.players?.length ? `<p class="note">Players in this story: ${st.players.map((p) => playerLink(p.id, p.name)).join(", ")}</p>` : ""}
-      <h3 class="kicker">The reports</h3>
+      <h3 class="kicker">The original reporting</h3>
       <ul class="plist">${st.items.map((i) => `<li><a href="${esc(i.link || "#")}" target="_blank" rel="noopener">${esc(i.title)}</a> <span class="dim">${esc(i.source)}${i.paywalled ? ", subscription" : ""}, ${ago(i.published)}</span></li>`).join("")}</ul>
-      <p class="note">The facts come from the reports above. The analysis is written by Claude from those headlines and this site's own numbers.</p>
+      <p class="note ai-note">The facts come from the reports above. Our take was written with AI (Claude) from those headlines and Ice Sheet's own numbers, without outside reporting.</p>
     </section>`;
 }
 // compact "around the league" block for team and player pages

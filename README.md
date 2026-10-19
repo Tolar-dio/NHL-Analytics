@@ -38,7 +38,9 @@ The **Backfill a past season** workflow (Actions tab) pulls a full past season: 
 
 ## The dashboard (site/)
 
-`site/build.py` turns the data and models into JSON; `site/index.html`, `app.js` and `style.css` are a static page that reads it. The nightly workflow builds and deploys it to GitHub Pages after each data pull. Tabs: Tonight (goal and 2+ point odds with fair prices, goalie switcher), League (team map, standings with luck, goalie saves above expected), Teams, Players (shot maps, Edge tracking), My team (fantasy schedule grid from `site/config.json`, published only encrypted with the `FANTASY_PASSWORD` repository secret and hidden until unlocked), and Trust the model? (backtest calibration).
+**Built for every fan.** The site is written as a product for a general NHL audience: no default team and league-wide news sources only. Visitors pick their own team (stored in their browser) to get it first on Tonight, highlighted on the league chart and opened by the Teams tab, and can follow players and goalies from their pages. Times show in the visitor's time zone. AI-written pieces are labelled, and betting numbers carry a responsible-gambling notice.
+
+`site/build.py` turns the data and models into JSON; `site/index.html`, `app.js` and `style.css` are a static page that reads it. The nightly workflow builds and deploys it to GitHub Pages after each data pull. Tabs: Tonight (goal and 2+ point odds with fair prices, goalie switcher), League (team map, standings with luck, goalie saves above expected), Teams, Players (shot maps, Edge tracking), My team (fantasy schedule grid from `site/config.json`, published only encrypted with the `FANTASY_PASSWORD` repository secret and hidden until unlocked), and Track record (backtest calibration and the live record). The footer links an About page (`site/about.js`) with methods, a glossary, data credits, how AI is used, responsible gambling and privacy.
 
 To preview locally: `python site/build.py && cd site && python -m http.server`.
 
@@ -48,7 +50,7 @@ Tonight cards and previews show DraftKings' moneyline and total (published free 
 
 ### Lineups and the live record
 
-Tonight's prices cover everyone who dressed in a team's last three games and is still on its roster, minus ESPN's injured list, plus players coming back from injury or just traded in; anyone who missed the last game is tagged, and every price assumes the player dresses (as sportsbooks do). Goalies are ESPN's probable starters when posted. Each game's prices are frozen at puck drop in `data/archive/` and graded the next morning by `analysis/track.py`, which feeds the "Live record" on the Trust page: the real test, since the backtest knew the actual lineups.
+Tonight's prices cover everyone who dressed in a team's last three games and is still on its roster, minus ESPN's injured list, plus players coming back from injury or just traded in; anyone who missed the last game is tagged, and every price assumes the player dresses (as sportsbooks do). Goalies are ESPN's probable starters when posted. Each game's prices are frozen at puck drop in `data/archive/` and graded the next morning by `analysis/track.py`, which feeds the "Live record" on the Track record page: the real test, since the backtest knew the actual lineups.
 
 ### Live scores and news
 

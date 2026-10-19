@@ -25,10 +25,12 @@ MAX_STORIES = int(os.environ.get("STORY_MAX", "60"))
 STORY_VERSION = 2   # bump to rewrite every cached story on the next run (v2: labelled fact sheets after v1 swapped teams)
 
 STYLE = """House style, follow exactly:
-- Plain, vivid sportswriting for one die-hard fan who knows hockey and analytics. No hype words, no cliches, no exclamation marks.
+- Plain, vivid sportswriting for Ice Sheet's readers: hockey fans from casual to analytics-minded. No hype words, no cliches, no exclamation marks.
+- The first time you use an analytics term (expected goals, goals saved above expected, expected goal share, deserved to win), say in plain words what it means. Don't stack several numbers in one sentence.
+- A percentage given with a decimal may be rounded to a whole number; otherwise quote numbers as given.
 - Never use em dashes or en dashes. Use commas, periods or parentheses.
 - Use ONLY facts in the JSON. Do not invent quotes, injuries, attendance, streaks, records, standings, history, line combinations, or anything else not present. If something isn't in the data, leave it out.
-- Never count, add, subtract or convert anything yourself. Quote numbers exactly as the JSON gives them, and when the JSON gives a summary (a record, a count, a total), use the summary instead of tallying a list.
+- Never count, add, subtract or convert anything yourself (rounding a percentage is the one exception). Quote other numbers exactly as the JSON gives them, and when the JSON gives a summary (a record, a count, a total), use the summary instead of tallying a list.
 - Every team number is labelled with its team abbreviation. Check the label before you attribute a number to a team or its goalie.
 - Keep events in the order they happened. Goals are listed in time order; don't describe an earlier goal as a response to a later one.
 - Tell the story of the game, and when you cite a number, say why it matters (what it reveals about how the game was really played).

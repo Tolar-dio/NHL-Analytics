@@ -104,7 +104,7 @@ async function renderGoalie(view, param) {
   const id = +param;
   const row = (D.goalies || []).find((g) => g.id === id);
   const G = await getJSON(`data/goalies/${id}.json`).catch(() => null);
-  if (!G) { view.innerHTML = `<section class="zone"><p class="empty">No goalie page for that id yet.</p><p><a href="#players">Back to players</a></p></section>`; return; }
+  if (!G) { view.innerHTML = `<section class="zone"><p class="crumbs"><a href="#players">Players</a></p><h1>Goalie not found</h1><p class="lede">We don't have a page for that goalie yet. Goalies get one after their first NHL game of the season.</p></section>`; return; }
   const tile = (v, label, sub) => `<div class="stat"><b>${v}</b><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}</div>`;
   const pctTxt = (p) => (p == null ? "" : `${ordinal(Math.min(99, Math.max(1, Math.round(100 * p))))} percentile`);
   const hd = G.bands[2];
@@ -119,12 +119,14 @@ async function renderGoalie(view, param) {
   const eh = (G.eh || []).filter((x) => x.gsax != null || x.gar != null).map((x) => `<tr><td>${esc(x.season)}</td><td class="tnum">${x.gp ?? "–"}</td><td class="tnum">${x.gsax == null ? "–" : signed(x.gsax, 1)}</td><td class="tnum">${x.gar == null ? "–" : signed(x.gar, 1)}</td></tr>`).join("");
   view.innerHTML = `
     <section class="zone">
+      <p class="crumbs"><a href="#players">Players</a></p>
       <div class="phead">
         <div class="ph-photo"><img src="https://assets.nhle.com/mugs/nhl/${esc(D.meta.season)}/${esc(G.team)}/${G.id}.png" alt="" width="128" height="128"
           onerror="this.parentNode.classList.add('ph-none'); this.remove()"></div>
         <div class="ph-text"><h1>${esc(G.name || "Goalie")}</h1>
-          <div class="meta">${esc(G.team)}, goalie, ${G.gp} games (${G.starts} starts), ${esc(G.rec)}</div></div>
-        <div class="meta ph-bio"><a href="#teams/${esc(G.team)}">${esc(G.team)} team page</a> · <a href="#league">all goalies</a></div>
+          <div class="meta"><a href="#teams/${esc(G.team)}">${esc(teamName(G.team))}</a>, goalie, ${G.gp} games (${G.starts} starts), ${esc(G.rec)}</div>
+          ${followBtn({ id: G.id, kind: "goalie", name: G.name, team: G.team })}</div>
+        <div class="meta ph-bio"><a href="#league">Every goalie, ranked</a></div>
       </div>
       <div class="stat-row">
         ${tile(signed(G.gsax, 1), "Saves above expected", pctTxt(G.pct.gsax60) ? `${pctTxt(G.pct.gsax60)} per 60` : `${G.ga} allowed on ${num(G.xga, 1)} expected`)}
@@ -154,7 +156,7 @@ async function renderGoalie(view, param) {
       ${eh ? `<h3 class="mix-h">By season (Evolving-Hockey)</h3>
         <div class="table-wrap"><table class="mini"><thead><tr><th>Season</th><th class="tnum">GP</th><th class="tnum">GSAx</th><th class="tnum">GAR</th></tr></thead><tbody>${eh}</tbody></table></div>
         <p class="note">Goals saved above expected and goals above replacement from <a href="https://evolving-hockey.com" target="_blank" rel="noopener">Evolving-Hockey</a>'s models, used with permission. Their expected goals differ a little from ours.</p>` : ""}
-      <p class="note">Shot data and expected goals courtesy of MoneyPuck.com. A goalie's season barely predicts his next one, so the model shrinks goalie numbers hard toward average before pricing anything.</p>
+      <p class="note">Shot data and expected goals courtesy of MoneyPuck.com. A goalie's season barely predicts his next one, so our projections pull goalie numbers hard toward average.</p>
     </section>`;
 }
 

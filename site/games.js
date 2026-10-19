@@ -154,10 +154,9 @@ async function renderGames(view) {
   const teams = [...new Set(idx.flatMap((x) => [x.away, x.home]))].sort();
   view.innerHTML = `<section class="zone">
       <h1>Every game, replayed</h1>
-      <p class="lede"><a href="#goals">Replay every goal from the latest night</a></p>
-      <p class="lede">${idx.length} games so far. "Deserved" replays every shot from the game thousands of times using its expected-goal chance and counts how often the winner still wins. Under 35% means they got away with one.</p>
+      <p class="lede">All ${idx.length} games this season, each with every shot, how the chances piled up, player-by-player numbers and a replay of every goal. "Deserved" replays each game's shots thousands of times and counts how often the winner still wins: under 35% means they got away with one. <a href="#goals">Watch every goal from the latest night</a>.</p>
       <div class="controls">
-        <select id="gTeam" aria-label="Team"><option value="all">All teams</option>${teams.map((t) => `<option ${S.gTeam === t ? "selected" : ""}>${t}</option>`).join("")}</select>
+        <select id="gTeam" aria-label="Team"><option value="all">All teams</option>${teams.map((t) => `<option value="${t}" ${S.gTeam === t ? "selected" : ""}>${esc(teamName(t))}</option>`).join("")}</select>
         <div class="chips" role="group" aria-label="Sort games">${Object.entries(SORTS).map(([k, v]) => `<button type="button" class="chip" data-gsort="${k}" aria-pressed="${S.gSort === k}">${v.label}</button>`).join("")}</div>
       </div>
       <ul class="game-list" id="gameList"></ul>
@@ -201,7 +200,7 @@ async function renderGame(view, id) {
       <h1>${g.away} ${g.a}, ${g.home} ${g.h}${g.end !== "REG" ? ` (${g.end})` : ""}</h1>
       <p class="lede">${esc(new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))} at ${esc(g.venue)}. <a href="${esc(g.gamecenter)}" target="_blank" rel="noopener">Watch the recap and condensed game on NHL.com</a></p>
       <div class="game-open">
-        <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>` : ""}
+        <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>${AI_LABEL}` : ""}
           ${g.notes && g.notes.length ? `<h3 class="kicker">What decided it</h3><ul class="notes">${g.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
           <h3 class="kicker">By period</h3>${linescore(g)}</div>
         <div>
@@ -278,11 +277,14 @@ async function renderGame(view, id) {
   }).catch(() => {});
 }
 
+// recaps and previews are written with AI from the game's data (scripts/write_stories.py); say so under each
+const AI_LABEL = `<p class="ai-label">Written with AI from our game data. <a href="#about/ai">How we use AI</a></p>`;
+
 // ------------------------------------------------------------------ preview page
 async function renderPreview(view, id) {
   view.innerHTML = `<p class="empty">Loading the preview…</p>`;
   let p;
-  try { p = await getJSON(`data/previews/${id}.json`); } catch (e) { view.innerHTML = `<p class="empty">Previews exist for today's games only. <a href="#tonight">Back to tonight</a>.</p>`; return; }
+  try { p = await getJSON(`data/previews/${id}.json`); } catch (e) { view.innerHTML = `<p class="empty">Previews are published for today's games only. <a href="#tonight">See tonight's games</a> or <a href="#games">find a finished game</a>.</p>`; return; }
   const A = p.teams[p.away], H = p.teams[p.home];
   const better = (a, h, higherIsBetter = true) => {
     if (a == null || h == null || a === h) return ["", ""];
@@ -325,19 +327,19 @@ async function renderPreview(view, id) {
   view.innerHTML = `
     <section class="zone">
       <p class="crumbs"><a href="#tonight">Tonight</a></p>
-      <h1>${p.away} at ${p.home}</h1>
-      <p class="lede">${timeMT(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "unknown"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "unknown"}.</p>
+      <h1>${esc(teamName(p.away))} at ${esc(teamName(p.home))}</h1>
+      <p class="lede">${gameTime(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "not known yet"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "not known yet"}.</p>
       <div class="game-open">
-        <div>${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>` : ""}
+        <div>${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>${AI_LABEL}` : ""}
           ${p.notes && p.notes.length ? (p.story
             ? `<details class="fold"><summary>The numbers behind it</summary><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul></details>`
             : `<h3 class="kicker">Where it tilts</h3><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`) : ""}</div>
         <div>
-          <h3 class="kicker">Model's expected goals tonight</h3>
+          <h3 class="kicker">Goals we expect tonight</h3>
           ${xgBar(p.away, p.away_xg)}${xgBar(p.home, p.home_xg)}
-          ${p.market && p.market.total != null ? `<p class="note"><b>Market</b> (DraftKings via the NHL): ${p.home} ${pct(p.market.p_home)} to win once the margin is removed, over/under ${p.market.total} (about ${num(p.market.implied_total, 1)} goals). <b>Model</b>: ${p.home} ${pct(p.market.model_p_home)}, total ${num(p.total, 1)}. The model's totals haven't beaten the market or a league average in testing, so read its total as context.</p>`
-            : `<p class="note">Total ${num(p.total, 1)}. Totals haven't beaten a league-average guess in testing, so read this as context, not a pick.</p>`}
-          ${p.away_b2b || p.home_b2b ? `<p class="note">${[p.away_b2b ? p.away : null, p.home_b2b ? p.home : null].filter(Boolean).join(" and ")} ${p.away_b2b && p.home_b2b ? "are both" : "is"} on the second night of a back-to-back. Tired teams got 47.4% of the expected goals in 2025-26.</p>` : ""}
+          ${p.market && p.market.total != null ? `<p class="note"><b>Sportsbook</b> (DraftKings, via the NHL): ${p.home} ${pct(p.market.p_home)} to win with the bookmaker's margin removed, over/under ${p.market.total} (about ${num(p.market.implied_total, 1)} goals). <b>Our model</b>: ${p.home} ${pct(p.market.model_p_home)}, ${num(p.total, 1)} goals. Our game totals haven't beaten the sportsbook or a league-average guess in testing, so read ours as context.</p>`
+            : `<p class="note">${num(p.total, 1)} goals in all. Our game totals haven't beaten a league-average guess in testing, so read this as context.</p>`}
+          ${p.away_b2b || p.home_b2b ? `<p class="note">${[p.away_b2b ? p.away : null, p.home_b2b ? p.home : null].filter(Boolean).join(" and ")} ${p.away_b2b && p.home_b2b ? "are both" : "is"} on the second night of a back-to-back. Last season, teams in that spot got 47.4% of the expected goals, and our numbers account for it.</p>` : ""}
           <h3 class="kicker">Tale of the tape</h3>
           <div class="vs-grid">
             <div class="vs vs-head"><span>${p.away}</span><b></b><span>${p.home}</span></div>
@@ -356,18 +358,18 @@ async function renderPreview(view, id) {
       </div>
     </section>
     ${(p.storylines || []).length ? `<section class="zone"><h2>Storylines</h2>
-      <p class="lede">What's going on around this game, and whether the model already accounts for it. Streaks, old teams and milestones make good stories; the model only moves on what shows up in the chances.</p>
+      <p class="lede">What's happening around this game, and whether it's factored into our numbers. Streaks, reunions and milestones make good stories, but our projections only move on things that show up in the chances: rest, injuries, goalies, special teams.</p>
       ${storyList(p.storylines)}</section>` : ""}
     ${p.watch && Object.keys(p.watch).length ? `<section class="zone"><h2>Players to watch</h2>
-      <p class="lede">Three a side: the likeliest producers, pushed up by the stories around them. Probabilities are the model's, before any story.</p>
+      <p class="lede">Three a side: the likeliest producers, with the stories around them. The percentages are our projections, which the stories don't change.</p>
       ${watchBlock(p.watch, [p.away, p.home])}</section>` : ""}
-    <section class="zone"><h2>In net</h2><p class="lede">Projected from recent starts. Switch goalies on the Tonight page to reprice every number.</p>
+    <section class="zone"><h2>In net</h2><p class="lede">ESPN's probable starters once posted, otherwise whoever has started most recently. Choose a different goalie on the Tonight page and every number updates.</p>
       <div class="grid-2">${goalieCard(p.goalies[p.away], p.away)}${goalieCard(p.goalies[p.home], p.home)}</div></section>
     <section class="zone"><h2>Last five</h2><p class="lede">Each bar is that game's share of expected goals; past the middle tick means they out-chanced the other team. Tap a game to open it.</p>
       <div class="grid-2"><div><h3>${p.away}</h3>${form(A)}</div><div><h3>${p.home}</h3>${form(H)}</div></div></section>
-    <section class="zone"><h2>Lines from their last game</h2><p class="lede">Grouped by who shared the most ice time. Coaches shuffle, so treat these as likely, not certain.</p>
+    <section class="zone"><h2>Lines from their last game</h2><p class="lede">Built from who shared the most ice time last game. Coaches shuffle lines often, so treat these as likely, not certain.</p>
       <div class="grid-2">${lines(p.away)}${lines(p.home)}</div></section>
-    <section class="zone"><h2>Who the model likes</h2><p class="lede">Each team's likeliest scorers and two-point players, with the fair odds the model would set. Full list with your own odds on the Tonight page.</p>
+    <section class="zone"><h2>Likeliest to produce</h2><p class="lede">Each team's likeliest goal scorers and two-point players, with the fair odds each chance works out to. Every skater is on the <a href="#tonight">Tonight</a> page.</p>
       <details class="fold"${p.watch && Object.keys(p.watch).length ? "" : " open"}><summary>Likeliest scorers and two-point players</summary>
       <div class="grid-2"><div>${props(p.away)}</div><div>${props(p.home)}</div></div></details></section>
     ${series.length ? `<section class="zone"><h2>Earlier this season</h2><ul class="game-list">${series.map((x) => `<li><a class="game-row" href="#game/${x.id}"><span class="gr-date">${shortDate(x.date)}</span><span class="gr-score">${x.away} ${x.a} <span class="dim">at</span> ${x.home} ${x.h}${endTag(x.end)}</span><span class="dim">${x.h > x.a ? x.home : x.away} deserved ${pct(x.h > x.a ? x.dtw_home : 1 - x.dtw_home)}</span></a></li>`).join("")}</ul></section>` : ""}`;
@@ -377,7 +379,7 @@ async function renderPreview(view, id) {
 async function teamLog(team) {
   const idx = await getJSON("data/games/index.json");
   const rows = idx.filter((x) => x.away === team || x.home === team);
-  return `<section class="zone"><h2>Season log</h2><p class="lede">Every ${team} game, newest first. The bar is how often ${team} wins when the game is replayed from its shots.</p>
+  return `<section class="zone"><h2>Season log</h2><p class="lede">Every ${team} game, newest first. The bar is how often ${team} would win if the game were replayed from its shots: the result it deserved.</p>
     <ul class="game-list">${rows.map((x) => gameRow(x, team)).join("")}</ul></section>`;
 }
 

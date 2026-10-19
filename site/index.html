@@ -3,8 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ice Sheet</title>
-<meta name="description" content="Nightly NHL analytics: tonight's goal and point odds, team and goalie process stats, player shot maps, and a replay of every goal.">
+<title>Ice Sheet: NHL analytics, explained</title>
+<meta name="description" content="Every NHL game, explained with the numbers behind it: tonight's scoring chances for every skater, which teams are better than their record, goalie and defense breakdowns, line deployment, and a replay of every goal.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ice Sheet">
+<meta property="og:title" content="Ice Sheet: NHL analytics, explained">
+<meta property="og:description" content="Tonight's scoring chances for every skater, team and goalie breakdowns, line deployment and a replay of every goal. Updated every morning.">
+<meta property="og:url" content="https://tolar-dio.github.io/NHL-Analytics/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#f8fbfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101c28" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23eef3f7'/%3E%3Crect x='14' y='6' width='6' height='52' fill='%231f4e9c'/%3E%3Crect x='44' y='6' width='6' height='52' fill='%231f4e9c'/%3E%3Crect x='29' y='6' width='6' height='52' fill='%23c8102e'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%230e1b2a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,6 +27,7 @@
   <div class="masthead-inner">
     <a class="wordmark" href="#tonight">Ice Sheet</a>
     <p class="freshness" id="freshness">Loading the latest data</p>
+    <button class="theme-toggle team-btn" id="teamBtn" type="button" aria-label="Pick your team">Your team</button>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch light or dark theme">Dark</button>
   </div>
   <nav class="tabs" aria-label="Sections">
@@ -29,7 +39,7 @@
     <a href="#teams" data-tab="teams">Teams</a>
     <a href="#players" data-tab="players">Players</a>
     <a href="#fantasy" data-tab="fantasy" hidden>My team</a>
-    <a href="#model" data-tab="model">Trust the model?</a>
+    <a href="#model" data-tab="model">Track record</a>
   </nav>
   <div class="live-strip" id="liveStrip" hidden aria-label="Tonight's scores"></div>
 </header>
@@ -37,8 +47,9 @@
 <main id="view" tabindex="-1"></main>
 
 <footer class="colophon">
-  <p>Shot data and expected goals courtesy of <a href="https://moneypuck.com">MoneyPuck.com</a>. Game, shift and tracking data from the NHL. Passing, zone entry and exit tracking from <a href="https://www.allthreezones.com">All Three Zones</a> (Corey Sznajder). Player value and impact models (GAR, WAR, RAPM) from <a href="https://evolving-hockey.com">Evolving-Hockey</a>, used with permission. Rebuilt every morning from <a href="https://github.com/Tolar-dio/NHL-Analytics">Tolar-dio/NHL-Analytics</a>.</p>
-  <p>Probabilities are model estimates, not advice. Early-season numbers lean heavily on last season.</p>
+  <p class="foot-links"><a href="#about">About Ice Sheet</a><a href="#about/methods">How the numbers work</a><a href="#about/glossary">Glossary</a><a href="#about/data">Data and credits</a><a href="#about/gambling">Responsible gambling</a></p>
+  <p>Ice Sheet is an independent hockey analytics site, not affiliated with or endorsed by the NHL, its teams or any sportsbook. Shot data and expected goals courtesy of <a href="https://moneypuck.com">MoneyPuck.com</a>. Game, shift and player tracking data from the NHL. Passing and zone tracking from <a href="https://www.allthreezones.com">All Three Zones</a> (Corey Sznajder). Player value models (GAR, WAR, RAPM) from <a href="https://evolving-hockey.com">Evolving-Hockey</a>, used with permission. Live scores, injuries and transactions from ESPN.</p>
+  <p>Our probabilities are estimates for information and entertainment, not betting advice. If you bet, do it only where it's legal and you're of age. Gambling problem? Call 1-800-GAMBLER.</p>
 </footer>
 
 <div class="tip" id="tip" role="tooltip" hidden></div>
@@ -48,6 +59,7 @@
 <script src="pulse.js"></script>
 <script src="plays.js"></script>
 <script src="depth.js"></script>
+<script src="about.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
