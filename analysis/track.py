@@ -5,7 +5,7 @@ to guess. Only games archived before puck drop count. Prices are conditional on 
 markets are graded on players who dressed; lineup and goalie guesses are graded separately.
 
     python analysis/track.py            # prints the report
-build.py calls track(cur) and puts the result in model.json for the "Trust the model?" page.
+build.py calls track(cur) and puts the result in model.json for the Track record page.
 """
 import glob, json, os, sys
 import numpy as np
@@ -58,7 +58,7 @@ def track(cur, season=M.CUR):
                                  base_g=1 - np.exp(-rg * p["proj_toi"]), base_2=1 - np.exp(-lp) * (1 + lp),
                                  y_goal=int(d.g >= 1), y_2=int(d.pts >= 2),
                                  p_sog2=p.get("p_sog2"), p_sog3=p.get("p_sog3"), exp_sog=p.get("exp_sog"),
-                                 sog=int(d.sog) if "sog" in d and not pd.isna(d.sog) else None))
+                                 sog=int(d.sog) if "sog" in d and not pd.isna(d.sog) else None, sleeper=p.get("sleeper")))
             unpriced = [i for i in dressed.index if i not in priced]
             lineup += [dict(tag="unpriced", dressed=True) for _ in unpriced]
             gm = games.loc[gid]
@@ -88,7 +88,7 @@ def track(cur, season=M.CUR):
                   cal=[dict(n=int(r.n), pred=round(float(r.pred), 3), act=round(float(r.act), 3)) for r in cal.itertuples()]),
         pts=dict(pred=round(float(P.p_2pts.sum()), 1), act=int(P.y_2.sum()), ll=round(ll(P.y_2, P.p_2pts), 4),
                  ll_base=round(ll(P.y_2, P.base_2), 4)),
-        **tails(P), **shots(P),
+        **tails(P), **shots(P), **sleeper_grade(P),
         lineup=dict(lu, unpriced=int((L.tag == "unpriced").sum())),
         goalies=dict(n=int(len(Q)), hits=int(Q.hit.sum()) if len(Q) else 0,
                      espn_n=int((Q.src == "espn").sum()) if len(Q) else 0,
@@ -119,6 +119,19 @@ def shots(P):
     return dict(sog=dict(n=int(len(q)), exp=round(float(q.exp_sog.sum()), 1), act=int(q.sog.sum()),
                          p2=round(float(q.p_sog2.sum()), 1), act2=int(y2.sum()), ll2=round(ll(y2, q.p_sog2), 4),
                          p3=round(float(q.p_sog3.sum()), 1), act3=int(y3.sum()), ll3=round(ll(y3, q.p_sog3), 4)))
+
+
+def sleeper_grade(P):
+    """Our sleepers (added Oct 20, 2026): depth scorers graded on goals, underrated point picks on 1+ points."""
+    if "sleeper" not in P or P.sleeper.isna().all():
+        return {}
+    out = {}
+    for kind, p, y in (("depth", "p_goal", "y_goal"), ("point", "p_1pt", "y_1")):
+        q = P[P.sleeper == kind].dropna(subset=[p])
+        if len(q):
+            out[kind] = dict(n=int(len(q)), pred=round(float(q[p].sum()), 1), act=int(q[y].sum()),
+                             goals=int(q.y_goal.sum()), points=int(q.y_1.sum()))
+    return dict(sleepers=out) if out else {}
 
 
 def market_grade(G):

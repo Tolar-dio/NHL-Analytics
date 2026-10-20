@@ -10,7 +10,7 @@ Run after the nightly pull and analysis steps:
 Everything here is derived from public NHL data and MoneyPuck shot data
 (credit MoneyPuck.com). No paid or private data goes into this public site.
 """
-import argparse, base64, datetime as dt, glob, gzip, hashlib, json, os, sys, urllib.request
+import argparse, base64, datetime as dt, glob, gzip, hashlib, json, os, re, sys, urllib.request
 from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
@@ -210,7 +210,7 @@ def archive_tonight(day, games, props, lu):
     arc = json.load(open(path)) if os.path.exists(path) else dict(date=day, games={})
     now = dt.datetime.now(dt.timezone.utc)
     keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_1pt", "p_2pts", "p_3pts", "exp_sog", "p_sog2", "p_sog3",
-            "proj_toi", "g_f"]
+            "proj_toi", "g_f", "sleeper"]
     for g in games:
         gid = str(g["id"])
         start = dt.datetime.fromisoformat(g["start"].replace("Z", "+00:00")) if g.get("start") else None
@@ -222,6 +222,7 @@ def archive_tonight(day, games, props, lu):
             away_goalie=g["away_goalie"], home_goalie=g["home_goalie"], away_goalie_src=g.get("away_goalie_src"),
             home_goalie_src=g.get("home_goalie_src"), away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
             o55=g["o55"], o65=g["o65"], lineup_source=lu["source"], market=g.get("market"),
+            sleepers=[dict(id=x["id"], kind=x["kind"], p_goal=x["p_goal"], p_1pt=x["p_1pt"]) for x in g.get("sleepers") or []],
             props=[{k: p.get(k) for k in keep} for p in props if p["game"] == g["id"]])
     os.makedirs(ARCHIVE, exist_ok=True)
     with open(path, "w") as f:
@@ -592,12 +593,36 @@ def main():
     # ---- each skater's goals and assists this season, for the player page's highlight reel: our replay of the
     # build-up (from the recorded events) and the NHL's official clip, linked, never rehosted
     reel = {}
+    # each game's human story (streaks snapped, comebacks, late winners, firsts, milestones): on the game page and
+    # in the recap writer's facts (site/narrative.py game_context)
+    import narrative as N
+    contexts = {}
+    try:
+        res_by_team = {t: N._results(cur, t) for t in sorted(set(cur["games"].home) | set(cur["games"].away))}
+        bios_ctx = N.load_bios(CUR)
+        pgs = cur["pg"][cur["pg"].game_type == "regular"].sort_values(["date", "game_id"]).copy()
+        grp = pgs.groupby("player_id")
+        pgs["gp0"], pgs["g0"], pgs["p0"] = grp.cumcount(), grp.g.cumsum() - pgs.g, grp.pts.cumsum() - pgs.pts
+        before_by_game = {gid: dict(zip(q.player_id, zip(q.gp0, q.g0, q.p0))) for gid, q in pgs.groupby("game_id")}
+    except Exception as e:
+        print(f"  game context skipped: {e!r}")
+        res_by_team = None
     for gi in game_index:
         try:
             with open(os.path.join(OUTD, "games", f"{gi['id']}.json")) as f:
                 G = json.load(f)
         except Exception:
             continue
+        if res_by_team is not None:
+            try:
+                ctx = N.game_context(G, res_by_team, before_by_game.get(G["id"], {}), bios_ctx)
+                contexts[G["id"]] = ctx
+                if G.get("context") != ctx["lines"] or G.get("context_facts") != ctx["facts"]:
+                    G["context"], G["context_facts"] = ctx["lines"], ctx["facts"]
+                    with open(os.path.join(OUTD, "games", f"{gi['id']}.json"), "w") as f:
+                        json.dump(G, f, separators=(",", ":"), allow_nan=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
+            except Exception as e:
+                print(f"  context for {G.get('id')} failed: {e!r}")
         seqs = G.get("seqs") or {}
         for x in G.get("goals", []):
             if x.get("ptype") == "SO":
@@ -612,7 +637,6 @@ def main():
                     reel.setdefault(int(a_["pid"]), []).append(dict(base, role=f"A{i + 1}"))
 
     # ---- narrative layer: form, streaks, breakouts, regression, milestones (site/narrative.py)
-    import narrative as N
     from previews import team_profile
     profiles = {t: {k: v for k, v in team_profile(t, s, cur["tg"], ev, game_index).items() if k != "last5"}
                 for t in sorted(set(cur["tg"].team))}
@@ -712,6 +736,44 @@ def main():
     pgc = cur["pg"][cur["pg"].date < str(today)]
     teams_tonight = sorted({t for g in slate for t in (g["away"], g["home"])})
     lu = expected_lineups(teams_tonight, pgc, prev["pg"], cur["gg"], prev["gg"], names, today)
+    # depth chart and "who gets his minutes" for injured regulars (site/depthchart.py), from the shift charts;
+    # published for the hourly news job, which adds it to takes on injury stories
+    ctx_games = None
+    try:
+        import depthchart as DC
+        ctx_games = pd.read_csv(os.path.join(ROOT, "analysis", "output", CUR, "context_games.csv"))
+        ctx_games = ctx_games[ctx_games.date < str(today)]
+        nm_int = {int(k): v for k, v in names.items()}
+        rip = {}
+        for team in sorted(set(ctx_games.team)):
+            gids = DC.team_games(ctx_games, team)[-DC.RECENT:]
+            for pid, rr in DC.roles(ctx_games, team, gids).items():
+                if rr["gp"] >= 2 and ((rr["pos"] == "F" and rr["line"] <= 3) or (rr["pos"] == "D" and rr["line"] <= 2) or rr["pp_unit"] == 1):
+                    x = DC.ripple(ctx_games, team, pid, nm_int, today)
+                    if x:
+                        rip[pid] = x
+        for pid, v in lu["inj"].items():
+            x = DC.ripple(ctx_games, v["team"], int(pid), nm_int, today)
+            if x:
+                x["status"] = v.get("status")
+                rip[int(pid)] = x
+        lu["ripple"] = rip
+        dump("depth.json", dict(date=str(today), players={str(k): v for k, v in rip.items()}))
+        print(f"  depth: {len(rip)} regulars and injured players with a who-steps-in read")
+    except Exception as e:
+        print(f"  depth chart skipped: {e!r}")
+    lu["contexts"] = contexts
+    try:   # coaching changes in the last three weeks (the news job's moves list), for each team's mood
+        mv = json.load(open(os.path.join(ROOT, "data", "news", "index.json"))).get("moves", [])
+        cutoff = str(today - dt.timedelta(days=21))
+        lu["staff"] = {}
+        for m in mv:
+            if m.get("kind") == "staff" and m.get("date", "") >= cutoff:
+                for it in m.get("items", []):
+                    if it.get("team") and re.search(r"head coach", it.get("text", ""), re.I):
+                        lu["staff"].setdefault(it["team"], []).append(dict(date=m["date"], text=it["text"]))
+    except Exception as e:
+        print(f"  staff moves skipped: {e!r}")
     def proj_goalie(team):
         """ESPN's probable starter when it's posted; otherwise most starts in the last five, skipping anyone hurt."""
         if team in lu["probable"]:
@@ -770,27 +832,34 @@ def main():
             d = SOG.prices(d, cur["pg"], prev["pg"], str(today))
         except Exception as e:
             print(f"  shot prices skipped: {e!r}")
-        # under the radar: real chances, goals lagging, outside the slate's top 12 favourites
-        rank = d.p_goal.rank(ascending=False)
-        regular = d.lineup == "last"
-        fwd = d[regular & (d.pos == "F") & (d.g - d.ixg <= -1.0) & (d.p_goal >= 0.22) & (rank > 12)].nlargest(8, "p_goal")
-        dmen = d[regular & (d.pos == "D") & (d.g - d.ixg <= -0.3)].nlargest(3, "p_goal")
-        d["radar"] = d.player_id.isin(set(fwd.player_id) | set(dmen.player_id))
+        # sleepers: our own under-the-radar picks per game, on process, role and matchup (site/sleepers.py)
+        sleepers, d["sleeper"] = {}, None
+        try:
+            import sleepers as SL
+            sleepers, kinds = SL.pick(d, cur["pg"], prev["pg"], all_shots, ctx_games, teams_rows, goalie_rows,
+                                      {int(k): v for k, v in names.items()}, lu["strength"], gm_out, str(today))
+            d["sleeper"] = d.player_id.map(kinds)
+            print(f"  sleepers: {sum(len(v) for v in sleepers.values())} across {len(sleepers)} games")
+        except Exception as e:
+            print(f"  sleepers skipped: {e!r}")
         d = d.rename(columns={"player_id": "id"}).sort_values("p_goal", ascending=False)
         props = records(d, ["id", "name", "team", "opp", "game", "pos", "gp", "g", "pts", "ixg", "proj_toi",
                             "pp_share", "p_goal", "p_1pt", "p_2pts", "p_3pts", "exp_sog", "p_sog2", "p_sog3", "p_sog4",
-                            "lam_g", "lam_p", "g_f", "radar",
+                            "lam_g", "lam_p", "g_f", "sleeper",
                             "lineup", "lineup_note"])
         archive_tonight(str(today), gm_out, props, lu)
         for p in props:
             f = P["skater"].get(p["id"], {}).get("form", {})
             p["form"], p["fv"] = f.get("state"), f.get("verdict")
     else:
-        props = []
+        props, sleepers = [], {}
     stories, headlines = N.game_stories(P, gm_out, props, lu, sched, cur, prev, names, profiles, teams_rows, game_index,
                                         bios, today, CUR) if gm_out else ({}, [])
     for g in gm_out:
         g["storylines"] = stories.get(g["id"], {}).get("storylines", [])[:3]
+        g["sleepers"] = sleepers.get(g["id"], [])
+        if g["id"] in stories:
+            stories[g["id"]]["sleepers"] = g["sleepers"]
     if gm_out:
         from previews import build_previews
         shifts = shifts_all

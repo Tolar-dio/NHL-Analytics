@@ -866,7 +866,7 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
             where = "at home" if lh else f"in {METRO.get(last.home, (last.home,))[0]}"
             ot = " in overtime" if last.decided_in == "OT" else " in a shootout" if last.decided_in == "SO" else ""
             out.append(dict(team=team, k="b2b", w=46, priced=True,
-                            text=f"{cap(the(team))} are on the second night of a back-to-back after a {gf}-{ga} {res}{ot} {where} last night.",
+                            text=f"{cap(the(team))} are on the second night of a back-to-back after a {max(gf, ga)}-{min(gf, ga)} {res}{ot} {where} last night.",
                             effect=f"Priced: we trim {team}'s expected scoring 2.5% and give {opp} 2.5% more. Last season, teams "
                                    f"on the second night got 47.4% of the expected goals."))
         elif rest is not None and orest is not None and rest >= 2 and orest == 0:
@@ -999,9 +999,11 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                 else:
                     tail = f" He had {pl(pv['pts'], 'point')} in {pl(pv['gp'], 'game')} last season."
                 status = STATUS.get(v["status"].lower(), v["status"].lower())
+                rp = (lu.get("ripple") or {}).get(i) or {}
                 out.append(dict(team=team, k="injury", w=36 + 20 * min(imp(i), 1.2), priced=True,
                                 text=f"{cap(the(team))} are without {S['name']}{kind}, {status}.{tail}{back}",
-                                effect="Priced: he's out of the lineup and the team rating.", pid=i))
+                                effect="Priced: he's out of the lineup and the team rating.", pid=i,
+                                ripple=rp.get("text") or None, role=rp.get("role") or None))
             elif G and G["starts"] >= 3:
                 out.append(dict(team=team, k="injury", w=40, priced=True,
                                 text=f"{cap(the(team))} are without goalie {G['name']}, {STATUS.get(v['status'].lower(), v['status'].lower())}.",
@@ -1231,7 +1233,16 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
             keep.append({k: (r(v, 1) if k == "w" else v) for k, v in x.items()})
         keep = keep[:9]
         watch = {t: _watch(P, props_by.get((g["id"], t), []), items, lu) for t in (a, h)}
-        by_game[g["id"]] = dict(storylines=keep, watch=watch)
+        mood = {}
+        for t in (a, h):
+            res = _results(cur, t)
+            last_ctx = (lu.get("contexts") or {}).get(res[-1]["id"]) if res else None
+            outs = [P["skater"][i]["name"] for i, v in lu.get("inj", {}).items()
+                    if v["team"] == t and v["out"] and i in (lu.get("ripple") or {}) and i in P["skater"]]
+            m = team_mood(t, res, last_ctx, (lu.get("staff") or {}).get(t, []), outs, today)
+            if m:
+                mood[t] = m
+        by_game[g["id"]] = dict(storylines=keep, watch=watch, mood=mood)
         kinds = set()
         for x in keep:
             if len(kinds) == 2:
@@ -1430,3 +1441,178 @@ def week_digest(cur, game_index, games_dir, names, P, bios, today, days=7):
                           for s_ in S["form"]["streaks"] if s_["k"] in ("points", "goals") and s_["n"] >= 5][:8]
     out["team_streaks_now"] = [T["streak"]["text"] for T in P["team"].values() if T.get("streak") and T["streak"]["n"] >= 4]
     return out
+
+
+# ------------------------------------------------------------------ the human story of a game, and each team's mood
+
+MILE_G = (1, 100, 200, 300, 400, 500, 600, 700, 800)
+MILE_P = (1, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500)
+MILE_GP = (1, 500, 1000, 1500)
+
+
+def _clock(t):
+    m, s = (t or "0:00").split(":")
+    return int(m) * 60 + int(s)
+
+
+def game_context(G, res_by_team, before_totals, bios):
+    """What the game meant beyond the box score, from data only: streaks started, extended or snapped, comebacks
+    and blown leads, late and overtime winners, shutouts and big nights in net, hat tricks, debuts, first goals and
+    career milestones. G is a game file (site/games.py). before_totals: {player_id: (gp, g, pts)} this season before
+    this game. Returns {"lines": [sentences], "facts": {...}} with the most telling first."""
+    lines, facts = [], {}
+    a, h = G["away"], G["home"]
+    if G.get("a") is None or G.get("h") is None:
+        return dict(lines=[], facts={})
+    win, lose = (h, a) if G["h"] > G["a"] else (a, h)
+    wsc, lsc = max(G["a"], G["h"]), min(G["a"], G["h"])
+    # streaks entering and leaving
+    for team in (win, lose):
+        res = res_by_team.get(team, [])
+        i = next((k for k, x in enumerate(res) if x["id"] == G["id"]), None)
+        if i is None:
+            continue
+        s0, s1 = _streak(res[:i]), _streak(res[: i + 1])
+        if team == win and s0 and s0[0] == "winless" and s0[1] >= 3:
+            lines.append((50 + s0[1], f"{cap(the(team))} snapped a {nw(s0[1])}-game winless run ({record([x['res'] for x in s0[2]])})."))
+            facts.setdefault("streaks", {})[team] = f"snapped a {s0[1]}-game winless run"
+        elif team == lose and s0 and s0[0] == "W" and s0[1] >= 3:
+            lines.append((45 + s0[1], f"{cap(theirs(team))} {nw(s0[1])}-game winning streak is over."))
+            facts.setdefault("streaks", {})[team] = f"{s0[1]}-game winning streak ended"
+        elif s1 and s1[0] == "W" and s1[1] >= 3:
+            lines.append((35 + 3 * s1[1], f"{cap(the(team))} have won {nw(s1[1])} straight."))
+            facts.setdefault("streaks", {})[team] = f"won {s1[1]} straight"
+        elif s1 and s1[0] == "winless" and s1[1] >= 4:
+            lines.append((30 + 3 * s1[1], f"{cap(the(team))} are winless in {nw(s1[1])} ({record([x['res'] for x in s1[2]])})."))
+            facts.setdefault("streaks", {})[team] = f"winless in {s1[1]}"
+    # how the scoring went: deficits, blown leads, the winner
+    goals = [x for x in G.get("goals", []) if x.get("ptype") != "SO"]
+    sa = sh = 0
+    worst = 0           # the winner's biggest deficit
+    third_deficit = False
+    gwg = None
+    for x in goals:
+        if x["team"] == a:
+            sa += 1
+        else:
+            sh += 1
+        ws, ls = (sh, sa) if win == h else (sa, sh)
+        worst = max(worst, ls - ws)
+        if x["period"] >= 3 and ls > ws:
+            third_deficit = True
+        if x["team"] == win and ws == lsc + 1 and gwg is None:
+            gwg = x
+    if worst >= 2:
+        lines.append((48 + 5 * worst, f"{cap(the(win))} came back from {nw(worst)} goals down to beat {the(lose)} {wsc}-{lsc}."))
+        facts["comeback_from"] = worst
+    elif third_deficit:
+        lines.append((44, f"{cap(the(win))} trailed in the third period and still won."))
+        facts["trailed_in_third"] = True
+    if G["end"] == "SO":
+        lines.append((30, f"{cap(the(win))} won it in a shootout."))
+    elif gwg and G["end"] == "OT":
+        lines.append((42, f"{gwg['name']} won it in overtime."))
+        facts["winner"] = dict(name=gwg["name"], when="overtime")
+    elif gwg and gwg["period"] == 3 and _clock(gwg["t"]) >= 18 * 60:
+        left = 20 * 60 - _clock(gwg["t"])
+        lines.append((44, f"{gwg['name']} scored the winner with {left // 60}:{left % 60:02d} left."))
+        facts["winner"] = dict(name=gwg["name"], when=f"{left // 60}:{left % 60:02d} left in the third")
+    if wsc - lsc >= 4:
+        lines.append((22, f"A {wsc}-{lsc} rout."))
+    # goalies
+    for x in G.get("goalies", []):
+        if not x.get("toi") or x["toi"] < 50:
+            continue
+        mine = x["team"]
+        if x["ga"] == 0 and x["sa"] >= 15:
+            lines.append((40, f"{x['name']} stopped all {x['sa']} shots for the shutout."))
+            facts.setdefault("goalies", []).append(f"{x['name']} shutout, {x['sa']} saves")
+        elif mine == win and x["sa"] - x["ga"] >= 38:
+            lines.append((34, f"{x['name']} made {x['sa'] - x['ga']} saves."))
+            facts.setdefault("goalies", []).append(f"{x['name']} {x['sa'] - x['ga']} saves")
+        elif mine == win and (x.get("gsax") or 0) >= 2.5:
+            lines.append((32, f"{x['name']} saved {num(x['gsax'])} goals more than the shots deserved."))
+    # players: hat tricks, debuts, firsts, milestones
+    gby, aby = {}, {}
+    for x in goals:
+        gby[x["pid"]] = gby.get(x["pid"], 0) + 1
+        for y in x.get("assists") or []:
+            if y.get("pid"):
+                aby[y["pid"]] = aby.get(y["pid"], 0) + 1
+    nm = {x["pid"]: x["name"] for x in goals}
+    nm.update({y["pid"]: y["name"] for x in goals for y in x.get("assists") or [] if y.get("pid")})
+    for pid, n in gby.items():
+        if n >= 3:
+            lines.append((46 + 2 * n, f"{nm[pid]} scored {nw(n)} goals."))
+            facts.setdefault("hat_tricks", []).append(nm[pid])
+    for pid in set(gby) | set(aby):
+        b = (bios or {}).get(pid) or (bios or {}).get(str(pid))
+        if not b or not b.get("career_prev") or b.get("pos") == "G":
+            continue
+        cp = b["career_prev"]
+        gp0, g0, p0 = before_totals.get(pid, (0, 0, 0))
+        cg, cpts, cgp = cp.get("goals", 0) + g0, cp.get("points", 0) + p0, cp.get("gamesPlayed", 0) + gp0
+        g1, p1 = cg + gby.get(pid, 0), cpts + gby.get(pid, 0) + aby.get(pid, 0)
+        if cg == 0 and g1 >= 1:
+            lines.append((47, f"{nm[pid]} scored his first NHL goal."))
+            facts.setdefault("firsts", []).append(f"{nm[pid]} first NHL goal")
+        elif cpts == 0 and p1 >= 1:
+            lines.append((40, f"{nm[pid]} picked up his first NHL point."))
+            facts.setdefault("firsts", []).append(f"{nm[pid]} first NHL point")
+        for m in MILE_G[1:]:
+            if cg < m <= g1:
+                lines.append((45, f"{nm[pid]} reached {m} career goals."))
+                facts.setdefault("milestones", []).append(f"{nm[pid]} {m}th career goal")
+        for m in MILE_P[1:]:
+            if cpts < m <= p1:
+                lines.append((43, f"{nm[pid]} reached {m:,} career points."))
+                facts.setdefault("milestones", []).append(f"{nm[pid]} {m}th career point")
+    lines.sort(key=lambda t: -t[0])
+    return dict(lines=[t for _, t in lines[:5]], facts=facts)
+
+
+def team_mood(team, res, last_ctx, staff_moves, injured_names, today):
+    """A short, factual read on where a team is: its last game and what it meant, the last five, a recent coaching
+    change, regulars out. Returns {"text": ..., "facts": {...}}."""
+    if not res:
+        return None
+    facts, bits = {}, []
+    last = res[-1]
+    days = (today - dt.date.fromisoformat(last["date"])).days
+    where = "vs" if last["home"] else "at"
+    how = {"W": "won", "L": "lost", "OTL": "lost"}[last["res"]]
+    tail = " in overtime" if last["end"] == "OT" else " in a shootout" if last["end"] == "SO" else ""
+    extra = [x for x in (last_ctx or {}).get("lines", []) if NICK.get(team, "~") in x or any(w in x for w in ("came back", "shutout", "winner", "overtime"))]
+    if extra and "overtime" in extra[0]:
+        tail = ""
+    hi, lo = max(last["gf"], last["ga"]), min(last["gf"], last["ga"])
+    lead = f"Last time out ({'last night' if days == 1 else f'{days} days ago'}), they {how} {hi}-{lo} {where} {last['opp']}{tail}."
+    if extra:
+        e = extra[0]
+        lead = lead[:-1] + ": " + ("t" + e[1:] if e.startswith("The ") else e)
+    bits.append(lead)
+    facts["last_game"] = dict(result=last["res"], goals_for=last["gf"], goals_against=last["ga"], opponent=last["opp"], home=last["home"],
+                              decided_in=last["end"], days_ago=days, what_it_meant=(last_ctx or {}).get("lines", [])[:3])
+    l5 = res[-5:]
+    gf, ga = sum(x["gf"] for x in l5), sum(x["ga"] for x in l5)
+    rec5 = record([x["res"] for x in l5])
+    facts["last_five"] = dict(record=rec5, goals_for=gf, goals_against=ga)
+    s = _streak(res)
+    if s and s[0] == "W":
+        bits.append(f"They've won {nw(s[1])} straight.")
+        facts["streak"] = f"won {s[1]} straight"
+    elif s and s[0] == "winless":
+        bits.append(f"They're winless in {nw(s[1])} ({record([x['res'] for x in s[2]])}).")
+        facts["streak"] = f"winless in {s[1]}"
+    elif len(l5) == 5:
+        bits.append(f"They're {rec5} in their last five, {'outscoring teams' if gf > ga else 'outscored'} {max(gf, ga)}-{min(gf, ga)}." if gf != ga
+                    else f"They're {rec5} in their last five.")
+    if staff_moves:
+        m = staff_moves[0]
+        facts["staff_change"] = dict(date=m["date"], announcement=m["text"])
+        bits.append(f"Behind the bench, a change this month: {m['text'].rstrip('.')}.")
+    if injured_names:
+        facts["regulars_out"] = injured_names[:3]
+        who = " and ".join(injured_names[:2]) if len(injured_names) <= 2 else ", ".join(injured_names[:2]) + " and others"
+        bits.append(f"They're playing without {who}.")
+    return dict(text=" ".join(bits), facts=facts)

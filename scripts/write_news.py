@@ -25,12 +25,13 @@ MOVES_MAX = int(os.environ.get("MOVES_MAX", "4"))   # Claude notes on trades and
 NEWS_TASK = """Write a short take on this NHL news story for a hockey analytics site, 2 short paragraphs, 120 to 180 words total.
 First, state what happened in one or two sentences, credited to the outlet that reported it ("per ESPN", "The Athletic reports"), using only the headlines and summaries given. Do not add details they don't contain.
 Then spend the rest on what this site's numbers say about the players or teams involved and why that matters: for the team's strength, a player's real level versus his results, fantasy value, or what changes on the ice. Only use numbers from the JSON, and say "so far this season" where the sample is small.
+If a player in the story is hurt or out, end with who should see more ice time or power-play time while he's out, from `who_gets_his_minutes`: when it's based on games already played without him, say so; when it's a projection, say it's going by how the coach has used his players.
 JSON facts:
 """
 
 
 MOVE_TASK = """Write a short note on this NHL roster or front-office move for a hockey analytics site: 2 to 4 sentences, 50 to 110 words.
-Start by restating the move plainly from the transaction text (credit it to the team's announcement). Then say what this site's numbers show about the players or teams involved and what changes for them. Only use the transaction text and the numbers in the JSON. Do not guess at reasons, contracts, salary cap, health or motives, and say nothing about a player's quality if the JSON has no numbers for him.
+Start by restating the move plainly from the transaction text (credit it to the team's announcement). Then say what this site's numbers show about the players or teams involved and what changes for them. For an injury move, say who should get the player's minutes, from `who_gets_his_minutes` (a projection from how the coach has used his players, or what has happened in games already played without him). Only use the transaction text and the numbers in the JSON. Do not guess at reasons, contracts, salary cap, health or motives, and say nothing about a player's quality if the JSON has no numbers for him.
 JSON facts:
 """
 
@@ -100,6 +101,20 @@ def main(client=None):
         prof = get(SITE + "team_profiles.json")
     except Exception:
         prof = {}
+    try:   # who absorbs an absent regular's minutes (site/depthchart.py), for injury stories and moves
+        depth = get(SITE + "depth.json").get("players", {})
+    except Exception:
+        depth = {}
+
+    def minutes_facts(ids):
+        out = []
+        for i in ids:
+            x = depth.get(str(i))
+            if x and x.get("text"):
+                out.append(dict(player=x["name"], his_role=x.get("role"), games_missed_so_far=x.get("games_missed"),
+                                based_on="games already played without him" if x.get("evidence") else "how the coach has used his players",
+                                summary=x["text"]))
+        return out or None
 
     # roster and staff moves (ESPN's transactions feed); Claude adds a short note to trades and staff changes
     mdir = os.path.join(OUT, "moves")
@@ -119,9 +134,11 @@ def main(client=None):
         if os.path.exists(path):
             m["take"] = json.load(open(path)).get("take")
             continue
-        if m["kind"] not in ("trade", "staff") or client is None or noted >= MOVES_MAX:
+        injury_note = m["kind"] == "injury" and any(str(p["id"]) in depth for p in m["players"])
+        if (m["kind"] not in ("trade", "staff") and not injury_note) or client is None or noted >= MOVES_MAX:
             continue
         facts = tidy(dict(transaction=[dict(team=i["team"], announcement=i["text"]) for i in m["items"]], date=m["date"],
+                          who_gets_his_minutes=minutes_facts([p["id"] for p in m["players"]]) if m["kind"] == "injury" else None,
                           players=[player_card(skaters_by[p["id"]]) for p in m["players"] if p["id"] in skaters_by][:4],
                           goalies=[goalie_card(goalies_by[p["id"]]) for p in m["players"] if p["id"] in goalies_by][:2],
                           teams=[team_card(teams_by[t], prof) for t in m["teams"] if t in teams_by]))
@@ -160,7 +177,8 @@ def main(client=None):
         facts = tidy(dict(reports=[dict(outlet=i["source"], headline=i["title"], summary=i.get("desc"), published=i["published"])
                                    for i in st["items"][:5]],
                           players=[player_card(x) for x in players[:4]], goalies=[goalie_card(x) for x in gks[:2]],
-                          teams=[team_card(teams_by[t], prof) for t in st["teams"][:3] if t in teams_by]))
+                          teams=[team_card(teams_by[t], prof) for t in st["teams"][:3] if t in teams_by],
+                          who_gets_his_minutes=minutes_facts([p["id"] for p in st["players"]]) if st.get("family") == "injury" else None))
         try:
             msg = client.messages.create(model=MODEL, max_tokens=1500, system=STYLE, thinking={"type": "between_tools"},
                                          messages=[{"role": "user", "content": NEWS_TASK + json.dumps(facts, separators=(",", ":"))}])

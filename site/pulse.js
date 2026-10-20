@@ -31,7 +31,7 @@ function storyList(lines, opts = {}) {
     const where = opts.game ? `<a class="sl-game" href="#preview/${x.game}">${x.away} at ${x.home}</a>` : "";
     return `<li class="sl"${opts.compact && x.effect ? ` data-tip="${esc(`<b>${x.priced ? "Factored into our numbers" : "Story only, not in our numbers"}</b><br>${x.effect}`)}"` : ""}>
       <span class="sl-team">${x.team || "Both"}</span>
-      <div><span class="sl-kind">${SL_KIND[x.k] || ""}</span>${where}<p class="sl-text">${esc(x.text)}</p>${eff}</div></li>`;
+      <div><span class="sl-kind">${SL_KIND[x.k] || ""}</span>${where}<p class="sl-text">${esc(x.text)}</p>${x.ripple ? `<p class="sl-ripple"><b>Who gets his minutes:</b> ${esc(x.ripple)}</p>` : ""}${eff}</div></li>`;
   }).join("")}</ul>`;
 }
 

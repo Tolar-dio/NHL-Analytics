@@ -166,7 +166,9 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
                       lines={t: projected_lines(t, pg, shifts, pos, names) for t in (away, home)},
                       props=key, story=story,
                       storylines=(stories or {}).get(g["id"], {}).get("storylines", []),
-                      watch=(stories or {}).get(g["id"], {}).get("watch", {}))
+                      watch=(stories or {}).get(g["id"], {}).get("watch", {}),
+                      mood=(stories or {}).get(g["id"], {}).get("mood", {}),
+                      sleepers=(stories or {}).get(g["id"], {}).get("sleepers", []))
         with open(os.path.join(out_dir, f"{g['id']}.json"), "w") as f:
             json.dump(detail, f, separators=(",", ":"), allow_nan=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
         written += 1

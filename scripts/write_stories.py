@@ -33,18 +33,19 @@ STYLE = """House style, follow exactly:
 - Never count, add, subtract or convert anything yourself (rounding a percentage is the one exception). Quote other numbers exactly as the JSON gives them, and when the JSON gives a summary (a record, a count, a total), use the summary instead of tallying a list.
 - Every team number is labelled with its team abbreviation. Check the label before you attribute a number to a team or its goalie.
 - Keep events in the order they happened. Goals are listed in time order; don't describe an earlier goal as a response to a later one.
-- Tell the story of the game, and when you cite a number, say why it matters (what it reveals about how the game was really played).
+- The story leads. These are people, and every game sits inside a season: a streak snapped or stretched, a comeback, a first NHL goal or a milestone, a team playing without its best player, a new coach, a goalie carrying them. Lead with what the game means to the people and teams in it, as far as the facts show, and use the numbers to explain and support that story, not to replace it. When you cite a number, say why it matters.
+- Mood and energy come only from what happened (results, streaks, comebacks, injuries, milestones, coaching changes). Describing a team that has lost five straight as needing a win is fine; inventing quotes, feelings attributed to a named person, locker-room details or anything else the facts don't show is not.
 - "Expected goals" means the quality of chances; "deserved to win" is the share of simulated replays of every shot that the team wins. Use them to separate how the game was played from how it ended.
 - Use full player names the first time, last names after. Write team abbreviations as given.
 - No headings, no bullet points, no sign-off."""
 
 RECAP_TASK = """Write a recap of this NHL game in 3 short paragraphs, 170 to 230 words total.
-Open with the decisive moment or the gap between result and play, not with the final score sentence template.
+Open with the story. Use `the_story` when it has something (a streak snapped or extended, a comeback, a late or overtime winner, a first NHL goal or a milestone, a goalie's big night); otherwise open with the decisive moment or the gap between result and play. Never open with a final-score sentence template. Then show how the game was really played, and end with where it leaves each team, using only the streaks and records in the facts.
 JSON facts:
 """
 
 PREVIEW_TASK = """Write a preview of tonight's NHL game in 3 short paragraphs, 160 to 220 words total.
-Cover how the teams compare in chance creation and prevention, special teams, the goalie matchup (this season and last), recent form (use each team's last_five summary), and one or two players worth watching (use the probabilities and reasons as given). Work in the one or two storylines that matter most, as written in the facts, and when a storyline says the model doesn't price it, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
+Open with where each team is coming from (`where_each_team_is`: the last game and what it meant, form, a coaching change, who's missing) and the story that makes this game matter. Then cover how the teams compare in chance creation and prevention, special teams and the goalie matchup (this season and last), and one or two players worth watching (use the probabilities and reasons as given). When a storyline says who is getting an injured player's minutes, say so. If `our_sleepers` has players, mention them as Ice Sheet's under-the-radar picks with the reason given, as players to watch, never as a bet or a lock. When a storyline is not in our numbers, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
 JSON facts:
 """
 
@@ -116,6 +117,8 @@ def recap_facts(g):
         team_stats={TEAM_STAT_NAMES.get(k, k): _by_team(g, v) for k, v in ts.items()
                     if k in TEAM_STAT_NAMES},
         data_notes=g.get("notes") or None,
+        the_story=g.get("context") or None,
+        story_details=g.get("context_facts") or None,
         earlier_meetings_this_season=[dict(date=x["date"], final=f'{x["away"]} {x["a"]}, {x["home"]} {x["h"]}', decided_in=x["end"])
                                       for x in g["series"] if x["date"] < g["date"] and x["a"] is not None],
     ))
@@ -162,8 +165,13 @@ def preview_facts(p):
                      earlier_meetings_this_season=[dict(date=x["date"], final=f'{x["away"]} {x["a"]}, {x["home"]} {x["h"]}', decided_in=x["end"])
                                                    for x in p["series"] if x["a"] is not None],
                      data_notes=p.get("notes") or None,
-                     storylines=[dict(team=x.get("team"), story=x["text"], in_the_model=bool(x.get("priced")))
+                     where_each_team_is={t: m for t, m in (p.get("mood") or {}).items()} or None,
+                     storylines=[dict(team=x.get("team"), story=x["text"], in_the_model=bool(x.get("priced")),
+                                      who_gets_his_minutes=x.get("ripple"))
                                  for x in (p.get("storylines") or [])[:6]] or None,
+                     our_sleepers=[dict(name=x["name"], team=x["team"], kind="depth scorer" if x["kind"] == "depth" else "underrated for a point",
+                                        why=x["why"], score_a_goal_pct=round(100 * x["p_goal"]), point_pct=round(100 * x["p_1pt"]))
+                                   for x in (p.get("sleepers") or [])] or None,
                      players_to_watch={t: [dict(name=w["name"], reasons=[c["t"] for c in w["chips"]], score_a_goal_pct=round(100 * w["p_goal"]),
                                                 point_pct=round(100 * w["p_1pt"])) for w in ws]
                                        for t, ws in (p.get("watch") or {}).items()} or None,

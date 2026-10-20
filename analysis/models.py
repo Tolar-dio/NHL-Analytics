@@ -32,8 +32,17 @@ CUR, PREV = "20262027", "20252026"
 # made no difference or overshot, so they stay off.
 K = dict(Kx=300, Ko=600, Ki=20, Kf=30, Kt=600, Kg=300,      # current-season shrinkage
          Kof=50, Kof_prior=150,                           # on-ice finishing (xGF units): this season, last season
+         Rf=0.02, Rf_d=0.0, Rof=0.0, fin_lo=0.8, fin_hi=1.25,  # role-based finishing prior (slope per minute a game)
          alpha=0.7,                                       # weight on last season vs role prior
          Kt_prior=1200, beta=0.7, Kg0=600)                # team/goalie prior settings
+# Role-based finishing (Oct 20, 2026): forwards who play more minutes finish their chances better (2025-26 G/xG: 0.72 under
+# 11 minutes a night, 1.14 over 19), but the finishing prior was the flat league rate, so fourth-liners' goals ran 15%
+# high and first-liners' 5% low. The prior now slopes 2% per minute a game around 16.5 (forwards), renormalised to the
+# league level. Walk-forward goal log loss: 2025-26 0.39235 -> 0.39204, 2026-27 with priors 0.38082 -> 0.38066; fourth
+# line predicted/actual 0.85 -> 0.93. Steeper slopes, a D slope and the same idea for on-ice finishing (points) were
+# tested and left off (mixed or worse). Tested the same day and left off, all worse or mixed across the two seasons:
+# moving ice time when regulars are out (slot minutes, promotion bumps), splitting rates into power play and other
+# play, last game's linemates, and opponents' defense against depth lines vs top-six lines (analysis/context.py).
 MAXG = 15
 PTS_CAL = 1.015
 # 1+ points ran high at the low end (depth players: 17% priced, 15% happened). A Platt correction on the logit, fit
@@ -119,6 +128,15 @@ def player_agg(pg):
     return p
 
 
+def role_curve(tpg, pos, slope_f, slope_d):
+    """Finishing by role: players who get more minutes finish better (coaches give minutes to finishers). A line in
+    minutes a game, 1.0 at 16.5 (F) or 20.5 (D) minutes, clipped to [0.6, 1.35]."""
+    tpg = pd.Series(tpg, dtype=float).fillna(14.0)
+    pos = pd.Series(pos, index=tpg.index)
+    r = np.where(pos == "D", 1 + slope_d * (tpg - 20.5), 1 + slope_f * (tpg - 16.5))
+    return pd.Series(np.clip(r, 0.6, 1.35), index=tpg.index)
+
+
 def role_priors(p):
     """League regression of each rate on TOI/game and PP share, by position."""
     out = pd.DataFrame(index=p.index)
@@ -142,12 +160,14 @@ def build_prev_priors(prev):
     pr["o"] = (p.xgf + K["Ko"] * r.o / 60) / (p.toi + K["Ko"]) * 60
     pr["a"] = (p.xga + K["Ko"] * r.a / 60) / (p.toi + K["Ko"]) * 60
     pr["ipp"] = (p.pts + K["Ki"] * r.ipp) / (p.gf + K["Ki"])
-    pr["fin"] = ((p.g + K["Kf"]) / (p.ixg + K["Kf"])).clip(0.8, 1.25)
+    rf = role_curve(p.toi_pg, p.pos, K["Rf"], K["Rf_d"]) if K.get("Rf") or K.get("Rf_d") else 1.0
+    pr["fin"] = ((p.g + K["Kf"] * rf) / (p.ixg + K["Kf"])).clip(K["fin_lo"], K["fin_hi"])
     pr["toi_pg"] = p.toi_pg
     pr["pos"], pr["pp_share"], pr["team"] = p.pos, p.pp_share, p.team
     if K.get("Kof") and K.get("Kof_prior"):   # last season's on-ice finishing, shrunk harder, as the starting point
         lg_of = p.gf.sum() / max(p.xgf.sum(), 1e-9)
-        pr["ofin"] = (p.gf + K["Kof_prior"] * lg_of) / (p.xgf + K["Kof_prior"]) / lg_of   # relative to last season's league
+        ro = role_curve(p.toi_pg, p.pos, K["Rof"], K["Rof"] / 2) if K.get("Rof") else 1.0
+        pr["ofin"] = (p.gf + K["Kof_prior"] * lg_of * ro) / (p.xgf + K["Kof_prior"]) / lg_of   # relative to last season's league
     gg = prev["gg"][prev["gg"].game_type == "regular"]
     g = gg.groupby("player_id").agg(xga=("xga", "sum"), ga=("ga", "sum"))
     gpr = (g.ga + K["Kg0"]) / (g.xga + K["Kg0"])
@@ -180,6 +200,11 @@ def fit_players(cur, cut, priors=None, k=K, extra=None):
     prior = r.copy()
     lg_fin = pg.g.sum() / max(pg.ixg.sum(), 1e-9)
     prior["fin"] = lg_fin
+    if k.get("Rf") or k.get("Rf_d"):
+        # finishing prior by role, renormalised so the league-wide level of goals doesn't move
+        rf = role_curve(p.proj_toi, p.pos, k["Rf"], k["Rf_d"])
+        w = p.ixg.clip(lower=0.01)
+        prior["fin"] = lg_fin * rf / np.average(rf, weights=w)
     if priors is not None:
         pp = priors["players"].reindex(p.index)
         has = pp.x.notna()
@@ -203,6 +228,9 @@ def fit_players(cur, cut, priors=None, k=K, extra=None):
         # so without this the best players' points are underrated. Shrunk toward the league GF/xGF.
         lg_of = pg.gf.sum() / max(pg.xgf.sum(), 1e-9)
         oprior = pd.Series(lg_of, index=p.index)
+        if k.get("Rof"):
+            ro = role_curve(p.proj_toi, p.pos, k["Rof"], k["Rof"] / 2)
+            oprior = lg_of * ro / np.average(ro, weights=p.xgf.clip(lower=0.01))
         if priors is not None and "ofin" in priors["players"]:
             po = priors["players"].ofin.reindex(p.index) * lg_of   # last season's relative finishing, in this season's terms
             oprior = oprior.where(po.isna(), po)

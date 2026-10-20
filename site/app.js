@@ -4,7 +4,7 @@
 
 const D = {};                       // loaded data
 const S = {                         // UI state
-  game: null, pos: "all", q: "", radar: false, mkt: "p_goal", sort: { key: "p_goal", dir: -1 },
+  game: null, pos: "all", q: "", sleepOnly: false, mkt: "p_goal", sort: { key: "p_goal", dir: -1 },
   goalies: {}, tLimit: 40, pSort: { key: "pts", dir: -1 }, pPos: "all", pTeam: "all", pMin: 3, pLimit: 60,
 };
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -485,6 +485,33 @@ function winHome(g) {
   a.forEach((pa, i) => h.forEach((ph, j) => { if (j > i) w += pa * ph; else if (i === j) t += pa * ph; }));
   return w + t / 2;
 }
+// Sleepers: our own under-the-radar picks per game (site/sleepers.py), with the reasons
+const SLEEPER_KIND = { depth: "Depth scorer", point: "Underrated for a point" };
+function sleeperOf(id) {
+  for (const g of (D.tonight && D.tonight.games) || []) for (const x of g.sleepers || []) if (x.id === id) return x;
+  return null;
+}
+function sleeperTag(r) {
+  if (!r.sleeper) return "";
+  const x = sleeperOf(r.id);
+  return `<span class="tag tag-sleeper" data-tip="${esc(`<b>${SLEEPER_KIND[r.sleeper] || "Sleeper"}</b><br>${x ? x.why : ""}`)}">Sleeper</span>`;
+}
+function sleeperCard(x, game) {
+  const p = x.kind === "depth" ? `<b>${pct(x.p_goal)}</b> to score <span class="dim">(fair ${x.fair_goal})</span> · ${pct(x.p_1pt)} for a point`
+    : `<b>${pct(x.p_1pt)}</b> for a point <span class="dim">(fair ${x.fair_point})</span> · ${pct(x.p_goal)} to score`;
+  return `<article class="sleeper"><div class="sl-top"><span class="sleeper-kind">${SLEEPER_KIND[x.kind] || "Sleeper"}</span>
+      ${game ? `<a class="sl-game" href="#preview/${game.id}">${game.away} at ${game.home}</a>` : ""}</div>
+    <h3>${playerLink(x.id, x.name)} <span class="dim">${x.team} vs ${x.opp}</span></h3>
+    <p>${esc(x.why.replace(/\s*We have him at [^.]*\.$/, ""))}</p><p class="sl-odds">${p}</p></article>`;
+}
+function sleeperSection(games) {
+  const all = games.flatMap((g) => (g.sleepers || []).map((x) => [x, g]));
+  if (!all.length) return "";
+  return `<section class="zone"><h2>Sleepers</h2>
+    <p class="lede">Our own under-the-radar picks: never "he's due", always something real. Depth scorers are third- and fourth-liners whose recent shots have been dangerous, facing a defense or goalie that gives chances up. Underrated point picks are players whose chance of a point tonight is clearly above what their season scoring suggests, because their role, line or matchup has changed. They're long shots by design, and we grade every one on the <a href="#model">Track record</a> page.</p>
+    <div class="sleepers">${all.map(([x, g]) => sleeperCard(x, g)).join("")}</div></section>`;
+}
+
 // first visit: what the site is, and a prompt to pick a team
 function welcomeCard() {
   if (store.get("ice-welcome")) return "";
@@ -539,6 +566,7 @@ function renderTonight(view) {
       <p class="lede">Each bar is how many goals we expect that team to score tonight, based on the chances both teams create and allow and who's in net. Choose a different goalie and every number on this page updates. Scores update live once the puck drops.</p>
       <div class="slate">${games.map(gameCard).join("")}</div>
     </section>
+    ${sleeperSection(games)}
     ${(T.headlines || []).length ? `<section class="zone">
       <h2>Tonight's storylines</h2>
       <p class="lede">What's happening around tonight's games. Tap one for the full preview, which also says whether each storyline is factored into our numbers. More on the <a href="#pulse">Pulse</a> page.</p>
@@ -552,7 +580,7 @@ function renderTonight(view) {
         <div class="chips" role="group" aria-label="Position">
           ${["all", "F", "D"].map((p) => `<button type="button" class="chip" data-pos="${p}" aria-pressed="${S.pos === p}">${p === "all" ? "All skaters" : p === "F" ? "Forwards" : "Defense"}</button>`).join("")}
         </div>
-        <label class="check"><input type="checkbox" id="radar" ${S.radar ? "checked" : ""}> Under the radar only</label>
+        <label class="check"><input type="checkbox" id="sleepOnly" ${S.sleepOnly ? "checked" : ""}> Sleepers only</label>
         ${followed.length ? `<label class="check"><input type="checkbox" id="followOnly" ${S.followOnly ? "checked" : ""}> Players I follow</label>` : ""}
       </div>
       <div class="controls"><span class="dim">Market</span>
@@ -560,7 +588,7 @@ function renderTonight(view) {
           ${MARKETS.map(([k, l]) => `<button type="button" class="chip" data-mkt="${k}" aria-pressed="${S.mkt === k}">${l}</button>`).join("")}
         </div></div>
       <div id="propsTable"></div>
-      <p class="note">Under the radar: players getting real chances whose goals haven't caught up yet, outside the night's dozen likeliest scorers. Lineups: everyone who dressed in any of the team's last three games, minus players listed as injured, plus players returning; anyone who missed the last game is tagged, and every number assumes the player dresses. ${esc(T.goalie_note)}</p>
+      <p class="note">Sleepers are our own under-the-radar picks, explained above. Lineups: everyone who dressed in any of the team's last three games, minus players listed as injured, plus players returning; anyone who missed the last game is tagged, and every number assumes the player dresses. ${esc(T.goalie_note)}</p>
       <p class="note gamble-note">For information and entertainment, not betting advice. Odds you type stay in this browser. If you bet, do it only where it's legal and you're of age. Gambling problem? Call 1-800-GAMBLER.</p>
     </section>`;
 
@@ -568,13 +596,13 @@ function renderTonight(view) {
     let rows = liveProps();
     if (S.game) rows = rows.filter((r) => r.game === S.game);
     if (S.pos !== "all") rows = rows.filter((r) => r.pos === S.pos);
-    if (S.radar) rows = rows.filter((r) => r.radar);
+    if (S.sleepOnly) rows = rows.filter((r) => r.sleeper);
     if (S.followOnly && followed.length) { const ids = new Set(followed.map((x) => x.id)); rows = rows.filter((r) => ids.has(r.id)); }
     if (S.q) rows = rows.filter((r) => r.name.toLowerCase().includes(S.q.toLowerCase()));
     // players ESPN lists as out or on IR sink to the bottom (still shown, flagged)
     const out = (r) => { const x = injuryOf(r.name); return x && x.abbr !== "DTD" ? 1 : 0; };
     const all = sortRows(rows, S.sort).sort((a, b) => out(a) - out(b));
-    rows = all.slice(0, S.game || S.q || S.radar || S.followOnly ? 400 : S.tLimit);
+    rows = all.slice(0, S.game || S.q || S.sleepOnly || S.followOnly ? 400 : S.tLimit);
     const mk = S.mkt, mkLabel = MARKETS.find(([k]) => k === mk)[1];
     const oddsKey = (id) => (mk === "p_goal" ? `odds:${T.date}:${id}` : `odds:${T.date}:${mk}:${id}`);
     const evCell = (r) => {
@@ -585,7 +613,7 @@ function renderTonight(view) {
     };
     const other = mk === "p_goal" ? ["p_2pts", "2+ points"] : ["p_goal", "Goal chance"];
     const cols = [
-      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${r.radar ? `<span class="tag" title="Under the radar">Radar</span>` : ""}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
+      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${sleeperTag(r)}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
       mk === "p_goal" ? { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" }
@@ -609,7 +637,7 @@ function renderTonight(view) {
   drawTable();
 
   $("#q").addEventListener("input", (e) => { S.q = e.target.value; drawTable(); });
-  $("#radar").addEventListener("change", (e) => { S.radar = e.target.checked; drawTable(); });
+  $("#sleepOnly").addEventListener("change", (e) => { S.sleepOnly = e.target.checked; drawTable(); });
   $("#followOnly")?.addEventListener("change", (e) => { S.followOnly = e.target.checked; drawTable(); });
   bindWelcome(view);
   $$("[data-pos]", view).forEach((b) => b.addEventListener("click", () => { S.pos = b.dataset.pos; renderTonight(view); }));
@@ -802,6 +830,12 @@ function renderTeams(view, param) {
   }).catch(() => {});
   teamLog(team).then((html) => { if (location.hash === here) view.insertAdjacentHTML("beforeend", html); }).catch(() => {});
   renderTactics($("#teamTactics"), team).catch(() => {});
+  getJSON("data/depth.json").then((dj) => {   // injured regulars and who's getting their minutes (site/depthchart.py)
+    const outs = Object.values(dj.players || {}).filter((x) => x.team === team && x.status && x.text);
+    if (!outs.length || location.hash !== here || !$("#teamStory")) return;
+    $("#teamStory").insertAdjacentHTML("afterend", `<div class="ripples"><h3 class="kicker">Who's out, and who's filling in</h3>
+      <ul class="notes">${outs.map((x) => `<li><b>${playerLink(x.id, x.name)}</b> <span class="dim">(${esc(x.status)}; ${esc(x.role)})</span>. ${esc(x.text)}</li>`).join("")}</ul></div>`);
+  }).catch(() => {});
   $("#teamPick").addEventListener("change", (e) => (location.hash = "#teams/" + e.target.value));
   $("[data-setteam]", view)?.addEventListener("click", (e) => { setMyTeam(e.target.dataset.setteam); route(); });
 }
@@ -1126,6 +1160,7 @@ function liveRecord(L) {
       <div><div class="bignum">${pc(L.goalies.hits, L.goalies.n)}</div><p>of starting goalies called right (${L.goalies.espn_n ? `${pc(L.goalies.espn_hits, L.goalies.espn_n)} when ESPN had posted a probable starter` : "no ESPN probables yet"}).</p></div>
     </div>
     <p class="note">Two or more points: ${L.pts.pred.toFixed(0)} predicted, ${L.pts.act} actual.${L.pts1 ? ` One or more: ${L.pts1.pred.toFixed(0)} predicted, ${L.pts1.act} actual. Three or more: ${L.pts3.pred.toFixed(0)} predicted, ${L.pts3.act} actual.` : ""}${L.sog ? ` Shots on goal (tracked since Oct 18): ${L.sog.exp.toFixed(0)} expected, ${L.sog.act} taken; two or more ${L.sog.p2.toFixed(0)} predicted, ${L.sog.act2} actual; three or more ${L.sog.p3.toFixed(0)} predicted, ${L.sog.act3} actual.` : ""} Game totals missed by ${L.totals.mae} goals on average (projected ${L.totals.mean_pred}, actual ${L.totals.mean_act}).</p>
+    ${L.sleepers ? `<p class="note"><b>Sleepers</b> (since Oct 20)${L.sleepers.depth ? `: depth scorers ${L.sleepers.depth.act} goals from ${L.sleepers.depth.n} picks, ${L.sleepers.depth.pred.toFixed(1)} expected` : ""}${L.sleepers.point ? `${L.sleepers.depth ? ";" : ":"} underrated point picks ${L.sleepers.point.act} of ${L.sleepers.point.n} got a point, ${L.sleepers.point.pred.toFixed(1)} expected` : ""}. Long shots by design; the honest test is whether hits keep pace with what we said.</p>` : ""}
     ${L.market && L.market.games ? `<p class="note"><b>Against the sportsbook</b> (DraftKings game lines published by the NHL, ${L.market.games} games): totals missed by ${L.market.total_mae_model} goals for us vs ${L.market.total_mae_market} for the book; over/under log loss ${L.market.over_ll_model.toFixed(3)} vs ${L.market.over_ll_market.toFixed(3)}; winner Brier score ${L.market.win_brier_model.toFixed(3)} vs ${L.market.win_brier_market.toFixed(3)}. Lower is better on all three; the sportsbook is the bar to clear.</p>` : ""}
   </section>`;
 }

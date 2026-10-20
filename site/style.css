@@ -851,3 +851,19 @@ table.mini td.tnum, table.mini th.tnum { text-align: right; font-variant-numeric
 @media (max-width: 640px) { .about-dl { grid-template-columns: minmax(0, 1fr); gap: 2px; } .about-dl dd { margin-bottom: 10px; } .about-sec { scroll-margin-top: 12px; } }
 tr.is-mine td { background: var(--crease); }
 tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
+
+/* ---------------------------------------------------------------- sleepers, mood, who steps in */
+.sleepers { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.sleeper { padding: 12px 14px; border: 1px solid var(--hair); border-left: 3px solid var(--blue); border-radius: 8px; background: var(--sheet); }
+.sleeper h3 { font-size: 21px; margin: 4px 0 6px; }
+.sleeper h3 .dim { font: 500 14px var(--body); }
+.sleeper p { margin: 0 0 6px; color: var(--ink-2); font-size: 15px; line-height: 1.45; }
+.sleeper .sl-odds { color: var(--ink); font-size: 14px; margin: 0; }
+.sl-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.sleeper-kind { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); }
+.tag-sleeper { color: var(--sheet); background: var(--blue); }
+.sl-ripple { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); }
+.moods .mood { padding: 12px 14px; border: 1px solid var(--hair); border-radius: 8px; background: var(--sheet); }
+.moods .mood p { margin: 6px 0 0; color: var(--ink-2); line-height: 1.5; }
+.story-notes li::before { background: var(--ink-2); }
+@media (max-width: 640px) { .sleepers { grid-template-columns: minmax(0, 1fr); } }

@@ -201,6 +201,7 @@ async function renderGame(view, id) {
       <p class="lede">${esc(new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))} at ${esc(g.venue)}. <a href="${esc(g.gamecenter)}" target="_blank" rel="noopener">Watch the recap and condensed game on NHL.com</a></p>
       <div class="game-open">
         <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>${AI_LABEL}` : ""}
+          ${g.context && g.context.length ? `<h3 class="kicker">The story</h3><ul class="notes story-notes">${g.context.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
           ${g.notes && g.notes.length ? `<h3 class="kicker">What decided it</h3><ul class="notes">${g.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
           <h3 class="kicker">By period</h3>${linescore(g)}</div>
         <div>
@@ -357,12 +358,18 @@ async function renderPreview(view, id) {
         </div>
       </div>
     </section>
+    ${p.mood && Object.keys(p.mood).length ? `<section class="zone"><h2>Where they're at</h2>
+      <p class="lede">How each team comes into tonight: the last game and what it meant, recent form, a coaching change, who's missing.</p>
+      <div class="grid-2 moods">${[p.away, p.home].filter((t) => p.mood[t]).map((t) => `<div class="mood"><h3>${esc(teamName(t))}</h3><p>${esc(p.mood[t].text)}</p></div>`).join("")}</div></section>` : ""}
     ${(p.storylines || []).length ? `<section class="zone"><h2>Storylines</h2>
       <p class="lede">What's happening around this game, and whether it's factored into our numbers. Streaks, reunions and milestones make good stories, but our projections only move on things that show up in the chances: rest, injuries, goalies, special teams.</p>
       ${storyList(p.storylines)}</section>` : ""}
     ${p.watch && Object.keys(p.watch).length ? `<section class="zone"><h2>Players to watch</h2>
       <p class="lede">Three a side: the likeliest producers, with the stories around them. The percentages are our projections, which the stories don't change.</p>
       ${watchBlock(p.watch, [p.away, p.home])}</section>` : ""}
+    ${(p.sleepers || []).length ? `<section class="zone"><h2>Sleepers</h2>
+      <p class="lede">Our under-the-radar picks for this game, on how they've been playing and what they're up against, never on "he's due". Long shots by design, graded on the <a href="#model">Track record</a> page.</p>
+      <div class="sleepers">${p.sleepers.map((x) => sleeperCard(x)).join("")}</div></section>` : ""}
     <section class="zone"><h2>In net</h2><p class="lede">ESPN's probable starters once posted, otherwise whoever has started most recently. Choose a different goalie on the Tonight page and every number updates.</p>
       <div class="grid-2">${goalieCard(p.goalies[p.away], p.away)}${goalieCard(p.goalies[p.home], p.home)}</div></section>
     <section class="zone"><h2>Last five</h2><p class="lede">Each bar is that game's share of expected goals; past the middle tick means they out-chanced the other team. Tap a game to open it.</p>

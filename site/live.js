@@ -474,7 +474,7 @@ async function renderNews(view, id) {
   const empty = { stories: "No stories", moves: "No moves", features: "Nothing new to read", listen: "No new episodes", watch: "No new videos" };
   const blurb = {
     stories: "Headlines from ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Many stories get a short Ice Sheet take on what our numbers say about the players and teams involved. Takes are written with AI from those headlines and our data; links go to the original reporting.",
-    moves: `Every call-up, assignment, signing, trade, waiver move and front-office change from the last 30 days, as the teams announced them (via ESPN). Trades and staff changes get a short note on what our numbers say, written with AI.
+    moves: `Every call-up, assignment, signing, trade, waiver move and front-office change from the last 30 days, as the teams announced them (via ESPN). Trades, staff changes and injuries to regulars get a short note on what our numbers say (for injuries, who should get his minutes), written with AI.
       <span class="chips mv-filter" role="group" aria-label="Kind of move">${MOVE_FILTERS.map(([k, l]) => `<button type="button" class="chip" data-mkind="${k}" aria-pressed="${S.mKind === k}">${l}</button>`).join("")}</span>`,
     features: "Ice Sheet's own pieces first: a weekly around-the-league column and deep dives on players and teams, written with AI from our data. Then analysis and newsletters from around hockey; links go to the writer's site, and some need a subscription.",
     listen: "The latest from league-wide shows: 32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.",
