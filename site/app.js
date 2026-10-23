@@ -1,4 +1,4 @@
-/* Ice Sheet front end. Plain JS, no build step. Data comes from data/*.json,
+/* Top Shelf front end. Plain JS, no build step. Data comes from data/*.json,
    rebuilt every morning by site/build.py. */
 "use strict";
 
@@ -516,7 +516,7 @@ function sleeperSection(games) {
 function welcomeCard() {
   if (store.get("ice-welcome")) return "";
   return `<section class="welcome" id="welcome" aria-label="Welcome">
-    <div><h2>Welcome to Ice Sheet</h2>
+    <div><h2>Welcome to Top Shelf</h2>
       <p>Every NHL game, explained with the numbers behind it: who's most likely to score tonight, which teams are better or worse than their record says, how every goal happened, and how coaches are using their players. Updated every morning, with live scores at night.</p>
       <p class="row" style="gap:10px;flex-wrap:wrap"><button type="button" class="chip chip-solid" data-welcome="team">${myTeam() ? "Change your team" : "Pick your team"}</button><a class="chip" href="#about">How it works</a></p></div>
     <button type="button" class="welcome-x" data-welcome="close" aria-label="Dismiss">×</button></section>`;

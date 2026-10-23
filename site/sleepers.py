@@ -1,4 +1,4 @@
-"""Sleepers: Ice Sheet's own under-the-radar picks for each game, chosen on process, role and matchup.
+"""Sleepers: Top Shelf's own under-the-radar picks for each game, chosen on process, role and matchup.
 
 Never "he's due" (goals lagging his chances). Two kinds, at most one of each per game:
 

@@ -172,7 +172,7 @@ function playerStory(st) {
       ${flags || ms || tonight ? `<ul class="notes">${tonight}${flags}${ms}</ul>` : ""}</div>`;
 }
 
-// ------------------------------------------------------------------ Ice Sheet's own writing (scripts/write_features.py)
+// ------------------------------------------------------------------ Top Shelf's own writing (scripts/write_features.py)
 const FEATURE_KIND = { column: "Around the league", player: "Player deep dive", team: "Team deep dive" };
 const readMins = (w) => `${Math.max(1, Math.round((w || 0) / 230))} min read`;
 function featureCard(f) {
@@ -199,8 +199,8 @@ async function renderFeature(view, slug) {
       <p class="kicker">${FEATURE_KIND[f.kind] || "Feature"}</p>
       <h1>${esc(f.title)}</h1>
       ${f.dek ? `<p class="lede feat-dek">${esc(f.dek)}</p>` : ""}
-      <p class="byline">Ice Sheet · Written with AI from our data · ${new Date(f.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${readMins(f.words)}</p>
+      <p class="byline">Top Shelf · Written with AI from our data · ${new Date(f.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${readMins(f.words)}</p>
       <div class="story feature-body">${body}</div>
-      <p class="note ai-note">How this was made: an AI model (Claude, by Anthropic) wrote this piece from Ice Sheet's data only. Shot data and expected goals courtesy of MoneyPuck.com; game, shift and tracking data from the NHL. There's no outside reporting: no interviews, quotes or inside information. More on ${subj}, and on <a href="#about/ai">how we use AI</a>.</p>
+      <p class="note ai-note">How this was made: an AI model (Claude, by Anthropic) wrote this piece from Top Shelf's data only. Shot data and expected goals courtesy of MoneyPuck.com; game, shift and tracking data from the NHL. There's no outside reporting: no interviews, quotes or inside information. More on ${subj}, and on <a href="#about/ai">how we use AI</a>.</p>
     </article>`;
 }

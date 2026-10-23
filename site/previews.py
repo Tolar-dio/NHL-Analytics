@@ -155,6 +155,8 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
         if os.path.exists(sp):
             d = json.load(open(sp))
             story = d.get("text") if d.get("v", 1) >= 2 else None   # v1 stories had swapped team stats; see write_stories.STORY_VERSION
+            if story:
+                story = story.replace("Ice Sheet", "Top Shelf")   # renamed Oct 23, 2026; older cached previews use the old name
             if d.get("goalies") and d["goalies"] != [(goalie_card(g[f"{s}_goalie"]) or {}).get("id") for s in ("away", "home")]:
                 story = None   # written for other starters; write_stories rewrites it this run
         gcards = {away: goalie_card(g["away_goalie"]), home: goalie_card(g["home_goalie"])}

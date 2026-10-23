@@ -25,7 +25,7 @@ MAX_STORIES = int(os.environ.get("STORY_MAX", "60"))
 STORY_VERSION = 2   # bump to rewrite every cached story on the next run (v2: labelled fact sheets after v1 swapped teams)
 
 STYLE = """House style, follow exactly:
-- Plain, vivid sportswriting for Ice Sheet's readers: hockey fans from casual to analytics-minded. No hype words, no cliches, no exclamation marks.
+- Plain, vivid sportswriting for Top Shelf's readers: hockey fans from casual to analytics-minded. No hype words, no cliches, no exclamation marks.
 - The first time you use an analytics term (expected goals, goals saved above expected, expected goal share, deserved to win), say in plain words what it means. Don't stack several numbers in one sentence.
 - A percentage given with a decimal may be rounded to a whole number; otherwise quote numbers as given.
 - Never use em dashes or en dashes. Use commas, periods or parentheses.
@@ -45,7 +45,7 @@ JSON facts:
 """
 
 PREVIEW_TASK = """Write a preview of tonight's NHL game in 3 short paragraphs, 160 to 220 words total.
-Open with where each team is coming from (`where_each_team_is`: the last game and what it meant, form, a coaching change, who's missing) and the story that makes this game matter. Then cover how the teams compare in chance creation and prevention, special teams and the goalie matchup (this season and last), and one or two players worth watching (use the probabilities and reasons as given). When a storyline says who is getting an injured player's minutes, say so. If `our_sleepers` has players, mention them as Ice Sheet's under-the-radar picks with the reason given, as players to watch, never as a bet or a lock. When a storyline is not in our numbers, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
+Open with where each team is coming from (`where_each_team_is`: the last game and what it meant, form, a coaching change, who's missing) and the story that makes this game matter. Then cover how the teams compare in chance creation and prevention, special teams and the goalie matchup (this season and last), and one or two players worth watching (use the probabilities and reasons as given). When a storyline says who is getting an injured player's minutes, say so. If `our_sleepers` has players, mention them as Top Shelf's under-the-radar picks with the reason given, as players to watch, never as a bet or a lock. When a storyline is not in our numbers, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
 JSON facts:
 """
 
