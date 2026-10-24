@@ -359,7 +359,7 @@ async function newsIndex() {
 const tagged = (x, team, pid) => (!team || (x.teams || []).includes(team)) && (!pid || (x.players || []).some((p) => p.id === pid));
 const teamChips = (teams) => (teams || []).length ? ` · ${teams.slice(0, 3).join(", ")}` : "";
 
-const AI_CHIP = `<span class="ai-chip" data-tip="Written with AI from the reports' headlines and Top Shelf's numbers">AI</span>`;
+const AI_CHIP = `<span class="ai-chip" data-tip="Written with AI from the reports' headlines and our numbers">AI</span>`;
 function storyCard(st) {
   // one link per outlet (an outlet often files a news brief and a follow-up on the same story); its latest piece
   const byOutlet = new Map();
@@ -456,7 +456,7 @@ function moveCard(m) {
 }
 
 // News is five tabs over one team filter; all panels stay in the page and only their visibility changes, so a
-// podcast keeps playing while you look at another tab. Features are Top Shelf's own pieces plus worth-reading links.
+// podcast keeps playing while you look at another tab. Features are our own pieces plus worth-reading links.
 const NEWS_TABS = [["stories", "Top stories", "Stories"], ["moves", "Moves", "Moves"], ["features", "Features", "Features"], ["listen", "Listen", "Listen"], ["watch", "Watch", "Watch"]];
 const NEWS_PAGE = { stories: 12, moves: 20, features: 12, listen: 8, watch: 9 };
 async function renderNews(view, id) {
@@ -473,10 +473,10 @@ async function renderNews(view, id) {
   const cards = { stories: storyCard, moves: moveCard, features: (x) => (x.slug ? featureCard(x) : readCard(x)), listen: listenCard, watch: videoCard };
   const empty = { stories: "No stories", moves: "No moves", features: "Nothing new to read", listen: "No new episodes", watch: "No new videos" };
   const blurb = {
-    stories: "Headlines from ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Many stories get a short Top Shelf take on what our numbers say about the players and teams involved. Takes are written with AI from those headlines and our data; links go to the original reporting.",
+    stories: "Headlines from ESPN, The Athletic, The Hockey News and Daily Faceoff, grouped when they cover the same story. Many stories get a short Read the Ice take on what our numbers say about the players and teams involved. Takes are written with AI from those headlines and our data; links go to the original reporting.",
     moves: `Every call-up, assignment, signing, trade, waiver move and front-office change from the last 30 days, as the teams announced them (via ESPN). Trades, staff changes and injuries to regulars get a short note on what our numbers say (for injuries, who should get his minutes), written with AI.
       <span class="chips mv-filter" role="group" aria-label="Kind of move">${MOVE_FILTERS.map(([k, l]) => `<button type="button" class="chip" data-mkind="${k}" aria-pressed="${S.mKind === k}">${l}</button>`).join("")}</span>`,
-    features: "Top Shelf's own pieces first: a weekly around-the-league column and deep dives on players and teams, written with AI from our data. Then analysis and newsletters from around hockey; links go to the writer's site, and some need a subscription.",
+    features: "Our own pieces first: a weekly around-the-league column and deep dives on players and teams, written with AI from our data. Then analysis and newsletters from around hockey; links go to the writer's site, and some need a subscription.",
     listen: "The latest from league-wide shows: 32 Thoughts, The Sheet, The Athletic Hockey Show, the PDOcast and more. Play here or in your podcast app.",
     watch: "Analysis and talk from The Hockey Guy, Hockey Psychology, the PDOcast, Daily Faceoff and more, played through YouTube.",
   };
@@ -567,7 +567,7 @@ async function renderTake(view, id) {
       ${st.players?.length ? `<p class="note">Players in this story: ${st.players.map((p) => playerLink(p.id, p.name)).join(", ")}</p>` : ""}
       <h3 class="kicker">The original reporting</h3>
       <ul class="plist">${st.items.map((i) => `<li><a href="${esc(i.link || "#")}" target="_blank" rel="noopener">${esc(i.title)}</a> <span class="dim">${esc(i.source)}${i.paywalled ? ", subscription" : ""}, ${ago(i.published)}</span></li>`).join("")}</ul>
-      <p class="note ai-note">The facts come from the reports above. Our take was written with AI (Claude) from those headlines and Top Shelf's own numbers, without outside reporting.</p>
+      <p class="note ai-note">The facts come from the reports above. Our take was written with AI (Claude) from those headlines and our own numbers, without outside reporting.</p>
     </section>`;
 }
 // compact "around the league" block for team and player pages

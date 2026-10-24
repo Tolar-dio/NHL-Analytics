@@ -1,4 +1,4 @@
-/* Top Shelf. The rink is the design system: ice surfaces, a red centre line
+/* Read the Ice. The rink is the design system: ice surfaces, a red centre line
    under the masthead, blue lines between zones of content, and goal-line red
    reserved for goals and warnings. */
 
@@ -867,3 +867,8 @@ tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
 .moods .mood p { margin: 6px 0 0; color: var(--ink-2); line-height: 1.5; }
 .story-notes li::before { background: var(--ink-2); }
 @media (max-width: 640px) { .sleepers { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 360px) {   /* the longer wordmark plus both masthead buttons on the narrowest phones */
+  .wordmark { font-size: 23px; }
+  .masthead-inner { gap: 6px; padding-left: 12px; padding-right: 12px; }
+  .theme-toggle { padding: 3px 8px; font-size: 12px; }
+}

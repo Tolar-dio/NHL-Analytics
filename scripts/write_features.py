@@ -1,4 +1,4 @@
-"""Top Shelf's own writing: a weekly "Around the league" column plus player and team deep dives, written by Claude
+"""The site's own writing (Read the Ice): a weekly "Around the league" column plus player and team deep dives, written by Claude
 from this site's numbers only (no web search, no reporting, no quotes).
 
 Runs in the nightly workflow after site/build.py and write_stories.py. At most one scheduled piece a night, so the

@@ -4,6 +4,7 @@ Writes site/data/previews/<game_id>.json with team comparison, special teams,
 last-five form, goalie matchup, season series, rest, projected lines (from
 shared ice time in each team's last game) and the key props.
 """
+import re
 import datetime as dt, json, os
 from itertools import combinations
 import numpy as np
@@ -126,6 +127,13 @@ def preview_notes(away, home, prof, goalies, series):
     return notes[:7]
 
 
+def rename(text):
+    """Cached previews written under the site's old names (Ice Sheet, Top Shelf): possessives become "our", the rest the new name."""
+    text = re.sub(r"(^|[.!?]\s+)(Ice Sheet|Top Shelf)'s ", lambda m: m.group(1) + "Our ", text)
+    text = re.sub(r"(Ice Sheet|Top Shelf)'s ", "our ", text)
+    return re.sub(r"Ice Sheet|Top Shelf", "Read the Ice", text)
+
+
 def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, shifts, pos, names, out_dir, stories_dir, today,
                    stories=None):
     os.makedirs(out_dir, exist_ok=True)
@@ -156,7 +164,7 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
             d = json.load(open(sp))
             story = d.get("text") if d.get("v", 1) >= 2 else None   # v1 stories had swapped team stats; see write_stories.STORY_VERSION
             if story:
-                story = story.replace("Ice Sheet", "Top Shelf")   # renamed Oct 23, 2026; older cached previews use the old name
+                story = rename(story)   # renamed Read the Ice on Oct 23, 2026; older cached previews use old names
             if d.get("goalies") and d["goalies"] != [(goalie_card(g[f"{s}_goalie"]) or {}).get("id") for s in ("away", "home")]:
                 story = None   # written for other starters; write_stories rewrites it this run
         gcards = {away: goalie_card(g["away_goalie"]), home: goalie_card(g["home_goalie"])}
