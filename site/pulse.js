@@ -41,7 +41,7 @@ function watchCards(list) {
       <div class="wc-head">${playerLink(w.id, w.name)}${w.team ? `<span class="dim">${w.team}</span>` : ""}${typeof injuryTag === "function" ? injuryTag(w.name) : ""}</div>
       <div class="wc-chips">${w.chips.map((c) => `<span class="wchip wchip-${c.k}">${esc(c.t)}</span>`).join("")}</div>
       ${w.why ? `<p class="wc-why">${esc(w.why)}</p>` : ""}
-      <p class="wc-line">${esc(w.line)} <span class="dim">Fair: ${fair(w.p_goal)}</span></p>
+      <p class="wc-line">${esc(w.line)} <span class="dim">Fair odds to score: ${fair(w.p_goal)}</span></p>
     </article>`).join("");
 }
 function watchBlock(watch, teams) {
@@ -117,7 +117,7 @@ async function renderPulse(view, tab) {
     <div class="news-bar" id="pulseBar"><div class="news-tabs pulse-tabs" role="tablist" aria-label="Pulse sections">${PULSE_TABS.map(([k, l, sh]) => `<button type="button" role="tab" id="pt-${k}" aria-controls="pp-${k}"
       aria-selected="${S.pTab === k}" tabindex="${S.pTab === k ? 0 : -1}" data-ptab="${k}"><span class="nt-long">${l}</span><span class="nt-short">${sh}</span><span class="nt-n">${count[k]}</span></button>`).join("")}</div></div>
     ${PULSE_TABS.map(([k]) => `<section class="zone news-panel pulse-panel" role="tabpanel" id="pp-${k}" aria-labelledby="pt-${k}" ${S.pTab === k ? "" : "hidden"}>${panels[k]()}</section>`).join("")}
-    <p class="note">Updated every morning, through ${esc(dateLabel(P.through))}'s games.</p>`;
+    <p class="note">Updated every morning. Includes games through ${esc(new Date(P.through + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))}.</p>`;
   talkedAbout().then((h) => { const el = $("#talked"); if (el && h) el.outerHTML = h; }).catch(() => {});
   const bar = $("#pulseBar"), m = $(".masthead");
   bar.style.top = m && getComputedStyle(m).position === "sticky" ? `${m.offsetHeight}px` : "0px";
@@ -203,6 +203,6 @@ async function renderFeature(view, slug) {
       ${f.dek ? `<p class="lede feat-dek">${esc(f.dek)}</p>` : ""}
       <p class="byline">Read the Ice · Written with AI from our data · ${new Date(f.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${readMins(f.words)}</p>
       <div class="story feature-body">${body}</div>
-      <p class="note ai-note">How this was made: an AI model (Claude, by Anthropic) wrote this piece from our data only. Shot data and expected goals courtesy of MoneyPuck.com; game, shift and tracking data from the NHL. There's no outside reporting: no interviews, quotes or inside information. More on ${subj}, and on <a href="#about/ai">how we use AI</a>.</p>
+      <p class="note ai-note">How this was made: an AI model (Claude, by Anthropic) wrote this piece from our data, each player's career record, and the recent headlines and reporters' posts shown on our player pages. Any quote appears word for word in one of those and is credited; there are no interviews or inside information. Shot data and expected goals courtesy of MoneyPuck.com; game, shift and tracking data from the NHL. More on ${subj}, and on <a href="#about/ai">how we use AI</a>.</p>
     </article>`;
 }

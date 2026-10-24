@@ -41,6 +41,7 @@ STYLE = """House style, follow exactly:
 - Mood and energy come only from what happened (results, streaks, comebacks, injuries, milestones, coaching changes). Describing a team that has lost five straight as needing a win is fine; inventing quotes, feelings attributed to a named person, locker-room details or anything else the facts don't show is not.
 - "Expected goals" means the quality of chances; "deserved to win" is the share of simulated replays of every shot that the team wins. Use them to separate how the game was played from how it ended.
 - Use full player names the first time, last names after. Write team abbreviations as given.
+- The site speaks as "we" ("our numbers", "we'd watch"). Never "I".
 - No headings, no bullet points, no sign-off."""
 
 RECAP_TASK = """Write a recap of this NHL game in 3 short paragraphs, 170 to 230 words total.

@@ -62,8 +62,11 @@ function styleMapSVG(lg, card, pid, map, W) {
   const grid = tx.map((v) => `<line class="grid" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><text x="${X(v)}" y="${H - m.b + 15}" text-anchor="middle">${fmt(map.x, v)}</text>`).join("") +
     ty.map((v) => `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${fmt(map.y, v)}</text>`).join("");
   const tipOf = (r) => `<b>${esc(r[1])}</b> ${r[2]}<br>${esc(map.xl)}: ${playVal(map.x, r[ix])}<br>${esc(map.yl)}: ${playVal(map.y, r[iy])}`;
-  const dots = pool.filter((r) => r[0] !== pid).map((r) => `<a href="#players/${r[0]}" data-tip="${esc(tipOf(r))}"><circle cx="${X(r[ix])}" cy="${Y(r[iy])}" r="8" fill="transparent"/>
-      <circle class="sm-dot" cx="${X(r[ix])}" cy="${Y(r[iy])}" r="3.5"/></a>`).join("");
+  // last season's map includes players with no page this season: their dots show the tip but don't link
+  const onPage = new Set(D.skaters.map((x) => x.id));
+  const dots = pool.filter((r) => r[0] !== pid).map((r) => { const inner = `<circle cx="${X(r[ix])}" cy="${Y(r[iy])}" r="8" fill="transparent"/>
+      <circle class="sm-dot" cx="${X(r[ix])}" cy="${Y(r[iy])}" r="3.5"/>`;
+    return onPage.has(r[0]) ? `<a href="#players/${r[0]}" data-tip="${esc(tipOf(r))}">${inner}</a>` : `<g data-tip="${esc(tipOf(r) + "<br><i>No games this season</i>")}">${inner}</g>`; }).join("");
   // a few names for orientation: the league leaders on each axis, where they fit
   const lead = [...pool].sort((a, b) => b[ix] - a[ix]).slice(0, 2).concat([...pool].sort((a, b) => b[iy] - a[iy]).slice(0, 2))
     .filter((r, i, a) => r[0] !== pid && a.findIndex((z) => z[0] === r[0]) === i);

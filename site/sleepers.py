@@ -17,6 +17,13 @@ analysis/track.py grades them on the Track record page.
 import numpy as np
 import pandas as pd
 
+from narrative import NICK
+
+
+def _the(team):
+    """'the Flyers', which reads as a plural subject; abbreviations ('PHI give up') don't."""
+    return f"the {NICK[team]}" if team in NICK else team
+
 HD = 0.15          # high-danger: an unblocked shot worth 15% or more
 WINDOW = 10        # recent games
 
@@ -113,8 +120,8 @@ def pick(d, pg, prev_pg, shots, C, teams_rows, goalie_rows, names, strength, gam
                     f"{r.ixg:.1f} expected goals in his last {int(r.n)} games ({r.ixg60:.2f} per 60, better than {round(100 * q)}% of "
                     f"depth forwards), with {int(r.hd)} shots from high-danger spots."]
             rk_ = dfr.get(x.opp)
-            opp_bit = (f"{x.opp} give up the {_ord(rk_)}-most expected goals per 60" if rk_ and rk_ <= 12 else
-                       f"{x.opp} are about average at keeping chances down ({_ord(rk_)} in expected goals allowed per 60)" if rk_ and rk_ <= 20 else None)
+            opp_bit = (f"{_the(x.opp)} give up the {_ord(rk_)}-most expected goals per 60" if rk_ and rk_ <= 12 else
+                       f"{_the(x.opp)} are about average at keeping chances down ({_ord(rk_)} in expected goals allowed per 60)" if rk_ and rk_ <= 20 else None)
             gk_bit = (f"{G_['name']} has allowed {abs(G_['gsax']):.1f} more goals than his shots deserved"
                       if G_ and G_.get("gsax") is not None and G_["gsax"] <= -1.5 else None)
             if opp_bit or gk_bit:
@@ -164,7 +171,7 @@ def pick(d, pg, prev_pg, shots, C, teams_rows, goalie_rows, names, strength, gam
                 reasons.append(f"his line creates chances ({x.oxgf60:.2f} expected goals per 60 with him on the ice)")
                 facts["on_ice_expected_goals_per_60"] = round(float(x.oxgf60), 2)
             if x.def_f * x.g_f >= 1.05 and dfr.get(x.opp, 99) <= 10:
-                reasons.append(f"{x.opp} give up the {_ord(dfr[x.opp])}-most expected goals per 60")
+                reasons.append(f"{_the(x.opp)} give up the {_ord(dfr[x.opp])}-most expected goals per 60")
                 facts["opponent_defense_rank"] = dfr.get(x.opp)
             if not reasons:
                 continue

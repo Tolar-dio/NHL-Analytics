@@ -904,3 +904,5 @@ tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
 #dpath td:nth-child(2) { white-space: normal; min-width: 150px; }
 @media (max-width: 640px) { #dpath td:nth-child(2) { min-width: 0; white-space: normal; } }
 @media (max-width: 640px) { #dpath th, #dpath td, #dcomp th, #dcomp td { padding: 7px 5px; font-size: 14px; } }
+.tag-started { color: var(--muted); border-color: var(--muted); }
+.final-note { margin: 4px 0 14px; padding: 10px 14px; border-left: 3px solid var(--blue); background: var(--sheet); border-radius: 6px; font-size: 15px; }

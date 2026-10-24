@@ -567,7 +567,7 @@ async function renderTake(view, id) {
       ${st.players?.length ? `<p class="note">Players in this story: ${st.players.map((p) => playerLink(p.id, p.name)).join(", ")}</p>` : ""}
       <h3 class="kicker">The original reporting</h3>
       <ul class="plist">${st.items.map((i) => `<li><a href="${esc(i.link || "#")}" target="_blank" rel="noopener">${esc(i.title)}</a> <span class="dim">${esc(i.source)}${i.paywalled ? ", subscription" : ""}, ${ago(i.published)}</span></li>`).join("")}</ul>
-      <p class="note ai-note">The facts come from the reports above. Our take was written with AI (Claude) from those headlines and our own numbers, without outside reporting.</p>
+      <p class="note ai-note">The facts come from the reports above. Our take was written with AI (Claude) from those headlines, our own numbers and the players' career records, without reporting of its own.</p>
     </section>`;
 }
 // compact "around the league" block for team and player pages

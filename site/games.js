@@ -287,6 +287,9 @@ async function renderPreview(view, id) {
   let p;
   try { p = await getJSON(`data/previews/${id}.json`); } catch (e) { view.innerHTML = `<p class="empty">Previews are published for today's games only. <a href="#tonight">See tonight's games</a> or <a href="#games">find a finished game</a>.</p>`; return; }
   const A = p.teams[p.away], H = p.teams[p.home];
+  // once the game is in the catalogue it's over: say so up top and point to the full game page
+  const fin = (await getJSON("data/games/index.json").catch(() => [])).find((x) => x.id === p.id);
+  const finalNote = fin ? `<p class="final-note"><b>Final: ${esc(fin.away)} ${fin.a}, ${esc(fin.home)} ${fin.h}${fin.end && fin.end !== "REG" ? ` (${esc(fin.end)})` : ""}.</b> This preview was written before the game. <a href="#game/${fin.id}">The full game, shot by shot</a></p>` : "";
   const better = (a, h, higherIsBetter = true) => {
     if (a == null || h == null || a === h) return ["", ""];
     const aBetter = higherIsBetter ? a > h : a < h;
@@ -330,6 +333,7 @@ async function renderPreview(view, id) {
       <p class="crumbs"><a href="#tonight">Tonight</a></p>
       <h1>${esc(teamName(p.away))} at ${esc(teamName(p.home))}</h1>
       <p class="lede">${gameTime(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "not known yet"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "not known yet"}.</p>
+      ${finalNote}
       <div class="game-open">
         <div>${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>${AI_LABEL}` : ""}
           ${p.notes && p.notes.length ? (p.story

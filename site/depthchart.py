@@ -62,8 +62,10 @@ def describe_role(r):
     return ", ".join(bits)
 
 
-def ripple(C, team, pid, names, today=None):
-    """Who absorbs an absent player's role. Returns None if he hasn't played for this team this season."""
+def ripple(C, team, pid, names, today=None, unavailable=()):
+    """Who absorbs an absent player's role. Returns None if he hasn't played for this team this season.
+    unavailable: ids out injured right now; they're never named as the one stepping in."""
+    unavailable = {int(x) for x in unavailable} | {int(pid)}
     gids = team_games(C, team)
     mine = C[(C.player_id == pid) & (C.team == team)]
     if mine.empty or not gids:
@@ -87,20 +89,20 @@ def ripple(C, team, pid, names, today=None):
         if linemates and me["pos"] == "F":
             q = C[C.game_id.isin(without) & C.player_id.isin(linemates)]
             cnt = pd.concat([q.mate1, q.mate2]).dropna().astype(int)
-            cnt = cnt[~cnt.isin(linemates + [pid])].value_counts()
+            cnt = cnt[~cnt.isin(linemates + [pid]) & ~cnt.isin(unavailable)].value_counts()
             if len(cnt):
                 x = int(cnt.index[0])
                 cand.append(dict(id=x, name=nm(x), how="line", with_=[nm(m) for m in linemates]))
         elif me["pos"] == "D" and me["mates"] and me["mates"][0] in R_wo:
             partner = me["mates"][0]
             q = C[C.game_id.isin(without) & (C.player_id == partner)].dmate.dropna().astype(int).value_counts()
-            q = q[q.index != pid]
+            q = q[~q.index.isin(unavailable)]
             if len(q):
                 x = int(q.index[0])
                 cand.append(dict(id=x, name=nm(x), how="pair", with_=[nm(partner)]))
         # his first-unit power-play spot
         if me["pp_unit"] == 1:
-            newpp = [x for x, r in R_wo.items() if r["pp_unit"] == 1 and (R_with.get(x) or {}).get("pp_unit") != 1 and x != pid]
+            newpp = [x for x, r in R_wo.items() if r["pp_unit"] == 1 and (R_with.get(x) or {}).get("pp_unit") != 1 and x not in unavailable]
             newpp.sort(key=lambda x: (R_wo[x]["pos"] != me["pos"], -R_wo[x]["pp"]))   # same position first
             if newpp:
                 cand.append(dict(id=newpp[0], name=nm(newpp[0]), how="pp"))
@@ -108,7 +110,7 @@ def ripple(C, team, pid, names, today=None):
         jumps = []
         for x, r in R_wo.items():
             b = R_with.get(x)
-            if b and r["pos"] == me["pos"] and r["toi"] - b["toi"] >= 1.5:
+            if b and r["pos"] == me["pos"] and r["toi"] - b["toi"] >= 1.5 and x not in unavailable:
                 jumps.append((r["toi"] - b["toi"], x))
         for dlt, x in sorted(jumps, reverse=True)[:2]:
             cand.append(dict(id=x, name=nm(x), how="minutes"))
@@ -128,12 +130,12 @@ def ripple(C, team, pid, names, today=None):
     else:
         # projection from the depth chart: next man up for his line, and the second unit's top power-play man
         R = roles(C, team, gids[-RECENT:])
-        same = sorted(((r["toi"], x) for x, r in R.items() if r["pos"] == me["pos"] and x != pid and r["line"] > me["line"]), reverse=True)
+        same = sorted(((r["toi"], x) for x, r in R.items() if r["pos"] == me["pos"] and x not in unavailable and r["line"] > me["line"]), reverse=True)
         if same:
             x = same[0][1]
             res["steps_in"].append(dict(id=x, name=nm(x), how="next", toi_before=round(R[x]["toi"], 2), line=R[x]["line"]))
         if me["pp_unit"] == 1:
-            pp2 = sorted(((r["pos"] == me["pos"], r["pp"], x) for x, r in R.items() if r["pp_unit"] == 2 and x != pid), reverse=True)
+            pp2 = sorted(((r["pos"] == me["pos"], r["pp"], x) for x, r in R.items() if r["pp_unit"] == 2 and x not in unavailable), reverse=True)
             pp2 = [(a, c) for _, a, c in pp2]
             if pp2:
                 x = pp2[0][1]
@@ -186,7 +188,7 @@ def build(C, inj, names, today=None):
     for pid, v in inj.items():
         if not v.get("out") and (v.get("status") or "").lower() not in ("day-to-day",):
             continue
-        r = ripple(C, v["team"], int(pid), names, today)
+        r = ripple(C, v["team"], int(pid), names, today, {int(k) for k, w in inj.items() if w.get("out")})
         if r and (r["line"] <= 3 or r["pp_unit"] == 1):
             r["status"] = v.get("status")
             out[int(pid)] = r

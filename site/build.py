@@ -755,16 +755,17 @@ def main():
         ctx_games = pd.read_csv(os.path.join(ROOT, "analysis", "output", CUR, "context_games.csv"))
         ctx_games = ctx_games[ctx_games.date < str(today)]
         nm_int = {int(k): v for k, v in names.items()}
+        hurt = {int(p) for p, v in lu["inj"].items() if v.get("out")}   # never "next in line" while he's hurt himself
         rip = {}
         for team in sorted(set(ctx_games.team)):
             gids = DC.team_games(ctx_games, team)[-DC.RECENT:]
             for pid, rr in DC.roles(ctx_games, team, gids).items():
                 if rr["gp"] >= 2 and ((rr["pos"] == "F" and rr["line"] <= 3) or (rr["pos"] == "D" and rr["line"] <= 2) or rr["pp_unit"] == 1):
-                    x = DC.ripple(ctx_games, team, pid, nm_int, today)
+                    x = DC.ripple(ctx_games, team, pid, nm_int, today, hurt)
                     if x:
                         rip[pid] = x
         for pid, v in lu["inj"].items():
-            x = DC.ripple(ctx_games, v["team"], int(pid), nm_int, today)
+            x = DC.ripple(ctx_games, v["team"], int(pid), nm_int, today, hurt)
             if x:
                 x["status"] = v.get("status")
                 rip[int(pid)] = x

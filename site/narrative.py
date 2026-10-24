@@ -167,7 +167,8 @@ def last_name(name):
 
 
 def sign(x, d=1):
-    return ("+" if x > 0 else "-" if x < 0 else "") + f"{abs(x):.{d}f}"
+    a = f"{abs(x):.{d}f}"
+    return ("" if float(a) == 0 else "+" if x > 0 else "-") + a
 
 
 def record(rs):
@@ -722,8 +723,8 @@ def _teams(P, cur, standings, profiles, gp_med):
         if abs(luck) >= 4 and t["gp"] >= 5:
             fin, gk = t["gf"] - t["xgf"], t["xga"] - t["ga"]
             same = lambda v: v * luck > 0 and abs(v) >= 1.5
-            parts = ([f"finishing ({sign(fin)} goals against the chances)"] if same(fin) else []) + \
-                    ([f"goaltending ({sign(gk)} saved above expected)"] if same(gk) else [])
+            parts = ([f"finishing ({abs(fin):.1f} {'more' if fin > 0 else 'fewer'} goals than their chances usually produce)"] if same(fin) else []) + \
+                    ([f"goaltending ({abs(gk):.1f} goals {'saved' if gk > 0 else 'allowed'} above expected)"] if same(gk) else [])
             by = " and ".join(parts)
             verb = "are" if len(parts) > 1 else "is"
             if luck > 0:
@@ -847,6 +848,8 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
     st = {t["team"]: t for t in standings}
     by_game = {}
     played = games[["date", "home", "away", "game_id", "home_score", "away_score", "decided_in", "venue"]]
+    # an afternoon build already has today's early games: a preview's context stops before today, never counts the game itself
+    played = played[played.date < today_s]
     future = [g for g in sched if g["date"] > today_s]
     prev_po = prev["games"][prev["games"].game_type == "playoffs"]
     prev_reg = prev["games"][prev["games"].game_type == "regular"]
@@ -1010,12 +1013,12 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
                 status = STATUS.get(v["status"].lower(), v["status"].lower())
                 rp = (lu.get("ripple") or {}).get(i) or {}
                 out.append(dict(team=team, k="injury", w=36 + 20 * min(imp(i), 1.2), priced=True,
-                                text=f"{cap(the(team))} are without {S['name']}{kind}, {status}.{tail}{back}",
+                                text=f"{cap(the(team))} are without {S['name']}{kind}{'' if status == 'out' else ', ' + status}.{tail}{back}",
                                 effect="Priced: he's out of the lineup and the team rating.", pid=i,
                                 ripple=rp.get("text") or None, role=rp.get("role") or None))
             elif G and G["starts"] >= 3:
                 out.append(dict(team=team, k="injury", w=40, priced=True,
-                                text=f"{cap(the(team))} are without goalie {G['name']}, {STATUS.get(v['status'].lower(), v['status'].lower())}.",
+                                text=f"{cap(the(team))} are without goalie {G['name']}" + ("" if v['status'].lower() == "out" else f", {STATUS.get(v['status'].lower(), v['status'].lower())}") + ".",
                                 effect="Priced through tonight's projected goalie.", pid=i))
         for x in lu.get("returning", []):
             if x["team"] != team:
@@ -1244,7 +1247,7 @@ def game_stories(P, slate_games, props, lu, sched, cur, prev, names, profiles, s
         watch = {t: _watch(P, props_by.get((g["id"], t), []), items, lu) for t in (a, h)}
         mood = {}
         for t in (a, h):
-            res = _results(cur, t)
+            res = [x for x in _results(cur, t) if x["date"] < today_s]
             last_ctx = (lu.get("contexts") or {}).get(res[-1]["id"]) if res else None
             outs = [P["skater"][i]["name"] for i, v in lu.get("inj", {}).items()
                     if v["team"] == t and v["out"] and i in (lu.get("ripple") or {}) and i in P["skater"]]
@@ -1326,7 +1329,7 @@ def _watch(P, rows, items, lu):
             c["why"] = f"{lead}{ss['pts']} points in {ss['gp']} games, with {num(ss['ixg'] or 0)} expected goals on his own shots."
         if not c["chips"]:
             c["chips"] = [dict(k="top", t="Top power play" if pp1 else "Big minutes" if (role.get("toi") or 0) >= 19 else "Model pick")]
-        c["line"] = f"Model: {round(100 * c['p_goal'])}% to score, {round(100 * c['p_1pt'])}% for a point."
+        c["line"] = f"We have him at {round(100 * c['p_goal'])}% to score, {round(100 * c['p_1pt'])}% for a point."
         c.pop("score")
         c["chips"] = c["chips"][:4]
         c["p_goal"], c["p_1pt"], c["p_2pts"] = r(c["p_goal"], 3), r(c["p_1pt"], 3), r(c["p_2pts"], 3)
@@ -1607,11 +1610,14 @@ def team_mood(team, res, last_ctx, staff_moves, injured_names, today):
     rec5 = record([x["res"] for x in l5])
     facts["last_five"] = dict(record=rec5, goals_for=gf, goals_against=ga)
     s = _streak(res)
+    said = lead.lower()   # the last game's own line often already names the streak ("the Ducks are winless in five")
     if s and s[0] == "W":
-        bits.append(f"They've won {nw(s[1])} straight.")
+        if "straight" not in said:
+            bits.append(f"They've won {nw(s[1])} straight.")
         facts["streak"] = f"won {s[1]} straight"
     elif s and s[0] == "winless":
-        bits.append(f"They're winless in {nw(s[1])} ({record([x['res'] for x in s[2]])}).")
+        if "winless" not in said:
+            bits.append(f"They're winless in {nw(s[1])} ({record([x['res'] for x in s[2]])}).")
         facts["streak"] = f"winless in {s[1]}"
     elif len(l5) == 5:
         bits.append(f"They're {rec5} in their last five, {'outscoring teams' if gf > ga else 'outscored'} {max(gf, ga)}-{min(gf, ga)}." if gf != ga

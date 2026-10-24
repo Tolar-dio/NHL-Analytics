@@ -139,6 +139,8 @@ def build_previews(slate, props, tonight_games, s, tg, ev, index, goalies, pg, s
     os.makedirs(out_dir, exist_ok=True)
     gl = {g["id"]: g for g in goalies}
     written = 0
+    # an afternoon build already has today's early games: form, rest and the season series stop before today
+    index = [x for x in index if x["date"] < today]
     for g in tonight_games:
         away, home = g["away"], g["home"]
         prof = {t: team_profile(t, s, tg, ev, index) for t in (away, home)}

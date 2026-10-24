@@ -18,7 +18,8 @@ const store = {
 // ------------------------------------------------------------------ number helpers
 const pct = (p, d = 0) => (p == null ? "–" : (100 * p).toFixed(d) + "%");
 const num = (x, d = 1) => (x == null ? "–" : Number(x).toFixed(d));
-const signed = (x, d = 1) => (x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(d));
+// no sign on anything that rounds to zero ("−0.0" reads as a real number)
+const signed = (x, d = 1) => { if (x == null) return "–"; const r = +Math.abs(x).toFixed(d); return (r === 0 ? "" : x > 0 ? "+" : "−") + Math.abs(x).toFixed(d); };
 function fair(p) {
   if (!p || p <= 0 || p >= 1) return "–";
   return p < 0.5 ? "+" + Math.round((100 * (1 - p)) / p) : String(Math.round((-100 * p) / (1 - p)));
@@ -327,7 +328,7 @@ function scatterTeams(teams, fav) {
   const ax = avg(xs), ay = avg(ys);
   const gx = ticks(x0, x1, 6).map((v) => `<line class="grid" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><text x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${v.toFixed(1)}</text>`);
   const gy = ticks(y0, y1, 6).map((v) => `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`);
-  // place labels right of the dot, else left, else drop them (tooltip still works)
+  // place labels right of the dot, else left, above or below, else drop them (tooltip still works)
   const placed = [], lw = 30, lh = 14;
   const hit = (b) => placed.some((p) => b.x < p.x + p.w && b.x + b.w > p.x && b.y < p.y + p.h && b.y + b.h > p.y);
   const order = [...teams].sort((a, b) => (b.team === fav) - (a.team === fav));
@@ -335,9 +336,10 @@ function scatterTeams(teams, fav) {
   const labelPos = {};
   order.forEach((t) => {
     const cx = X(t.xgf60), cy = Y(t.xga60);
-    for (const [dx, anchor] of [[8, "start"], [-8, "end"]]) {
-      const b = { x: anchor === "start" ? cx + dx : cx + dx - lw, y: cy - lh / 2, w: lw, h: lh };
-      if (!hit(b) && b.x > m.l && b.x + b.w < W) { placed.push(b); labelPos[t.team] = { dx, anchor }; return; }
+    for (const [dx, dy, anchor] of [[8, 0, "start"], [-8, 0, "end"], [0, -13, "middle"], [0, 15, "middle"]]) {
+      const left = anchor === "start" ? cx + dx : anchor === "end" ? cx + dx - lw : cx - lw / 2;
+      const b = { x: left, y: cy + dy - lh / 2, w: lw, h: lh };
+      if (!hit(b) && b.x > m.l && b.x + b.w < W && b.y > m.t && b.y + b.h < H - m.b) { placed.push(b); labelPos[t.team] = { dx, dy, anchor }; return; }
     }
   });
   const dots = teams.map((t) => {
@@ -346,7 +348,7 @@ function scatterTeams(teams, fav) {
     // red is reserved for goals site-wide, so the favourite team is the dark dot with a blue ring
     return `<a href="#teams/${t.team}" data-tip="${esc(tipTxt)}"><circle cx="${X(t.xgf60)}" cy="${Y(t.xga60)}" r="12" fill="transparent"/>
       <circle cx="${X(t.xgf60)}" cy="${Y(t.xga60)}" r="${isFav ? 6.5 : 4.5}" fill="${isFav ? "var(--ink)" : "var(--blue)"}" stroke="${isFav ? "var(--blue)" : "var(--sheet)"}" stroke-width="${isFav ? 2.5 : 2}"/>
-      ${lp ? `<text class="lbl" x="${X(t.xgf60) + lp.dx}" y="${Y(t.xga60) + 4}" text-anchor="${lp.anchor}" style="${isFav ? "fill:var(--ink);font-weight:700" : ""}">${t.team}</text>` : ""}</a>`;
+      ${lp ? `<text class="lbl" x="${X(t.xgf60) + lp.dx}" y="${Y(t.xga60) + 4 + lp.dy}" text-anchor="${lp.anchor}" style="${isFav ? "fill:var(--ink);font-weight:700" : ""}">${t.team}</text>` : ""}</a>`;
   });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Teams by chances created and allowed per 60 minutes">
     ${gx.join("")}${gy.join("")}
@@ -363,7 +365,8 @@ function scatterTeams(teams, fav) {
 function divergingBars(rows, valueKey, labelFn, tipFn, hrefFn) {
   const W = mainW(900), rowH = 24, m = { l: W < 500 ? 150 : 200, r: 44, t: 6 }, H = m.t + rows.length * rowH + 22;
   const maxAbs = Math.max(...rows.map((r) => Math.abs(r[valueKey])), 1);
-  const X = (v) => m.l + ((v + maxAbs) / (2 * maxAbs)) * (W - m.l - m.r);
+  const pad = 40;   // room for the value label at either end, so the longest bar never runs into a name
+  const X = (v) => m.l + pad + ((v + maxAbs) / (2 * maxAbs)) * (W - m.l - m.r - 2 * pad);
   const bars = rows.map((r, i) => {
     const v = r[valueKey], y = m.t + i * rowH, x0 = X(0), x1 = X(v);
     const left = Math.min(x0, x1), w = Math.max(Math.abs(x1 - x0), 1.5);
@@ -473,7 +476,7 @@ function liveProps() {
 // the model's game numbers next to DraftKings' (published free by the NHL), so totals are read against the
 // market, not a league average: the model's totals have never beaten either
 function marketLine(g) {
-  const m = g.market, mine = `Our model: ${g.home} ${pct(winHome(g))}, ${g.total.toFixed(1)} goals`;
+  const m = g.market, mine = `Our numbers: ${g.home} ${pct(winHome(g))}, ${g.total.toFixed(1)} goals`;
   if (!m || m.total == null) return `<div class="game-foot" data-tip="${esc("Our game totals haven't beaten a simple league-average guess in testing, so read them as context.")}">${mine}. No sportsbook line yet.</div>`;
   const ml = (o) => (o > 0 ? `+${o}` : `${o}`);
   const tip = `<b>DraftKings, via the NHL</b><br>${g.away} ${ml(m.ml_away)}, ${g.home} ${ml(m.ml_home)} (${pct(m.p_home)} ${g.home} once the margin is removed)<br>Over/under ${m.total}: over ${ml(m.over)}, under ${ml(m.under)}; the over price implies about ${num(m.implied_total, 1)} goals<br><span class="dim">Our totals haven't beaten the sportsbook line or a league-average guess in testing.</span>`;
@@ -592,6 +595,8 @@ function renderTonight(view) {
       <p class="note gamble-note">For information and entertainment, not betting advice. Odds you type stay in this browser. If you bet, do it only where it's legal and you're of age. Gambling problem? Call 1-800-GAMBLER.</p>
     </section>`;
 
+  const startAt = Object.fromEntries(T.games.map((g) => [g.id, Date.parse(g.start)]));
+  const started = (r) => (startAt[r.game] && Date.now() >= startAt[r.game] ? 1 : 0);
   const drawTable = () => {
     let rows = liveProps();
     if (S.game) rows = rows.filter((r) => r.game === S.game);
@@ -601,7 +606,8 @@ function renderTonight(view) {
     if (S.q) rows = rows.filter((r) => r.name.toLowerCase().includes(S.q.toLowerCase()));
     // players ESPN lists as out or on IR sink to the bottom (still shown, flagged)
     const out = (r) => { const x = injuryOf(r.name); return x && x.abbr !== "DTD" ? 1 : 0; };
-    const all = sortRows(rows, S.sort).sort((a, b) => out(a) - out(b));
+    // games already under way or over sink below the ones still to come; their numbers were set before puck drop
+    const all = sortRows(rows, S.sort).sort((a, b) => started(a) - started(b) || out(a) - out(b));
     rows = all.slice(0, S.game || S.q || S.sleepOnly || S.followOnly ? 400 : S.tLimit);
     const mk = S.mkt, mkLabel = MARKETS.find(([k]) => k === mk)[1];
     const oddsKey = (id) => (mk === "p_goal" ? `odds:${T.date}:${id}` : `odds:${T.date}:${mk}:${id}`);
@@ -613,7 +619,7 @@ function renderTonight(view) {
     };
     const other = mk === "p_goal" ? ["p_2pts", "2+ points"] : ["p_goal", "Goal chance"];
     const cols = [
-      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${sleeperTag(r)}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
+      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${started(r) ? `<span class="tag tag-started" data-tip="This game has started. These numbers were set before puck drop.">Started</span>` : ""}${sleeperTag(r)}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
       mk === "p_goal" ? { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" }
