@@ -641,6 +641,8 @@ def main():
     profiles = {t: {k: v for k, v in team_profile(t, s, cur["tg"], ev, game_index).items() if k != "last5"}
                 for t in sorted(set(cur["tg"].team))}
     bios = N.load_bios(CUR)
+    import dossier as DOS
+    DCTX = DOS.Context(CUR, bios)       # careers, draft, NHLe, Wikipedia: each player's path to the NHL
     P = N.season_pulse(CUR, PREV, cur, prev, names, fp, pri["players"], sk_idx, teams_rows, goalie_rows, profiles, bios, today)
     for row in sk_rows:
         f = P["skater"].get(row["id"], {}).get("form", {})
@@ -673,6 +675,15 @@ def main():
             if os.path.exists(os.path.join(ROOT, "data", "external", "edge", CUR, "goalie_areas.csv.gz")) else None
         gsum = GP.build(all_shots, cur["gg"], prev["gg"], games, names, os.path.join(OUTD, "goalies"), box=N.goalie_box(CUR),
                         edge_areas=gareas, eh=eh_g, shot_code=SHOT_CODE)
+        try:   # where each goalie came from (site/dossier.py)
+            for gid_ in gsum:
+                path = os.path.join(OUTD, "goalies", f"{gid_}.json")
+                if os.path.exists(path):
+                    gj = json.load(open(path))
+                    gj["dossier"] = DOS.build(int(gid_), DCTX)
+                    json.dump(gj, open(path, "w"), separators=(",", ":"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
+        except Exception as e:
+            print(f"  goalie dossiers skipped: {e!r}")
         for g in goalie_rows:
             g.update({k: v for k, v in (gsum.get(g["id"]) or {}).items() if v is not None})
         dump("goalies.json", goalie_rows)
@@ -890,7 +901,13 @@ def main():
         if pid in tonight_lines:
             story["tonight"] = tonight_lines[pid]
         with open(os.path.join(plog, f"{pid}.json"), "w") as f:
+            try:
+                dos = DOS.build(pid, DCTX, S.get("season"))
+            except Exception as e:
+                print(f"  ! dossier {pid}: {e!r}")
+                dos = None
             json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid), eh=eh_cards.get(pid), defense=def_cards.get(pid),
+                           dossier=dos,
                            reel=sorted(reel.get(pid, []), key=lambda r: (r["date"], r["period"], r["t"]), reverse=True)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print(f"  players/: {len(plogs)} game logs")

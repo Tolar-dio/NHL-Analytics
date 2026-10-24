@@ -5,3 +5,4 @@ site/data/
 
 # the private repo's tables, checked out by the nightly (All Three Zones); never commit
 private/
+data/derived/nhle.json

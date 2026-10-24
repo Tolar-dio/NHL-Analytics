@@ -795,6 +795,7 @@ function renderTeams(view, param) {
         ], null, "tg") : `<p class="empty">No goalie data yet.</p>`}
       </div>
     </section>
+    <section class="zone buzz" id="teamRoom" hidden></section>
     <section class="zone" id="teamTactics" hidden></section>
     <section class="zone"><h2>Skaters</h2><p class="lede">Tap a column to sort. xG is the expected goals from a player's own shots. "Team better with him" compares the team's share of five-on-five chances with him on the ice to its share without him: +5 means five points better.</p><div id="teamSk"></div></section>
     <div id="teamNews"></div>`;
@@ -830,6 +831,7 @@ function renderTeams(view, param) {
   }).catch(() => {});
   teamLog(team).then((html) => { if (location.hash === here) view.insertAdjacentHTML("beforeend", html); }).catch(() => {});
   renderTactics($("#teamTactics"), team).catch(() => {});
+  renderRoom($("#teamRoom"), team).catch(() => {});
   getJSON("data/depth.json").then((dj) => {   // injured regulars and who's getting their minutes (site/depthchart.py)
     const outs = Object.values(dj.players || {}).filter((x) => x.team === team && x.status && x.text);
     if (!outs.length || location.hash !== here || !$("#teamStory")) return;
@@ -969,6 +971,7 @@ function renderPlayers(view, param) {
       <p class="verdict">${esc(verdictFor(p))}</p>
       <div id="pStory"></div>
     </section>
+    <section class="zone buzz" id="pBuzz" hidden></section>
     <section class="zone grid-2 grid-top">
       <div class="figure"><h3>Shot map</h3><p class="note">${shots.length} unblocked shots this season. Bigger dots were better chances; red went in. Tap one for the details.</p>
         ${shotMap(rinkSVG(shots, { label: `${p.name} shot map` }), shots, { kind: "player", id: p.id, name: p.name })}
@@ -990,6 +993,7 @@ function renderPlayers(view, param) {
         <div id="pEdge"></div>
       </div>
     </section>
+    <section class="zone path" id="pPath" hidden></section>
     <section class="zone plays" id="pValue" hidden></section>
     <section class="zone plays" id="pDef" hidden></section>
     <section class="zone plays" id="pPlays" hidden></section>
@@ -1004,6 +1008,7 @@ function renderPlayers(view, param) {
     const rows = Array.isArray(file) ? file : file.log || [], ed = Array.isArray(file) ? null : file.edge;
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
     if (!Array.isArray(file) && file.story && $("#pBio")) $("#pBio").innerHTML = playerBio(file.story);
+    if (!Array.isArray(file) && file.dossier && $("#pPath")) renderPath($("#pPath"), file.dossier, p.name);
     if (!Array.isArray(file) && file.eh && $("#pValue")) renderValue($("#pValue"), file.eh, p.id).catch(() => {});
     if (!Array.isArray(file) && file.defense && $("#pDef")) renderDefense($("#pDef"), { ...file.defense, name: p.name }, p.id, { eh: file.eh, a3z: file.a3z }).catch(() => {});
     if (!Array.isArray(file) && file.a3z && $("#pPlays")) renderPlays($("#pPlays"), file.a3z, p.id, p.name).catch(() => {});
@@ -1028,6 +1033,7 @@ function renderPlayers(view, param) {
     ], null, "plog") + (anyMiles || anyMph ? `<p class="note hide-sm">Miles skated and shot speeds are NHL EDGE tracking. The public feed only covers each player's last ten games and his ten hardest shots, so earlier games and slower shots show a dash.</p>` : "")
       : `<p class="note">No games yet this season.</p>`;
   }).catch(() => { const el = $("#pLog"); if (el) el.innerHTML = `<p class="note">Game log unavailable.</p>`; });
+  renderBuzz($("#pBuzz"), p.id, p.name).catch(() => {});
   relatedMedia(null, p.id, `${p.name} in the news`).then((r) => {
     const el = $("#pMedia");
     if (location.hash !== here || !el) return;

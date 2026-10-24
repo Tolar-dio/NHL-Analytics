@@ -1,5 +1,7 @@
 """The site's own writing (Read the Ice): a weekly "Around the league" column plus player and team deep dives, written by Claude
-from this site's numbers only (no web search, no reporting, no quotes).
+from this site's numbers, each player's path to the NHL (career, draft, Wikipedia lead) and what's being said about him
+(headlines, reporters' public posts, team video titles; scripts/writer_context.py). No web search, no reporting of its
+own; quotes only as they appear in those headlines and posts, attributed.
 
 Runs in the nightly workflow after site/build.py and write_stories.py. At most one scheduled piece a night, so the
 three kinds settle into their own days: the column when the last one is a week old, then a player deep dive, then
@@ -18,6 +20,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from write_stories import STYLE, MODEL, SEASON, clean, tidy  # noqa: E402
+from writer_context import coverage, dossier_local, path as wpath, said, team_coverage  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE_DATA = os.path.join(ROOT, "site", "data")
@@ -30,20 +33,21 @@ KIND_LABEL = {"column": "Around the league", "player": "Player deep dive", "team
 FEATURE_STYLE = STYLE.replace("- No headings, no bullet points, no sign-off.",
                               "- Break the piece up with 2 to 4 short subheads, each on its own line starting with '## '. "
                               "No bullet points, no sign-off.") + """
-- This site does not report. There are no interviews, quotes, locker-room details, contracts, injuries or backstory beyond what the JSON states. Never imply otherwise ("sources say", "he said", "the coach believes").
+- This site does no reporting of its own: no interviews, no inside information, no locker-room details, contracts or injuries beyond what the JSON states. Backstory comes only from `path_to_the_nhl`, the career tables and `background_from_wikipedia`; what people are saying comes only from `recent_headlines`, `reporters_posts` and `team_videos`, always attributed ("The Athletic's Michael Russo posted..."). Never imply we spoke to anyone ("sources say", "he told us", "the coach believes").
+- When the JSON includes what's being said, use it to show how he's seen (the hype, the worry, the praise) and set it against the numbers: agree where the numbers agree and say so plainly where they don't.
 - Small samples: when a number covers a handful of games, say so in plain words, and lean on chances (expected goals) over goals when they disagree.
 - Start with exactly two lines: "TITLE: " (a specific headline under 70 characters) and "DEK: " (one sentence under 160 characters). Then a blank line, then the piece."""
 
 COLUMN_TASK = """Write "Around the league", this site's weekly column, 650 to 900 words, covering the week in the JSON.
-Lead with the most interesting story of the week, then move through the best and strangest games, the players and goalies who owned the week (and whether their chances back it up), the teams trending up and down, milestones and streaks, and the week's notable roster or staff moves if any are listed (state those plainly from the transaction text). Keep it lively and specific; every claim must come from the JSON.
+Lead with the most interesting story of the week, then move through who the league is talking about (`most_talked_about`: what the headlines and reporters say, attributed, and whether our numbers agree), the best and strangest games, the players and goalies who owned the week (and whether their chances back it up), the teams trending up and down, milestones and streaks, and the week's notable roster or staff moves if any are listed (state those plainly from the transaction text). Keep it lively and specific; every claim must come from the JSON.
 JSON facts:
 """
 PLAYER_TASK = """Write a deep dive on this NHL player for this site, 900 to 1,300 words.
-Cover who he is (age, where he's from, how he was drafted and his path so far, from the JSON only), what his season looks like, and what is really driving it: his chances versus his results, his role and ice time, where his shots come from, how he skates and shoots if tracking data is given, and how the model sees him. End with what to watch for next and what would change the picture. Use the exact numbers given, and explain why each one matters.
+Cover who he is (age, where he's from, how he was drafted, where he played before the NHL and how that translates, his international résumé, how players drafted around him have fared, from the JSON only), how he's being talked about right now (from the headlines and reporters' posts given, attributed), what his season looks like, and what is really driving it: his chances versus his results, his role and ice time, where his shots come from, how he skates and shoots if tracking data is given, and how the model sees him. End with what to watch for next and what would change the picture. Use the exact numbers given, and explain why each one matters.
 JSON facts:
 """
 TEAM_TASK = """Write a deep dive on this NHL team for this site, 900 to 1,300 words.
-Cover the record and how it was built: chance creation and prevention, special teams, goaltending, finishing luck, the game-by-game arc, and the players driving it (and any who are running hot or cold). Say whether the record is likely to hold, with the reasons from the numbers. End with what to watch for next. Use the exact numbers given, and explain why each one matters.
+Cover the record and how it was built (and, if `from_the_room` has it, what the team's press conferences and beat reporters are talking about, attributed): chance creation and prevention, special teams, goaltending, finishing luck, the game-by-game arc, and the players driving it (and any who are running hot or cold). Say whether the record is likely to hold, with the reasons from the numbers. End with what to watch for next. Use the exact numbers given, and explain why each one matters.
 JSON facts:
 """
 
@@ -83,7 +87,22 @@ def column_facts(day):
                      standings_bottom_three=[dict(team=t["team"], record=f"{t['w']}-{t['l']}-{t['otl']}", points=t["pts"]) for t in table[-3:]],
                      season_note=pulse.get("note"), notable_moves=notable[:8],
                      due_for_more=[dict(name=x["name"], team=x["team"], why=x["text"]) for x in pulse.get("due", [])[:3]],
-                     due_to_cool=[dict(name=x["name"], team=x["team"], why=x["text"]) for x in pulse.get("cooling", [])[:3]]))
+                     due_to_cool=[dict(name=x["name"], team=x["team"], why=x["text"]) for x in pulse.get("cooling", [])[:3]],
+                     most_talked_about=talked_about()))
+
+
+def talked_about():
+    """The players with the most headlines this week (scripts/buzz.py), each with his latest two headlines."""
+    try:
+        with open(os.path.join(ROOT, "data", "coverage", "buzz.json")) as f:
+            top = json.load(f).get("top", [])[:5]
+    except Exception:
+        return None
+    out = []
+    for x in top:
+        s = said(coverage(x["id"]), news=2, posts=1, videos=0, days=7)
+        out.append(dict(name=x["name"], team=x["team"], headlines_this_week=x["news7"], outlets=x["outlets"], **s))
+    return out or None
 
 
 def shot_profile(shots):
@@ -154,7 +173,9 @@ def player_facts(pid):
                            style=pf["a3z"].get("style"),
                            rates=[dict(stat=r["label"], value=r["v"], is_share=r["share"], percentile_among_position=r["pctile"],
                                        league_typical=r["lg"]) for r in pf["a3z"]["rows"]]) if pf.get("a3z") else None,
-        value_and_impact=eh_facts(pf.get("eh"))))
+        value_and_impact=eh_facts(pf.get("eh")),
+        **wpath(pf.get("dossier"), notes=6, wiki_chars=1600, seasons=6),
+        **said(coverage(pid), news=10, posts=6, videos=4, days=30)))
 
 
 def eh_facts(c):
@@ -217,7 +238,20 @@ def team_facts(abbr):
         most_chances=[sk_card(x) for x in sorted(sk, key=lambda x: -(x.get("ixg") or 0))[:4]],
         play_drivers=[sk_card(x) for x in sorted((x for x in sk if x.get("rel5") is not None and x["gp"] >= 3), key=lambda x: -x["rel5"])[:3]],
         running_hot=on("hot"), running_cold=on("cold"), breakouts=on("breakouts"), due_for_more=on("due"), due_to_cool=on("cooling"),
-        most_valuable_by_evolving_hockey_war=value_leaders(sk)))
+        most_valuable_by_evolving_hockey_war=value_leaders(sk),
+        from_the_room=room_facts(abbr)))
+
+
+def room_facts(abbr):
+    """The team's own video titles (press conferences first) and its beat reporters' recent public posts."""
+    c = team_coverage(abbr)
+    if not c:
+        return None
+    vids = sorted(c.get("videos") or [], key=lambda v: (v.get("k") != "presser", -(len(v.get("d") or ""))))
+    out = dict(team_video_titles=[dict(title=v["t"], kind=v.get("k"), date=(v.get("d") or "")[:10]) for v in vids[:8]] or None,
+               reporters_posts=[dict(text=p["t"][:400], reporter=p.get("a"), outlet=p.get("o"), date=(p.get("d") or "")[:10])
+                                for p in (c.get("posts") or [])[:8]] or None)
+    return {k: v for k, v in out.items() if v} or None
 
 
 def value_leaders(sk):

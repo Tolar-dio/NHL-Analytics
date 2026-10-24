@@ -20,7 +20,7 @@ concurrency:
 jobs:
   news:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       # main as it is now, not the commit that triggered the run: scheduled and workflow_run runs otherwise start
       # from a stale commit, rewrite files the previous run already pushed, and the rebase below conflicts
@@ -35,7 +35,7 @@ jobs:
       - name: Install the Claude SDK
         run: pip install "anthropic>=0.40"
 
-      - name: Gather news, newsletters, podcasts and videos; write takes (about 1 cent each, 8 per run at most)
+      - name: Gather news, newsletters, podcasts and videos, and what's being said about every player; write takes (about 1 cent each, 8 per run at most)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           STORY_MODEL: claude-sonnet-5-5
@@ -48,10 +48,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for p in data/news data/injuries; do if [ -e "$p" ]; then git add "$p"; fi; done
+          for p in data/news data/injuries data/coverage; do if [ -e "$p" ]; then git add "$p"; fi; done
           if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
           git commit -q -m "News $(date -u +%Y-%m-%dT%H:%MZ)"
-          # this job is the only writer of data/news and data/injuries/history.json, so on a conflict its own,
+          # this job is the only writer of data/news, data/coverage and data/injuries/history.json, so on a conflict its own,
           # newer files win (-X theirs keeps the commit being replayed); a failed rebase is aborted before retrying
           for i in 1 2 3; do
             if git pull -q --rebase -X theirs origin main && git push -q; then exit 0; fi

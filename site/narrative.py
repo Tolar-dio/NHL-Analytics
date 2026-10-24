@@ -178,10 +178,19 @@ def record(rs):
 # ------------------------------------------------------------------ inputs
 
 def load_bios(season):
-    path = os.path.join(ROOT, "data", "external", "bios", season, "bios.json.gz")
-    if not os.path.exists(path):
+    """NHL.com bios (scripts/fetch_external.py): bios.jsonl, one [id, bio] per line; bios.json.gz before Oct 24, 2026."""
+    d = os.path.join(ROOT, "data", "external", "bios", season)
+    if os.path.exists(os.path.join(d, "bios.jsonl")):
+        out = {}
+        with open(os.path.join(d, "bios.jsonl"), encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    k, v = json.loads(line)
+                    out[int(k)] = v
+        return out
+    if not os.path.exists(os.path.join(d, "bios.json.gz")):
         return {}
-    with gzip.open(path, "rt") as f:
+    with gzip.open(os.path.join(d, "bios.json.gz"), "rt") as f:
         return {int(k): v for k, v in json.load(f).items()}
 
 

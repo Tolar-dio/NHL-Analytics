@@ -26,6 +26,8 @@ const SITE_GLOSSARY = [
   ["Royal-road pass", "A pass across the middle of the offensive zone right before a shot. It makes the goalie move side to side, and those shots go in far more often."],
   ["Carry-in, controlled exit", "Entering the offensive zone with the puck instead of dumping it in, and leaving your own zone with possession instead of clearing it. Carry-ins lead to chances about three times as often as dump-ins."],
   ["Own-end starts", "The share of a player's five-on-five faceoffs that happen in his own zone. Coaches give those to players they trust defensively."],
+  ["NHL pace (league translation)", "Roughly what a scoring rate in another league is worth in the NHL, over 82 games. We learn it from players who moved: for everyone who played a season in one league and the next season in another, how his points per game changed. An SHL point is worth about two-thirds of an NHL point, an OHL point under a third. It's a rough guide: only players good enough to move count, and young players also improve from one season to the next."],
+  ["Central Scouting", "The NHL's own scouting department. It ranks draft prospects twice a season (midterm and final) in four groups: North American and international skaters and goalies."],
   ["Percentile", "Where a player ranks among players at his position. 90th means better than 90% of them. We only rank players with enough minutes to mean something."],
 ];
 
@@ -45,8 +47,8 @@ function renderAbout(view) {
       <dt><a href="#pulse">Pulse</a></dt><dd>Who's hot, who's cold and whether it's real, young players breaking out, rookies, players due for more goals or due to cool off, goalie form and milestones in reach.</dd>
       <dt><a href="#news">News</a></dt><dd>The day's headlines grouped by story, with a short take on what our numbers say; every trade, signing and call-up; our own features; and the latest from hockey's best podcasts and video channels.</dd>
       <dt><a href="#league">League</a></dt><dd>Every team placed by the chances it creates and allows, the standings with luck shown, and every goalie ranked by goals saved.</dd>
-      <dt><a href="#teams">Teams</a></dt><dd>One team's season: record and the chances behind it, shot map, forward lines, defense pairs and special-teams units, who plays when, goalies and every game.</dd>
-      <dt><a href="#players">Players</a></dt><dd>Search any skater or goalie. Player pages have a shot map, game log, what he's worth, how he defends, how he plays (from hand-tracked data) and his highlights. Follow players to keep them one tap away.</dd>
+      <dt><a href="#teams">Teams</a></dt><dd>One team's season: record and the chances behind it, shot map, the team's press conferences and what its beat reporters and fans are saying, forward lines, defense pairs and special-teams units, who plays when, goalies and every game.</dd>
+      <dt><a href="#players">Players</a></dt><dd>Search any skater or goalie. Player pages have the latest headlines, reporters' posts and team videos about him, his path to the NHL (draft, junior and European seasons, international play, players taken around the same spot), a shot map, game log, what he's worth, how he defends, how he plays (from hand-tracked data) and his highlights. Follow players to keep them one tap away.</dd>
       <dt><a href="#model">Track record</a></dt><dd>How accurate our numbers have been, on last season and on every night this season.</dd>
     </dl>`)}
     ${sec("methods", "How the numbers work", `
@@ -77,10 +79,13 @@ function renderAbout(view) {
         <li><b>ESPN</b>: live scores, probable starting goalies, injury reports, transactions and headlines.</li>
         <li><b>Sportsbook lines</b>: DraftKings moneylines and totals as published by the NHL, for comparison only.</li>
         <li><b>News, podcasts and video</b>: we show headlines and short teasers and link to the publisher; podcasts play from each show's public feed; videos play through YouTube's own player. Some links need a subscription to that publisher.</li>
+        <li><b>Player coverage</b>: per-player headlines found through Google News (headline, outlet and link only); public Bluesky posts from reporters who cover the league, shown with their name and a link; Reddit thread titles from r/hockey and each team's subreddit, linked; and each team's official YouTube videos.</li>
+        <li><b>Careers and the draft</b>: every league season, international tournament and award from each player's NHL.com page; draft picks and Central Scouting rankings from the NHL.</li>
+        <li><b><a href="https://en.wikipedia.org">Wikipedia</a></b>: the introduction to each player's article, shown as written and credited to its contributors under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, with a link to the article.</li>
       </ul>
       <p class="note">Read the Ice is an independent site. We're not affiliated with or endorsed by the NHL, the NHLPA, any team, ESPN or any sportsbook. Team names and abbreviations belong to their owners.</p>`)}
     ${sec("ai", "How we use AI", `
-      <p>Some of the writing on Read the Ice is generated by AI: game recaps and previews, the short takes on news stories, notes on trades and staff moves, and the column and deep dives on the Features tab. It's written by Claude, an AI model made by Anthropic, from Read the Ice's own data (and, for news takes, the headlines and teasers of the linked reports). It contains no outside reporting, interviews or quotes, and every AI-written piece is labeled.</p>
+      <p>Some of the writing on Read the Ice is generated by AI: game recaps and previews, the short takes on news stories, notes on trades and staff moves, and the column and deep dives on the Features tab. It's written by Claude, an AI model made by Anthropic, from Read the Ice's own data, each player's career record and Wikipedia introduction, and what's being said about him: the headlines of recent reports, reporters' public posts and the titles of his team's videos. It never reads full articles, does no reporting of its own and never interviews anyone. When a piece quotes someone, the words appear in one of those headlines or posts and the piece says whose they are. Fan posts on Reddit are shown on the site but never given to the AI. Every AI-written piece is labeled.</p>
       <p>Everything else, including every number, chart, storyline and note on game, team and player pages, is produced directly from the data by code. AI writing can still get something wrong. If a sentence and a number disagree, trust the number.</p>`)}
     ${sec("gambling", "Responsible gambling", `
       <p>Our probabilities are estimates published for information and entertainment. They aren't betting advice, and nothing here guarantees a result. Read the Ice doesn't take bets, sell picks or get paid by sportsbooks.</p>

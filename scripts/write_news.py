@@ -15,6 +15,7 @@ import datetime as dt, glob, json, os, sys, time, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from write_stories import STYLE, MODEL, clean, finished, tidy  # noqa: E402
 import media  # noqa: E402
+from writer_context import coverage as player_coverage, dossier_remote, path as wpath, said  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data", "news")
@@ -26,6 +27,7 @@ NEWS_TASK = """Write a short take on this NHL news story for a hockey analytics 
 First, state what happened in one or two sentences, credited to the outlet that reported it ("per ESPN", "The Athletic reports"), using only the headlines and summaries given. Do not add details they don't contain.
 Then spend the rest on what this site's numbers say about the players or teams involved and why that matters: for the team's strength, a player's real level versus his results, fantasy value, or what changes on the ice. Only use numbers from the JSON, and say "so far this season" where the sample is small.
 If a player in the story is hurt or out, end with who should see more ice time or power-play time while he's out, from `who_gets_his_minutes`: when it's based on games already played without him, say so; when it's a projection, say it's going by how the coach has used his players.
+`who_they_are` can add one line of context (how a player was drafted, where he played before, what a beat reporter posted, attributed) when it helps the reader understand the news.
 JSON facts:
 """
 
@@ -73,6 +75,16 @@ def team_card(t, prof):
                 power_play_expected_goals_per_game=p.get("pp_xg_pg"), penalty_kill_expected_goals_allowed_per_game=p.get("pk_xga_pg"))
 
 
+def backgrounds(players):
+    """Path to the NHL (two sentences from the nightly dossier) and the latest reporters' posts for the players in a story."""
+    out = {}
+    for p in players:
+        info = {**wpath(dossier_remote(p["id"], SITE), notes=2), **said(player_coverage(p["id"]), news=0, posts=2, videos=0, days=4)}
+        if info:
+            out[p["name"]] = info
+    return out or None
+
+
 def main(client=None):
     if client is None:
         key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
@@ -96,6 +108,15 @@ def main(client=None):
     print("\n".join(log))
     goalies_by = {x["id"]: x for x in get(SITE + "goalies.json")}
     skaters_by = {x["id"]: x for x in get(SITE + "skaters.json")}
+    try:   # what's being said about every player and team (headlines, reporters, fans, team videos): data/coverage/
+        import buzz
+        try:
+            tonight_ids = {p["id"] for p in get(SITE + "tonight.json").get("props", [])}
+        except Exception:
+            tonight_ids = set()
+        buzz.gather(list(skaters_by.values()), list(goalies_by.values()), tonight_ids)
+    except Exception as e:
+        print(f"coverage failed: {e!r}")
     teams_by = {t["team"]: t for t in get(SITE + "teams.json")}
     try:
         prof = get(SITE + "team_profiles.json")
@@ -178,7 +199,8 @@ def main(client=None):
                                    for i in st["items"][:5]],
                           players=[player_card(x) for x in players[:4]], goalies=[goalie_card(x) for x in gks[:2]],
                           teams=[team_card(teams_by[t], prof) for t in st["teams"][:3] if t in teams_by],
-                          who_gets_his_minutes=minutes_facts([p["id"] for p in st["players"]]) if st.get("family") == "injury" else None))
+                          who_gets_his_minutes=minutes_facts([p["id"] for p in st["players"]]) if st.get("family") == "injury" else None,
+                          who_they_are=backgrounds(st["players"][:3])))
         try:
             msg = client.messages.create(model=MODEL, max_tokens=1500, system=STYLE, thinking={"type": "between_tools"},
                                          messages=[{"role": "user", "content": NEWS_TASK + json.dumps(facts, separators=(",", ":"))}])

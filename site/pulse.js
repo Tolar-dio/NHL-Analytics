@@ -109,7 +109,8 @@ async function renderPulse(view, tab) {
       <h2 class="mt">Teams</h2><p class="lede">Streaks, and records that run ahead of or behind the chances.</p>
       <div class="pgrid">${P.teams.filter((t) => t.streak || t.luck_text).map(teamCard).join("")}</div>
       <h2 class="mt">Milestones in reach</h2><p class="lede">Career numbers before each player's next game.</p>
-      ${pulseRows(P.milestones, "Nothing within reach this week.")}`,
+      ${pulseRows(P.milestones, "Nothing within reach this week.")}
+      <div id="talked"></div>`,
   };
   view.innerHTML = `<section class="zone news-head"><h1>The pulse</h1>
       <p class="lede">Who's hot, who's not, and whether it's real. We judge every streak against the chances behind it, so you can tell a player who's earning it from one riding the bounces. ${esc(P.note)}</p></section>
@@ -117,6 +118,7 @@ async function renderPulse(view, tab) {
       aria-selected="${S.pTab === k}" tabindex="${S.pTab === k ? 0 : -1}" data-ptab="${k}"><span class="nt-long">${l}</span><span class="nt-short">${sh}</span><span class="nt-n">${count[k]}</span></button>`).join("")}</div></div>
     ${PULSE_TABS.map(([k]) => `<section class="zone news-panel pulse-panel" role="tabpanel" id="pp-${k}" aria-labelledby="pt-${k}" ${S.pTab === k ? "" : "hidden"}>${panels[k]()}</section>`).join("")}
     <p class="note">Updated every morning, through ${esc(dateLabel(P.through))}'s games.</p>`;
+  talkedAbout().then((h) => { const el = $("#talked"); if (el && h) el.outerHTML = h; }).catch(() => {});
   const bar = $("#pulseBar"), m = $(".masthead");
   bar.style.top = m && getComputedStyle(m).position === "sticky" ? `${m.offsetHeight}px` : "0px";
   const pick = (k, focus) => {

@@ -872,3 +872,38 @@ tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
   .masthead-inner { gap: 6px; padding-left: 12px; padding-right: 12px; }
   .theme-toggle { padding: 3px 8px; font-size: 12px; }
 }
+
+/* ---------------------------------------------------------------- path to the NHL, background, the buzz */
+.path-top { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 18px 28px; align-items: start; margin-bottom: 6px; }
+.dcard { display: flex; gap: 14px; align-items: center; padding: 12px 14px; border: 1px solid var(--hair); border-left: 3px solid var(--blue); border-radius: 8px; background: var(--sheet); }
+.dc-pick { display: flex; flex-direction: column; align-items: center; min-width: 58px; }
+.dc-pick b { font: 700 36px/1 var(--display, var(--body)); color: var(--ink); }
+.dc-pick span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.dc-und b { color: var(--muted); }
+.dc-line { font-size: 15px; }
+.dc-cs { margin-top: 4px; font-size: 14px; }
+.dc-near { margin-top: 4px; font-size: 13px; }
+.path td .sub, .path .sub { font-size: 12px; color: var(--muted); }
+.intl li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.intl .il-stat { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 14px; }
+.wiki { max-width: 72ch; }
+.wiki-body p, .wiki-more p { color: var(--ink-2); line-height: 1.55; margin: 0 0 10px; }
+.wiki-more summary, .more-list summary { cursor: pointer; color: var(--blue); font-size: 14px; margin: 2px 0 8px; }
+.credit { font-size: 13px; }
+.buzz-meter { font-size: 15px; margin: 0 0 6px; }
+.buzz-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 32px; align-items: start; }
+.heads li, .threads li { font-size: 15px; line-height: 1.4; }
+.heads li a, .threads li a { color: var(--ink); }
+.bposts { display: grid; gap: 10px; }
+.bpost { padding: 10px 12px; border: 1px solid var(--hair); border-radius: 8px; background: var(--sheet); }
+.bp-text { margin: 0 0 6px; font-size: 15px; line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }
+.talked { margin: 8px 0 0; padding-left: 22px; max-width: 72ch; }
+.talked li { padding: 6px 0; border-bottom: 1px solid var(--hair); }
+.talked li .dim { display: block; font-size: 13px; }
+@media (max-width: 760px) {
+  .path-top, .buzz-grid { grid-template-columns: minmax(0, 1fr); }
+}
+#dpath td:nth-child(2), #dpath th:nth-child(2), #dcomp td:nth-child(2), #dcomp th:nth-child(2), #dcomp td:nth-child(3), #dcomp th:nth-child(3) { text-align: left; }
+#dpath td:nth-child(2) { white-space: normal; min-width: 150px; }
+@media (max-width: 640px) { #dpath td:nth-child(2) { min-width: 0; white-space: normal; } }
+@media (max-width: 640px) { #dpath th, #dpath td, #dcomp th, #dcomp td { padding: 7px 5px; font-size: 14px; } }

@@ -138,6 +138,7 @@ async function renderGoalie(view, param) {
       </div>
       <div class="plays-notes">${(G.notes || []).map((n) => `<p>${esc(n)}</p>`).join("")}</div>
     </section>
+    <section class="zone buzz" id="gBuzz" hidden></section>
     <section class="zone grid-2 grid-top">
       <div class="figure"><h3>Every unblocked shot he has faced</h3><p class="note">Shots against him this season, all attacking the same net. Bigger dots were better chances; red went in. Tap one for the details.</p>
         ${shotMap(rinkSVG(G.map || [], { label: `${G.name} shots against` }), G.map || [], { kind: "goalie", name: null, id: null })}
@@ -157,7 +158,10 @@ async function renderGoalie(view, param) {
         <div class="table-wrap"><table class="mini"><thead><tr><th>Season</th><th class="tnum">GP</th><th class="tnum">GSAx</th><th class="tnum">GAR</th></tr></thead><tbody>${eh}</tbody></table></div>
         <p class="note">Goals saved above expected and goals above replacement from <a href="https://evolving-hockey.com" target="_blank" rel="noopener">Evolving-Hockey</a>'s models, used with permission. Their expected goals differ a little from ours.</p>` : ""}
       <p class="note">Shot data and expected goals courtesy of MoneyPuck.com. A goalie's season barely predicts his next one, so our projections pull goalie numbers hard toward average.</p>
-    </section>`;
+    </section>
+    <section class="zone path" id="gPath" hidden></section>`;
+  if (G.dossier) renderPath($("#gPath"), G.dossier, G.name);
+  renderBuzz($("#gBuzz"), G.id, G.name).catch(() => {});
 }
 
 function svDots(sv, lg, key) {

@@ -1,0 +1,452 @@
+{
+ "_note": "Sources for scripts/buzz.py (hourly, run by the news job). Edit freely. youtube: each team's official channel id (UC...); teams left blank are looked up once by name through the YouTube Data API when YOUTUBE_API_KEY is set, or paste the id here (it's in the channel page's share link). bluesky: reporters and outlets whose public posts we show when they name a player (team = their beat, which lets a last name alone count for that team's players); every team with a reporter on Bluesky is welcome, add more. subreddits: thread titles and links only, never sent to Claude.",
+ "subreddits": {
+  "league": "hockey",
+  "ANA": "AnaheimDucks",
+  "BOS": "BostonBruins",
+  "BUF": "sabres",
+  "CGY": "CalgaryFlames",
+  "CAR": "canes",
+  "CHI": "hawks",
+  "COL": "ColoradoAvalanche",
+  "CBJ": "BlueJackets",
+  "DAL": "DallasStars",
+  "DET": "DetroitRedWings",
+  "EDM": "EdmontonOilers",
+  "FLA": "FloridaPanthers",
+  "LAK": "losangeleskings",
+  "MIN": "wildhockey",
+  "MTL": "Habs",
+  "NSH": "Predators",
+  "NJD": "devils",
+  "NYI": "NewYorkIslanders",
+  "NYR": "rangers",
+  "OTT": "OttawaSenators",
+  "PHI": "Flyers",
+  "PIT": "penguins",
+  "SJS": "SanJoseSharks",
+  "SEA": "SeattleKraken",
+  "STL": "stlouisblues",
+  "TBL": "TampaBayLightning",
+  "TOR": "leafs",
+  "UTA": "UtahMammoth",
+  "VAN": "canucks",
+  "VGK": "goldenknights",
+  "WSH": "caps",
+  "WPG": "winnipegjets"
+ },
+ "youtube": {
+  "ANA": "",
+  "BOS": "UCeNx7hBcFlZ4OXkd-18hJ-g",
+  "BUF": "UCygaJ2FHLv2HkmGua22dDYg",
+  "CGY": "UCFQqBMe3HSg6ltl09MlLHcQ",
+  "CAR": "UCsjx7L3gOJJYxmaEMiwxvVQ",
+  "CHI": "UC-eEFwGhQy3BGHYKp92KG1A",
+  "COL": "UCM715eqbBCk1JE4zlAwYLqw",
+  "CBJ": "",
+  "DAL": "",
+  "DET": "UCj_N4nmrUUiYd0_Vn5_as_w",
+  "EDM": "",
+  "FLA": "UCSSc4wVk6telelb58RrLYdg",
+  "LAK": "",
+  "MIN": "UCQRr7SxnnndFYuuRUtOIEnA",
+  "MTL": "UCy8mtXf-Lxkyl6I6HMAq6-g",
+  "NSH": "UCnFXrrRYVwI82BrrFvBxg0w",
+  "NJD": "",
+  "NYI": "",
+  "NYR": "UCXlX2t7ziIJpZQWZcrHGnow",
+  "OTT": "",
+  "PHI": "",
+  "PIT": "",
+  "SJS": "",
+  "SEA": "UCxspiBq2xf5pLjz9_NMjoyw",
+  "STL": "UCtN4OcxSgiJhDMPXo5A5Gqg",
+  "TBL": "UCgC7zVCS9UJg-ziFINnwzyA",
+  "TOR": "",
+  "UTA": "",
+  "VAN": "",
+  "VGK": "UCyUzGmp1kAmlkNUzAqW9xJw",
+  "WSH": "",
+  "WPG": ""
+ },
+ "bluesky": [
+  {
+   "handle": "wyshynski.bsky.social",
+   "name": "Greg Wyshynski",
+   "outlet": "ESPN",
+   "team": null
+  },
+  {
+   "handle": "kristenshilton.bsky.social",
+   "name": "Kristen Shilton",
+   "outlet": "ESPN",
+   "team": null
+  },
+  {
+   "handle": "marklazerus.bsky.social",
+   "name": "Mark Lazerus",
+   "outlet": "The Athletic",
+   "team": null
+  },
+  {
+   "handle": "downgoesbrown.bsky.social",
+   "name": "Sean McIndoe",
+   "outlet": "The Athletic",
+   "team": null
+  },
+  {
+   "handle": "seangentille.bsky.social",
+   "name": "Sean Gentille",
+   "outlet": "The Athletic",
+   "team": null
+  },
+  {
+   "handle": "domluszczyszyn.bsky.social",
+   "name": "Dom Luszczyszyn",
+   "outlet": "The Athletic",
+   "team": null
+  },
+  {
+   "handle": "shaynagoldman.bsky.social",
+   "name": "Shayna Goldman",
+   "outlet": "The Athletic",
+   "team": null
+  },
+  {
+   "handle": "jkamckenzie.bsky.social",
+   "name": "Julian McKenzie",
+   "outlet": "The Athletic",
+   "team": null
+  },
+  {
+   "handle": "dimfilipovic.bsky.social",
+   "name": "Dimitri Filipovic",
+   "outlet": "The Hockey PDOcast",
+   "team": null
+  },
+  {
+   "handle": "jfreshhockey.bsky.social",
+   "name": "JFresh",
+   "outlet": "JFresh Hockey",
+   "team": null
+  },
+  {
+   "handle": "drosennhl.bsky.social",
+   "name": "Dan Rosen",
+   "outlet": "NHL.com",
+   "team": null
+  },
+  {
+   "handle": "tomgulittinhl.bsky.social",
+   "name": "Tom Gulitti",
+   "outlet": "NHL.com",
+   "team": null
+  },
+  {
+   "handle": "jonlanenhl.bsky.social",
+   "name": "Jon Lane",
+   "outlet": "NHL.com",
+   "team": null
+  },
+  {
+   "handle": "stevenpellis.ca",
+   "name": "Steven Ellis",
+   "outlet": "Daily Faceoff",
+   "team": null
+  },
+  {
+   "handle": "dailyfaceoff.bsky.social",
+   "name": "Daily Faceoff",
+   "outlet": "Daily Faceoff",
+   "team": null
+  },
+  {
+   "handle": "adamzherman.bsky.social",
+   "name": "Adam Herman",
+   "outlet": "Bleacher Report",
+   "team": null
+  },
+  {
+   "handle": "prashanthiyer.bsky.social",
+   "name": "Prashanth Iyer",
+   "outlet": "Expected By Whom",
+   "team": null
+  },
+  {
+   "handle": "jeffveillette.bsky.social",
+   "name": "Jeff Veillette",
+   "outlet": "The Faceoff Circle",
+   "team": null
+  },
+  {
+   "handle": "berkshire.bsky.social",
+   "name": "Andrew Berkshire",
+   "outlet": "Game Over Network",
+   "team": null
+  },
+  {
+   "handle": "garrethohl.bsky.social",
+   "name": "Garret Hohl",
+   "outlet": "The Five Hohl",
+   "team": null
+  },
+  {
+   "handle": "jhanhky.bsky.social",
+   "name": "Jack Han",
+   "outlet": "coach and consultant",
+   "team": null
+  },
+  {
+   "handle": "ty-anderson.bsky.social",
+   "name": "Ty Anderson",
+   "outlet": "98.5 The Sports Hub",
+   "team": "BOS"
+  },
+  {
+   "handle": "matthewfairburn.bsky.social",
+   "name": "Matthew Fairburn",
+   "outlet": "The Athletic",
+   "team": "BUF"
+  },
+  {
+   "handle": "joeyerdon.bsky.social",
+   "name": "Joe Yerdon",
+   "outlet": "Bleacher Report",
+   "team": "BUF"
+  },
+  {
+   "handle": "engelheather.bsky.social",
+   "name": "Heather Engel",
+   "outlet": "NHL.com",
+   "team": "BUF"
+  },
+  {
+   "handle": "trevorneufeld.bsky.social",
+   "name": "Trevor Neufeld",
+   "outlet": "Calgary Hockey Now",
+   "team": "CGY"
+  },
+  {
+   "handle": "corylav.bsky.social",
+   "name": "Cory Lavalette",
+   "outlet": "North State Journal",
+   "team": "CAR"
+  },
+  {
+   "handle": "scottpowers.bsky.social",
+   "name": "Scott Powers",
+   "outlet": "The Athletic",
+   "team": "CHI"
+  },
+  {
+   "handle": "benpopecst.bsky.social",
+   "name": "Ben Pope",
+   "outlet": "Chicago Sun-Times",
+   "team": "CHI"
+  },
+  {
+   "handle": "evanrawal.bsky.social",
+   "name": "Evan Rawal",
+   "outlet": "Denver Gazette",
+   "team": "COL"
+  },
+  {
+   "handle": "cmasisak22.bsky.social",
+   "name": "Corey Masisak",
+   "outlet": "Denver Post",
+   "team": "COL"
+  },
+  {
+   "handle": "seanshapiro.bsky.social",
+   "name": "Sean Shapiro",
+   "outlet": "EP Rinkside",
+   "team": "DAL"
+  },
+  {
+   "handle": "mbultman.bsky.social",
+   "name": "Max Bultman",
+   "outlet": "The Athletic",
+   "team": "DET"
+  },
+  {
+   "handle": "dfoedmonton.bsky.social",
+   "name": "Oilersnation",
+   "outlet": "Daily Faceoff Edmonton",
+   "team": "EDM"
+  },
+  {
+   "handle": "jordanmcpherson.bsky.social",
+   "name": "Jordan McPherson",
+   "outlet": "Miami Herald",
+   "team": "FLA"
+  },
+  {
+   "handle": "colbydguy.pucksandpalms.com",
+   "name": "Colby Guy",
+   "outlet": "Pucks and Palms",
+   "team": "FLA"
+  },
+  {
+   "handle": "russohockey.bsky.social",
+   "name": "Michael Russo",
+   "outlet": "The Athletic",
+   "team": "MIN"
+  },
+  {
+   "handle": "hlrule.bsky.social",
+   "name": "Heather Rule",
+   "outlet": "NHL.com",
+   "team": "MIN"
+  },
+  {
+   "handle": "ericengels.bsky.social",
+   "name": "Eric Engels",
+   "outlet": "Sportsnet",
+   "team": "MTL"
+  },
+  {
+   "handle": "arponbasu.bsky.social",
+   "name": "Arpon Basu",
+   "outlet": "The Athletic",
+   "team": "MTL"
+  },
+  {
+   "handle": "karinehains.bsky.social",
+   "name": "Karine Hains",
+   "outlet": "The Hockey News",
+   "team": "MTL"
+  },
+  {
+   "handle": "marcdumont.bsky.social",
+   "name": "Marc Dumont",
+   "outlet": "Montreal Canadiens coverage",
+   "team": "MTL"
+  },
+  {
+   "handle": "mike-fink.bsky.social",
+   "name": "Mike Fink",
+   "outlet": "The Hockey News",
+   "team": "NJD"
+  },
+  {
+   "handle": "stefenrosner.bsky.social",
+   "name": "Stefen Rosner",
+   "outlet": "NHL.com",
+   "team": "NYI"
+  },
+  {
+   "handle": "mollieewalkerr.bsky.social",
+   "name": "Mollie Walker",
+   "outlet": "New York Post",
+   "team": "NYR"
+  },
+  {
+   "handle": "graemenichols.bsky.social",
+   "name": "Graeme Nichols",
+   "outlet": "Coming Down the Pipe",
+   "team": "OTT"
+  },
+  {
+   "handle": "charlieoconn.bsky.social",
+   "name": "Charlie O'Connor",
+   "outlet": "PHLY Sports",
+   "team": "PHI"
+  },
+  {
+   "handle": "kevinkurznhl.bsky.social",
+   "name": "Kevin Kurz",
+   "outlet": "The Athletic",
+   "team": "PHI"
+  },
+  {
+   "handle": "jackiespiegel93.bsky.social",
+   "name": "Jackie Spiegel",
+   "outlet": "Philadelphia Inquirer",
+   "team": "PHI"
+  },
+  {
+   "handle": "jmarshpgh.bsky.social",
+   "name": "Jesse Marshall",
+   "outlet": "freelance",
+   "team": "PIT"
+  },
+  {
+   "handle": "ryanwilson.bsky.social",
+   "name": "Ryan Wilson",
+   "outlet": "Hockey Hot Stove",
+   "team": "PIT"
+  },
+  {
+   "handle": "real-max-miller.bsky.social",
+   "name": "Max Miller",
+   "outlet": "Sharks Hockey Digest",
+   "team": "SJS"
+  },
+  {
+   "handle": "alisonl.bsky.social",
+   "name": "Alison Lukan",
+   "outlet": "Seattle Kraken contributor",
+   "team": "SEA"
+  },
+  {
+   "handle": "dfotoronto.bsky.social",
+   "name": "The Leafs Nation",
+   "outlet": "Daily Faceoff Toronto",
+   "team": "TOR"
+  },
+  {
+   "handle": "stanch.bsky.social",
+   "name": "Wyatt Arndt",
+   "outlet": "CanucksArmy",
+   "team": "VAN"
+  },
+  {
+   "handle": "passittobulis.bsky.social",
+   "name": "Daniel Wagner",
+   "outlet": "Pass it to Bulis",
+   "team": "VAN"
+  },
+  {
+   "handle": "quadrelli.bsky.social",
+   "name": "David Quadrelli",
+   "outlet": "The Nation Network",
+   "team": "VAN"
+  },
+  {
+   "handle": "jeffpaterson.bsky.social",
+   "name": "Jeff Paterson",
+   "outlet": "Rink Wide",
+   "team": "VAN"
+  },
+  {
+   "handle": "jessegranger.bsky.social",
+   "name": "Jesse Granger",
+   "outlet": "The Athletic",
+   "team": "VGK"
+  },
+  {
+   "handle": "baileyannej.bsky.social",
+   "name": "Bailey Johnson",
+   "outlet": "Washington Post",
+   "team": "WSH"
+  },
+  {
+   "handle": "sammisilber.bsky.social",
+   "name": "Sammi Silber",
+   "outlet": "The Hockey News",
+   "team": "WSH"
+  },
+  {
+   "handle": "wpgmurat.bsky.social",
+   "name": "Murat Ates",
+   "outlet": "The Athletic",
+   "team": "WPG"
+  },
+  {
+   "handle": "wiebesworld.bsky.social",
+   "name": "Ken Wiebe",
+   "outlet": "Winnipeg Free Press",
+   "team": "WPG"
+  }
+ ]
+}

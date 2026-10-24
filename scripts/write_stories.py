@@ -16,6 +16,9 @@ Env:
 """
 import datetime as dt, glob, json, os, re, sys, time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from writer_context import QUOTE_RULE, coverage, dossier_local, path as wpath, said  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE_DATA = os.path.join(ROOT, "site", "data")
 SEASON = "20262027"
@@ -30,6 +33,7 @@ STYLE = """House style, follow exactly:
 - A percentage given with a decimal may be rounded to a whole number; otherwise quote numbers as given.
 - Never use em dashes or en dashes. Use commas, periods or parentheses.
 - Use ONLY facts in the JSON. Do not invent quotes, injuries, attendance, streaks, records, standings, history, line combinations, or anything else not present. If something isn't in the data, leave it out.
+""" + QUOTE_RULE + """
 - Never count, add, subtract or convert anything yourself (rounding a percentage is the one exception). Quote other numbers exactly as the JSON gives them, and when the JSON gives a summary (a record, a count, a total), use the summary instead of tallying a list.
 - Every team number is labelled with its team abbreviation. Check the label before you attribute a number to a team or its goalie.
 - Keep events in the order they happened. Goals are listed in time order; don't describe an earlier goal as a response to a later one.
@@ -40,12 +44,12 @@ STYLE = """House style, follow exactly:
 - No headings, no bullet points, no sign-off."""
 
 RECAP_TASK = """Write a recap of this NHL game in 3 short paragraphs, 170 to 230 words total.
-Open with the story. Use `the_story` when it has something (a streak snapped or extended, a comeback, a late or overtime winner, a first NHL goal or a milestone, a goalie's big night); otherwise open with the decisive moment or the gap between result and play. Never open with a final-score sentence template. Then show how the game was really played, and end with where it leaves each team, using only the streaks and records in the facts.
+Open with the story. Use `the_story` when it has something (a streak snapped or extended, a comeback, a late or overtime winner, a first NHL goal or a milestone, a goalie's big night); otherwise open with the decisive moment or the gap between result and play. Never open with a final-score sentence template. Then show how the game was really played, and end with where it leaves each team, using only the streaks and records in the facts. `who_they_are` gives the path to the NHL of the stars and of anyone with a first NHL goal or point: one detail from it (where he was drafted, where he played before) can make the story human; don't recite it.
 JSON facts:
 """
 
 PREVIEW_TASK = """Write a preview of tonight's NHL game in 3 short paragraphs, 160 to 220 words total.
-Open with where each team is coming from (`where_each_team_is`: the last game and what it meant, form, a coaching change, who's missing) and the story that makes this game matter. Then cover how the teams compare in chance creation and prevention, special teams and the goalie matchup (this season and last), and one or two players worth watching (use the probabilities and reasons as given). When a storyline says who is getting an injured player's minutes, say so. If `our_sleepers` has players, mention them as our under-the-radar picks (the site speaks as "we") with the reason given, as players to watch, never as a bet or a lock. When a storyline is not in our numbers, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
+Open with where each team is coming from (`where_each_team_is`: the last game and what it meant, form, a coaching change, who's missing) and the story that makes this game matter. Then cover how the teams compare in chance creation and prevention, special teams and the goalie matchup (this season and last), and one or two players worth watching (use the probabilities and reasons as given; a player's `background` or `in_the_news` can add one human detail, such as how he was drafted or what a reporter posted, attributed). When a storyline says who is getting an injured player's minutes, say so. If `our_sleepers` has players, mention them as our under-the-radar picks (the site speaks as "we") with the reason given, as players to watch, never as a bet or a lock. When a storyline is not in our numbers, don't claim it will decide the game. Projected goalies may change; say "projected" when naming them.
 JSON facts:
 """
 
@@ -119,9 +123,39 @@ def recap_facts(g):
         data_notes=g.get("notes") or None,
         the_story=g.get("context") or None,
         story_details=g.get("context_facts") or None,
+        who_they_are=who_they_are(g),
         earlier_meetings_this_season=[dict(date=x["date"], final=f'{x["away"]} {x["a"]}, {x["home"]} {x["h"]}', decided_in=x["end"])
                                       for x in g["series"] if x["date"] < g["date"] and x["a"] is not None],
     ))
+
+
+def who_they_are(g):
+    """The path to the NHL of the three stars and of anyone whose first NHL goal or point came in this game."""
+    full = {p["id"]: p["name"] for p in (g.get("roster") or []) + g.get("players", []) + g.get("goalies", []) if p.get("id")}
+    by_name = {v: k for k, v in full.items()}
+    want = [s.get("pid") or s.get("id") for s in g.get("stars", [])]
+    for f in (g.get("context_facts") or {}).get("firsts", []):
+        want.append(by_name.get(f.rsplit(" first NHL", 1)[0]))
+    out = {}
+    for pid in dict.fromkeys(x for x in want if x):
+        info = wpath(dossier_local(pid, SITE_DATA), notes=2)
+        if info.get("path_to_the_nhl"):
+            out[full.get(pid) or str(pid)] = info["path_to_the_nhl"]
+    return out or None
+
+
+def _watch_extra(pid):
+    """A player to watch: two lines of background and what's being said this week."""
+    if not pid:
+        return {}
+    out = {}
+    b = wpath(dossier_local(pid, SITE_DATA), notes=2)
+    if b.get("path_to_the_nhl"):
+        out["background"] = b["path_to_the_nhl"]
+    n = said(coverage(pid), news=2, posts=1, videos=0, days=7)
+    if n:
+        out["in_the_news"] = n
+    return out
 
 
 def _last_five(t):
@@ -173,7 +207,7 @@ def preview_facts(p):
                                         why=x["why"], score_a_goal_pct=round(100 * x["p_goal"]), point_pct=round(100 * x["p_1pt"]))
                                    for x in (p.get("sleepers") or [])] or None,
                      players_to_watch={t: [dict(name=w["name"], reasons=[c["t"] for c in w["chips"]], score_a_goal_pct=round(100 * w["p_goal"]),
-                                                point_pct=round(100 * w["p_1pt"])) for w in ws]
+                                                point_pct=round(100 * w["p_1pt"]), **_watch_extra(w.get("id"))) for w in ws]
                                        for t, ws in (p.get("watch") or {}).items()} or None,
                      players_model_likes={t: dict(score_a_goal=[{"name": x["name"], "pct": round(100 * x["p_goal"])} for x in v["goal"]],
                                                   two_plus_points=[{"name": x["name"], "pct": round(100 * x["p_2pts"])} for x in v["pts"]])

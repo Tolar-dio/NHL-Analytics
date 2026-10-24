@@ -216,9 +216,11 @@ def fetch_edge(season, force=False):
 
 
 # ---------------------------------------------------------------- player bios (NHL player landing)
-# Birthplace, birth date, draft, size, the NHL teams each player has played for, and career totals THROUGH
-# LAST SEASON (this season comes from our own tables, so milestones stay current without refetching).
+# Birthplace, birth date, draft, size, the NHL teams each player has played for, career totals THROUGH LAST SEASON
+# (this season comes from our own tables, so milestones stay current without refetching), and since Oct 24, 2026 his
+# whole career by league (junior, college, Europe, minors, international tournaments, playoffs) and his NHL awards.
 # Fetched once per player per season and refreshed every BIO_REFRESH_DAYS, at most BIO_MAX a night.
+# Saved as plain JSON lines (one player per line, sorted) so git stores each night's changes as small diffs.
 
 BIO_REFRESH_DAYS = 45
 BIO_MAX = int(os.environ.get("BIO_MAX", "800"))   # the first run fetches everyone (~5 min); after that only new players and 45-day refreshes
@@ -230,6 +232,32 @@ TEAM_BY_NAME = {"Ducks": "ANA", "Bruins": "BOS", "Sabres": "BUF", "Flames": "CGY
                 "Capitals": "WSH", "Jets": "WPG", "Utah Hockey Club": "UTA", "Hockey Club": "UTA", "Mammoth": "UTA",
                 "Utah Mammoth": "UTA", "Coyotes": "ARI"}
 CAREER_KEYS = ["gamesPlayed", "goals", "assists", "points", "wins", "shutouts"]
+# one compact row per league season: short key -> landing key
+ROW_KEYS = dict(gp="gamesPlayed", g="goals", a="assists", p="points", pim="pim", pm="plusMinus",
+                w="wins", l="losses", ot="otLosses", gaa="goalsAgainstAvg", sv="savePctg", so="shutouts")
+
+
+def _txt(o):
+    return o.get("default") if isinstance(o, dict) else o
+
+
+def career_rows(j):
+    """Every league season on the player's NHL.com page, regular season (gt 2) and playoffs (gt 3)."""
+    out = []
+    for x in j.get("seasonTotals") or []:
+        r = dict(s=int(x["season"]), lg=x.get("leagueAbbrev"), tm=_txt(x.get("teamName")) or _txt(x.get("teamCommonName")),
+                 gt=x.get("gameTypeId"))
+        for k, src in ROW_KEYS.items():
+            v = x.get(src)
+            if v is not None:
+                r[k] = round(v, 4) if isinstance(v, float) else v
+        out.append(r)
+    return out
+
+
+def awards_of(j):
+    return [dict(name=_txt(a.get("trophy")), seasons=sorted({int(s["seasonId"]) for s in a.get("seasons") or [] if s.get("seasonId")}))
+            for a in j.get("awards") or [] if _txt(a.get("trophy"))]
 
 
 def bio_of(j, season):
@@ -244,25 +272,59 @@ def bio_of(j, season):
         if ab:
             teams.append([int(x["season"]), ab, x.get("gamesPlayed") or 0])
     dd = j.get("draftDetails") or {}
-    txt = lambda o: (o or {}).get("default") if isinstance(o, dict) else o
-    return dict(name=f'{txt(j.get("firstName"))} {txt(j.get("lastName"))}', pos=j.get("position"), birth_date=j.get("birthDate"),
-                birth_city=txt(j.get("birthCity")), birth_state=txt(j.get("birthStateProvince")), birth_country=j.get("birthCountry"),
+    return dict(name=f'{_txt(j.get("firstName"))} {_txt(j.get("lastName"))}', pos=j.get("position"), birth_date=j.get("birthDate"),
+                birth_city=_txt(j.get("birthCity")), birth_state=_txt(j.get("birthStateProvince")), birth_country=j.get("birthCountry"),
                 height_in=j.get("heightInInches"), weight_lb=j.get("weightInPounds"), shoots=j.get("shootsCatches"),
-                draft=dict(year=dd.get("year"), team=dd.get("teamAbbrev"), round=dd.get("round"), overall=dd.get("overallPick")) if dd else None,
-                nhl_teams=teams, career_prev=prev)
+                draft=dict(year=dd.get("year"), team=dd.get("teamAbbrev"), round=dd.get("round"), pick=dd.get("pickInRound"),
+                           overall=dd.get("overallPick")) if dd else None,
+                nhl_teams=teams, career_prev=prev, career=career_rows(j), awards=awards_of(j),
+                hhof=bool(j.get("inHHOF")), top100=bool(j.get("inTop100AllTime")), num=j.get("sweaterNumber"))
+
+
+def read_jsonl(path):
+    out = {}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    k, v = json.loads(line)
+                    out[str(k)] = v
+    return out
+
+
+def write_jsonl(path, d):
+    """One [key, value] pair per line, sorted by key: small, reviewable git diffs when a few entries change."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    keys = sorted(d, key=lambda k: (len(str(k)), str(k)))
+    text = "".join(json.dumps([k, d[k]], separators=(",", ":"), sort_keys=True, ensure_ascii=False) + "\n" for k in keys)
+    if os.path.exists(path) and open(path, encoding="utf-8").read() == text:
+        return False
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+    return True
+
+
+def load_bios(season):
+    """bios.jsonl, or the older gzipped file it replaced (Oct 24, 2026)."""
+    out = os.path.join(DATA, "external", "bios", season)
+    bios = read_jsonl(os.path.join(out, "bios.jsonl"))
+    old = os.path.join(out, "bios.json.gz")
+    if not bios and os.path.exists(old):
+        bios = json.load(gzip.open(old, "rt"))
+    return bios
 
 
 def fetch_bios(season):
     out = os.path.join(DATA, "external", "bios", season)
     os.makedirs(out, exist_ok=True)
-    path = os.path.join(out, "bios.json.gz")
-    bios = json.load(gzip.open(path, "rt")) if os.path.exists(path) else {}
+    bios = load_bios(season)
     today = dt.date.today()
     with gzip.open(os.path.join(DATA, "tables", season, "players.csv.gz"), "rt") as f:
         roster = list(csv.DictReader(f))
-    due = [p for p in roster if p["player_id"] not in bios or
+    due = [p for p in roster if p["player_id"] not in bios or "career" not in bios[p["player_id"]] or
            (today - dt.date.fromisoformat(bios[p["player_id"]].get("fetched", "2000-01-01"))).days >= BIO_REFRESH_DAYS]
-    due.sort(key=lambda p: bios.get(p["player_id"], {}).get("fetched", ""))
+    due = list({p["player_id"]: p for p in due}.values())
+    due.sort(key=lambda p: ("career" in bios.get(p["player_id"], {}), bios.get(p["player_id"], {}).get("fetched", "")))
     done = 0
     for p in due[:BIO_MAX]:
         try:
@@ -274,12 +336,194 @@ def fetch_bios(season):
         bios[p["player_id"]] = b
         done += 1
         time.sleep(0.4)
-    buf = io.BytesIO()
-    with gzip.GzipFile(fileobj=buf, mode="wb", mtime=0) as gz:
-        gz.write(json.dumps(bios, separators=(",", ":"), sort_keys=True).encode())
-    with open(path, "wb") as f:
-        f.write(buf.getvalue())
+    write_jsonl(os.path.join(out, "bios.jsonl"), bios)
+    if os.path.exists(os.path.join(out, "bios.json.gz")):
+        os.remove(os.path.join(out, "bios.json.gz"))
     print(f"Bios: fetched {done}; {len(bios)} on file; {max(0, len(due) - done)} still due")
+
+
+# ---------------------------------------------------------------- the draft: every pick, Central Scouting's rankings,
+# and the careers of first- and second-round picks who aren't on a roster now (so comparisons include the misses)
+# NHL records API (picks with player ids) and api-web draft rankings (final and midterm rank by category).
+# Past drafts never change, so each year is fetched once; the newest draft is refreshed weekly.
+
+DRAFT_FIRST = 2005
+CS_CATS = {1: "North American skaters", 2: "International skaters", 3: "North American goalies", 4: "International goalies"}
+DRAFT_CAREER_MAX = int(os.environ.get("DRAFT_CAREER_MAX", "250"))
+
+
+def _nm(s):
+    import unicodedata
+    s = unicodedata.normalize("NFD", s or "")
+    return "".join(c for c in s if unicodedata.category(c) != "Mn").lower().replace("-", " ").replace(".", "").replace("'", "").strip()
+
+
+def fetch_draft(season):
+    out = os.path.join(DATA, "external", "draft")
+    os.makedirs(out, exist_ok=True)
+    today = dt.date.today()
+    last = today.year if today.month >= 7 else today.year - 1
+    got = 0
+    for year in range(DRAFT_FIRST, last + 1):
+        path = os.path.join(out, f"{year}.json")
+        if os.path.exists(path):
+            old = json.load(open(path))
+            if year < last or (today - dt.date.fromisoformat(old.get("fetched", "2000-01-01"))).days < 7:
+                continue
+        try:
+            d = get_json(f"https://records.nhl.com/site/api/draft?cayenneExp=draftYear={year}", tries=2)
+        except RuntimeError as e:
+            print(f"! draft {year}: {e}")
+            continue
+        picks = []
+        for x in sorted(d.get("data") or [], key=lambda x: x.get("overallPickNumber") or 999):
+            if x.get("supplementalDraft") == "Y":
+                continue
+            picks.append(dict(id=x.get("playerId"), overall=x.get("overallPickNumber"), round=x.get("roundNumber"),
+                              team=x.get("triCode"), name=x.get("playerName"), pos=x.get("position"), birth=x.get("birthDate"),
+                              club=x.get("amateurClubName"), league=x.get("amateurLeague"), country=x.get("countryCode")))
+        ranks = {}
+        for cat in CS_CATS:
+            try:
+                r = get_json(f"https://api-web.nhle.com/v1/draft/rankings/{year}/{cat}", tries=2)
+            except RuntimeError:
+                continue
+            for x in r.get("rankings") or []:
+                key = (_nm(f'{x.get("firstName")} {x.get("lastName")}'), x.get("birthDate"))
+                ranks[key] = dict(cat=cat, final=x.get("finalRank"), mid=x.get("midtermRank"))
+            time.sleep(0.3)
+        by_last = {}
+        for (n, b), v in ranks.items():
+            by_last.setdefault((n.split()[-1] if n else "", b), []).append(v)
+        for p in picks:
+            key = (_nm(p["name"]), p["birth"])
+            cs = ranks.get(key)
+            if not cs:   # first names differ between the two lists now and then (Alex/Alexander): last name and birth date
+                c = by_last.get((key[0].split()[-1] if key[0] else "", p["birth"])) or []
+                cs = c[0] if len(c) == 1 else None
+            if cs:
+                p["cs"] = cs
+        json.dump(dict(year=year, fetched=today.isoformat(), picks=picks), open(path, "w"), separators=(",", ":"))
+        got += 1
+        time.sleep(0.5)
+    print(f"Draft: fetched {got} draft years")
+    fetch_draft_careers(season, out, last)
+
+
+def fetch_draft_careers(season, out, last):
+    """Careers of the first two rounds of every draft since DRAFT_FIRST who aren't in this season's bios."""
+    bios = load_bios(season)
+    path = os.path.join(out, "careers.jsonl")
+    car = read_jsonl(path)
+    today = dt.date.today()
+    want = []
+    for f in sorted(os.listdir(out)):
+        if not f[:4].isdigit() or not f.endswith(".json"):
+            continue
+        d = json.load(open(os.path.join(out, f)))
+        if d["year"] > last - 1:      # this summer's picks have no pro career to compare yet
+            continue
+        for p in d["picks"]:
+            if p.get("id") and (p.get("round") or 9) <= 2 and str(p["id"]) not in bios:
+                c = car.get(str(p["id"]))
+                stale = c and d["year"] >= last - 7 and (today - dt.date.fromisoformat(c.get("fetched", "2000-01-01"))).days >= 120
+                if not c or stale:
+                    want.append(p["id"])
+    done = 0
+    for pid in want[:DRAFT_CAREER_MAX]:
+        try:
+            j = get_json(f"https://api-web.nhle.com/v1/player/{pid}/landing", tries=2)
+        except RuntimeError:
+            continue
+        b = bio_of(j, season)
+        car[str(pid)] = dict(name=b["name"], pos=b["pos"], birth_date=b["birth_date"], draft=b["draft"], career=b["career"],
+                             fetched=today.isoformat())
+        done += 1
+        time.sleep(0.4)
+    write_jsonl(path, car)
+    print(f"Draft careers: fetched {done}; {len(car)} on file; {max(0, len(want) - done)} still due")
+
+
+# ---------------------------------------------------------------- Wikipedia (CC BY-SA 4.0; credit and link every use)
+# Wikidata maps NHL.com player ids (property P3522) to English Wikipedia articles in one query; the article's lead
+# section comes from the Wikipedia REST summary. Refreshed every WIKI_REFRESH_DAYS, at most WIKI_MAX a night.
+
+WIKI_REFRESH_DAYS = 30
+WIKI_MAX = int(os.environ.get("WIKI_MAX", "400"))
+WIKI_UA = {"User-Agent": "NHL-Analytics/1.0 (https://github.com/Tolar-dio/NHL-Analytics; site build)", "Accept": "application/json"}
+
+
+def _wiki_get(url, accept="application/json", tries=3):
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, headers={**WIKI_UA, "Accept": accept})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return r.read().decode("utf-8")
+        except urllib.error.HTTPError as e:
+            if e.code not in (429, 500, 502, 503, 504) or i == tries - 1:
+                raise
+            time.sleep(min(30, int(e.headers.get("retry-after") or 0) or 5 * (i + 1)))
+
+
+def fetch_wiki(season):
+    import urllib.parse
+    out = os.path.join(DATA, "external", "wiki")
+    os.makedirs(out, exist_ok=True)
+    tpath = os.path.join(out, "titles.json")
+    today = dt.date.today()
+    titles = json.load(open(tpath)) if os.path.exists(tpath) else {}
+    bios = load_bios(season)
+    if not titles or (today - dt.date.fromisoformat(titles.get("_fetched", "2000-01-01"))).days >= 7 or \
+            sum(1 for k in bios if k not in titles) > 25:
+        q = ('SELECT ?id ?article WHERE { ?p wdt:P3522 ?id . ?article schema:about ?p ; '
+             'schema:isPartOf <https://en.wikipedia.org/> }')
+        try:
+            text = _wiki_get("https://query.wikidata.org/sparql?" + urllib.parse.urlencode(dict(query=q)), "text/csv")
+            rows = list(csv.reader(io.StringIO(text)))[1:]
+            keep = set(bios)
+            for f in os.listdir(os.path.join(DATA, "external", "draft")) if os.path.isdir(os.path.join(DATA, "external", "draft")) else []:
+                if f[:4].isdigit():
+                    keep |= {str(p["id"]) for p in json.load(open(os.path.join(DATA, "external", "draft", f)))["picks"] if p.get("id")}
+            new = {r[0]: urllib.parse.unquote(r[1].rsplit("/wiki/", 1)[1]) for r in rows if len(r) == 2 and r[0] in keep}
+            # the same NHL id can sit on two Wikidata items now and then; the first wins, a later run can correct it
+            new["_fetched"] = today.isoformat()
+            titles = new
+            with open(tpath, "w") as f:
+                json.dump(titles, f, separators=(",", ":"), sort_keys=True, ensure_ascii=False)
+        except Exception as e:
+            print(f"! Wikidata: {e!r}")
+    spath = os.path.join(out, "summaries.jsonl")
+    summ = read_jsonl(spath)
+    due = [pid for pid in bios if pid in titles and (pid not in summ or summ[pid].get("title") != titles[pid] or
+           (today - dt.date.fromisoformat(summ[pid].get("fetched", "2000-01-01"))).days >= WIKI_REFRESH_DAYS)]
+    due.sort(key=lambda p: summ.get(p, {}).get("fetched", ""))
+    due = due[:WIKI_MAX]
+    done = 0
+    # the action API takes 20 titles a request: the lead section as plain text, the short description, the revision
+    for i in range(0, len(due), 20):
+        chunk = due[i:i + 20]
+        want = {titles[pid].replace("_", " "): pid for pid in chunk}
+        q = dict(action="query", format="json", formatversion=2, redirects=1, prop="extracts|description|info",
+                 exintro=1, explaintext=1, exlimit=20, titles="|".join(want))
+        try:
+            j = json.loads(_wiki_get("https://en.wikipedia.org/w/api.php?" + urllib.parse.urlencode(q)))
+        except Exception as e:
+            print(f"! Wikipedia batch: {e!r}")
+            break
+        alias = {r["to"]: r["from"] for r in (j.get("query") or {}).get("redirects", [])}
+        alias.update({n["to"]: n["from"] for n in (j.get("query") or {}).get("normalized", [])})
+        for pg in (j.get("query") or {}).get("pages", []):
+            t = pg.get("title")
+            pid = want.get(t) or want.get(alias.get(t)) or want.get(alias.get(alias.get(t), ""))
+            if not pid or pg.get("missing") or not pg.get("extract") or "may refer to" in pg["extract"][:300]:
+                continue
+            summ[pid] = dict(title=titles[pid], url="https://en.wikipedia.org/wiki/" + urllib.parse.quote(t.replace(" ", "_")),
+                             desc=pg.get("description"), extract=pg["extract"].strip(), rev=pg.get("lastrevid"),
+                             fetched=today.isoformat())
+            done += 1
+        time.sleep(1.0)
+    write_jsonl(spath, summ)
+    print(f"Wikipedia: {len(titles) - 1} players mapped; fetched {done} summaries; {len(summ)} on file; {max(0, len(due) - done)} still due")
 
 
 # ---------------------------------------------------------------- MoneyPuck season summaries
@@ -318,6 +562,8 @@ def main():
     if not a.skip_edge:
         jobs.append(("Edge", lambda: fetch_edge(a.season, a.force_edge)))
     jobs.append(("Bios", lambda: fetch_bios(a.season)))
+    jobs.append(("Draft", lambda: fetch_draft(a.season)))
+    jobs.append(("Wikipedia", lambda: fetch_wiki(a.season)))
     for name, fn in jobs:
         try:
             fn()
