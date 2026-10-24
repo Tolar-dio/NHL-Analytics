@@ -886,10 +886,7 @@ tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
 .path td .sub, .path .sub { font-size: 12px; color: var(--muted); }
 .intl li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
 .intl .il-stat { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 14px; }
-.wiki { max-width: 72ch; }
-.wiki-body p, .wiki-more p { color: var(--ink-2); line-height: 1.55; margin: 0 0 10px; }
-.wiki-more summary, .more-list summary { cursor: pointer; color: var(--blue); font-size: 14px; margin: 2px 0 8px; }
-.credit { font-size: 13px; }
+.more-list summary { cursor: pointer; color: var(--blue); font-size: 14px; margin: 2px 0 8px; }
 .buzz-meter { font-size: 15px; margin: 0 0 6px; }
 .buzz-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 32px; align-items: start; }
 .heads li, .threads li { font-size: 15px; line-height: 1.4; }

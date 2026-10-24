@@ -31,11 +31,11 @@ Data source: the NHL's public API (api-web.nhle.com and api.nhle.com). Preseason
 - `data/external/edge/<season>/skaters.csv.gz`: NHL Edge tracking per skater (top skating speed, 20+ mph bursts, distance, top shot speed, zone time, shots by danger area). Refreshed weekly.
 - `data/external/bios/<season>/bios.jsonl`: each rostered player's NHL.com page: birth, size, draft, NHL teams, awards and every league season of his career (junior, college, Europe, minors, international tournaments, playoffs). One player per line so git stores small diffs.
 - `data/external/draft/<year>.json`: every pick since 2005 (NHL records API, with player ids) and NHL Central Scouting's midterm and final rankings; `careers.jsonl` holds the careers of first- and second-round picks who aren't on a roster now, so draft comparisons include the misses.
-- `data/external/wiki/`: Wikidata's map from NHL ids to English Wikipedia articles and each article's introduction (CC BY-SA 4.0, credited and linked wherever it's shown).
+- `data/external/wiki/`: Wikidata's map from NHL ids to English Wikipedia articles and each article's introduction (CC BY-SA 4.0), background for the AI writers; not shown on the site.
 
 `analysis/nhle.py` learns NHL equivalency factors (what a point in the SHL, OHL, NCAA and so on is worth in the NHL) from those careers.
 
-`scripts/buzz.py` runs hourly in the news job and writes `data/coverage/`: per-player headlines from Google News (headline, outlet, date, link only), public Bluesky posts from the reporters in `scripts/buzz_sources.json`, Reddit thread titles from r/hockey and the team subreddits (shown, never sent to the AI), and each team's YouTube videos. The site reads it straight from GitHub.
+`scripts/buzz.py` runs hourly in the news job and writes `data/coverage/`: per-player headlines from Google News (headline, outlet, date, link only), public Bluesky posts from the reporters in `scripts/buzz_sources.json`, Reddit thread titles from r/hockey and the team subreddits (shown, never sent to the AI), and each team's YouTube videos. The site reads it straight from GitHub and shows only the last five days.
 
 ## Past seasons
 

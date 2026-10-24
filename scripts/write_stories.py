@@ -152,7 +152,7 @@ def _watch_extra(pid):
     b = wpath(dossier_local(pid, SITE_DATA), notes=2)
     if b.get("path_to_the_nhl"):
         out["background"] = b["path_to_the_nhl"]
-    n = said(coverage(pid), news=2, posts=1, videos=0, days=7)
+    n = said(coverage(pid), news=2, posts=1, videos=0, days=5)
     if n:
         out["in_the_news"] = n
     return out

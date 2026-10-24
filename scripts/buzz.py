@@ -20,7 +20,8 @@ Outputs (committed by the news job; the site reads them from raw.githubuserconte
 from the checkout):
   data/coverage/players/<id>.json   {id, name, team, checked, news, posts, threads, videos}
   data/coverage/teams/<TEAM>.json   {team, updated, posts, threads, videos}
-  data/coverage/buzz.json           {updated, players: {id: [news 7d, news 30d, outlets 30d, posts 7d, threads 7d]}, top}
+  data/coverage/buzz.json           {players: {id: [news 5d, news 30d, outlets 5d, posts 5d, threads 5d]}, top}
+The site shows only the last BUZZ_DAYS (5) days; the longer KEEP windows are for the AI writers' deep dives.
   data/coverage/state.json          rotation state
 """
 import datetime as dt
@@ -45,12 +46,14 @@ NEWS_EVERY_H = 20
 BSKY = "https://public.api.bsky.app/xrpc/"
 NOW = dt.datetime.now(dt.timezone.utc)
 
-KEEP = dict(news=(45, 30), posts=(10, 15), threads=(21, 15), videos=(60, 12))    # days, max items per player
+BUZZ_DAYS = 5     # what counts as buzz: the site shows this window and the counts use it
+KEEP = dict(news=(45, 30), posts=(10, 15), threads=(21, 15), videos=(60, 12))    # days, max items per player (writers look back further)
 TEAM_KEEP = dict(posts=(10, 20), threads=(7, 12), videos=(30, 15))
 # betting and promo headlines aren't news, and the site never touts
 NOT_NEWS = re.compile(r"\b(props?|odds|best bets?|bet365|draftkings|fanduel|betmgm|caesars|sportsbook|parlay|promo|bonus code|"
                       r"picks? (and|&) predictions?|prediction|anytime goal ?scorer|player to score)\b", re.I)
 # machine-made filler: "X October 24 Preview vs. the Flyers", "Fantasy Outlook & Stats", player-profile pages
+SPONSORED = re.compile(r"\b(presented by|brought to you by|sponsored by|in partnership with)\b", re.I)
 FILLER = re.compile(r"\b(preview vs\.?|fantasy outlook|outlook & stats|stats & fantasy|player profile|stats, news|"
                     r"fantasy (news|value|stats)|game logs?|career stats|bio, stats)\b", re.I)
 STRONG = re.compile(r"\b(fuck\w*|shit\w*|bitch\w*|cunt\w*|asshole\w*|motherf\w*|dickhead\w*)\b|\bf[-*@#_]{1,2}c?k\w*|\bf\*+\w*|"
@@ -240,6 +243,8 @@ def run_bluesky(R):
             when = media.iso((p.get("record") or {}).get("createdAt") or p.get("indexedAt"))
             if len(text) < 30 or STRONG.search(text) or media.age_days(when) > KEEP["posts"][0]:   # "Stenberg ENG" says little
                 continue
+            if NOT_NEWS.search(text) or media.AD_RE.search(text) or SPONSORED.search(text):   # sportsbook reads and sponsored clips
+                continue
             teams, players = R.tag(text, a.get("team"))
             if not players and not (a.get("team") and a["team"] in teams):
                 continue
@@ -290,7 +295,7 @@ def run_reddit(R, state):
             continue
         fetched += [t for t, sub in subs.items() if sub in group and t != "league"]
         for it in items:
-            if not it["u"] or NOT_NEWS.search(it["t"]) or STRONG.search(it["t"]):
+            if not it["u"] or NOT_NEWS.search(it["t"]) or STRONG.search(it["t"]) or media.AD_RE.search(it["t"]):
                 continue
             team = team_of_sub.get((it["sub"] or "").lower())
             tteams, players = R.tag(it["t"], team)
@@ -413,22 +418,29 @@ def gather(skaters, goalies, tonight_ids=()):
             d["checked"] = state["news_checked"].get(str(pid))
             # counts from the whole search (up to 100 results), not the 30 we keep, so the busiest players still rank
             full = prune([n for n in news[pid] if keep(n)], 30, 1000)
-            d["counts"] = dict(n7=sum(1 for i in full if media.age_days(i["d"]) <= 7), n30=len(full),
-                               outlets=len({i["o"] for i in full if i.get("o")}))
+            d["counts"] = dict(n5=sum(1 for i in full if media.age_days(i["d"]) <= BUZZ_DAYS), n30=len(full),
+                               outlets5=len({i["o"] for i in full if i.get("o") and media.age_days(i["d"]) <= BUZZ_DAYS}),
+                               fetched=now_iso())
         if bsky_ok:   # this run's reporters' feeds are the whole truth for posts: deleted posts drop off
             d["posts"] = prune(posts_p.get(pid, []), *KEEP["posts"])
         if pid in threads_p or d.get("threads"):
             d["threads"] = prune(threads_p.get(pid, []) + d.get("threads", []), *KEEP["threads"])
         if pid in vids_p or d.get("videos"):
             d["videos"] = prune(vids_p.get(pid, []) + d.get("videos", []), *KEEP["videos"])
+        # counts from the last full search while it's fresh (it saw up to 100 results, not just the 30 we keep);
+        # a search over a day old has aged, so count what we kept instead
         c = d.get("counts") or {}
-        n7 = c.get("n7", sum(1 for i in d["news"] if media.age_days(i["d"]) <= 7))
+        recent = [i for i in d["news"] if media.age_days(i["d"]) <= BUZZ_DAYS]
+        if "n5" in c and media.age_days(c.get("fetched")) <= 1:
+            n5, outlets = c["n5"], c["outlets5"]
+        else:
+            n5, outlets = len(recent), len({i["o"] for i in recent if i.get("o")})
         n30 = c.get("n30", len(d["news"]))
-        outlets = c.get("outlets", len({i["o"] for i in d["news"] if i.get("o")}))
-        p7 = sum(1 for i in d["posts"] if media.age_days(i["d"]) <= 7)
-        t7 = sum(1 for i in d.get("threads", []) if media.age_days(i["d"]) <= 7)
-        if n30 or p7 or t7 or d.get("videos"):
-            buzz[pid] = [n7, n30, outlets, p7, t7]
+        p5 = sum(1 for i in d["posts"] if media.age_days(i["d"]) <= BUZZ_DAYS)
+        t5 = sum(1 for i in d.get("threads", []) if media.age_days(i["d"]) <= BUZZ_DAYS)
+        v5 = sum(1 for i in d.get("videos", []) if media.age_days(i["d"]) <= BUZZ_DAYS)
+        if n5 or p5 or t5 or v5:
+            buzz[pid] = [n5, n30, outlets, p5, t5]
         changed += save(path, d)
     for t in FULL:
         path = os.path.join(OUT, "teams", f"{t}.json")
@@ -442,11 +454,11 @@ def gather(skaters, goalies, tonight_ids=()):
         d["team"] = t
         changed += save(path, d)
     score = {pid: b[0] * 3 + b[2] + b[3] * 2 + b[4] for pid, b in buzz.items()}
-    top = [dict(id=pid, name=R.all[pid]["name"], team=R.all[pid]["team"], news7=buzz[pid][0], outlets=buzz[pid][2],
-                posts7=buzz[pid][3], threads7=buzz[pid][4])
+    top = [dict(id=pid, name=R.all[pid]["name"], team=R.all[pid]["team"], news5=buzz[pid][0], outlets=buzz[pid][2],
+                posts5=buzz[pid][3], threads5=buzz[pid][4])
            for pid in sorted(score, key=lambda p: -score[p])[:15] if score[pid] >= 6]
     save(os.path.join(OUT, "buzz.json"), dict(players={str(k): v for k, v in buzz.items()}, top=top,
-                                               fields=["news_7d", "news_30d", "outlets_30d", "posts_7d", "threads_7d"]))
+                                               fields=["news_5d", "news_30d", "outlets_5d", "posts_5d", "threads_5d"]))
     save(os.path.join(OUT, "state.json"), state)
     save(os.path.join(OUT, "youtube_cache.json"), ycache)
     print(f"  coverage files changed: {changed}; buzz for {len(buzz)} players")

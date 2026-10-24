@@ -92,7 +92,7 @@ def column_facts(day):
 
 
 def talked_about():
-    """The players with the most headlines this week (scripts/buzz.py), each with his latest two headlines."""
+    """The players with the most headlines in the last five days (scripts/buzz.py), each with his latest two headlines."""
     try:
         with open(os.path.join(ROOT, "data", "coverage", "buzz.json")) as f:
             top = json.load(f).get("top", [])[:5]
@@ -100,8 +100,8 @@ def talked_about():
         return None
     out = []
     for x in top:
-        s = said(coverage(x["id"]), news=2, posts=1, videos=0, days=7)
-        out.append(dict(name=x["name"], team=x["team"], headlines_this_week=x["news7"], outlets=x["outlets"], **s))
+        s = said(coverage(x["id"]), news=2, posts=1, videos=0, days=5)
+        out.append(dict(name=x["name"], team=x["team"], headlines_last_five_days=x.get("news5", x.get("news7")), outlets=x["outlets"], **s))
     return out or None
 
 

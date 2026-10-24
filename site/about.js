@@ -48,7 +48,7 @@ function renderAbout(view) {
       <dt><a href="#news">News</a></dt><dd>The day's headlines grouped by story, with a short take on what our numbers say; every trade, signing and call-up; our own features; and the latest from hockey's best podcasts and video channels.</dd>
       <dt><a href="#league">League</a></dt><dd>Every team placed by the chances it creates and allows, the standings with luck shown, and every goalie ranked by goals saved.</dd>
       <dt><a href="#teams">Teams</a></dt><dd>One team's season: record and the chances behind it, shot map, the team's press conferences and what its beat reporters and fans are saying, forward lines, defense pairs and special-teams units, who plays when, goalies and every game.</dd>
-      <dt><a href="#players">Players</a></dt><dd>Search any skater or goalie. Player pages have the latest headlines, reporters' posts and team videos about him, his path to the NHL (draft, junior and European seasons, international play, players taken around the same spot), a shot map, game log, what he's worth, how he defends, how he plays (from hand-tracked data) and his highlights. Follow players to keep them one tap away.</dd>
+      <dt><a href="#players">Players</a></dt><dd>Search any skater or goalie. Player pages have the last five days of headlines, reporters' posts and team videos about him, his path to the NHL (draft, junior and European seasons, international play, players taken around the same spot), a shot map, game log, what he's worth, how he defends, how he plays (from hand-tracked data) and his highlights. Follow players to keep them one tap away.</dd>
       <dt><a href="#model">Track record</a></dt><dd>How accurate our numbers have been, on last season and on every night this season.</dd>
     </dl>`)}
     ${sec("methods", "How the numbers work", `
@@ -81,7 +81,7 @@ function renderAbout(view) {
         <li><b>News, podcasts and video</b>: we show headlines and short teasers and link to the publisher; podcasts play from each show's public feed; videos play through YouTube's own player. Some links need a subscription to that publisher.</li>
         <li><b>Player coverage</b>: per-player headlines found through Google News (headline, outlet and link only); public Bluesky posts from reporters who cover the league, shown with their name and a link; Reddit thread titles from r/hockey and each team's subreddit, linked; and each team's official YouTube videos.</li>
         <li><b>Careers and the draft</b>: every league season, international tournament and award from each player's NHL.com page; draft picks and Central Scouting rankings from the NHL.</li>
-        <li><b><a href="https://en.wikipedia.org">Wikipedia</a></b>: the introduction to each player's article, shown as written and credited to its contributors under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, with a link to the article.</li>
+        <li><b><a href="https://en.wikipedia.org">Wikipedia</a></b>: the introduction to each player's article (by its contributors, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>), which our AI writers can draw on for background.</li>
       </ul>
       <p class="note">Read the Ice is an independent site. We're not affiliated with or endorsed by the NHL, the NHLPA, any team, ESPN or any sportsbook. Team names and abbreviations belong to their owners.</p>`)}
     ${sec("ai", "How we use AI", `

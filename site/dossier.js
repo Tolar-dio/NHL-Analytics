@@ -1,6 +1,6 @@
-/* Player dossiers and coverage: "Path to the NHL" and "Background" (from the nightly build, site/dossier.py),
-   "The buzz" on player pages and "From the room" on team pages (live from data/coverage/, written hourly by
-   scripts/buzz.py and read straight from GitHub so it doesn't wait for the nightly deploy).
+/* Player dossiers and coverage: "Path to the NHL" (from the nightly build, site/dossier.py), "The buzz" on player
+   pages and "From the room" on team pages (live from data/coverage/, written hourly by scripts/buzz.py and read
+   straight from GitHub so it doesn't wait for the nightly deploy). Buzz shows only the last BUZZ_DAYS days.
    Loaded before app.js; reuses $, esc, table, playerLink, teamName, ago, bindMedia. */
 "use strict";
 
@@ -10,12 +10,14 @@ async function coverage(path) {
   if (!covCache[path]) covCache[path] = fetch(COVERAGE + path, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   return covCache[path];
 }
+const BUZZ_DAYS = 5;   // older than this isn't buzz
+const fresh = (arr) => (arr || []).filter((x) => x.d && Date.now() - new Date(x.d) <= BUZZ_DAYS * 86400000);
 const ppg = (p, gp) => (gp ? (p / gp).toFixed(2) : "–");
 const statLine = (r) => `${r.gp} GP, ${r.g} G, ${r.a} A, ${r.p} P`;
 
 // ---------------------------------------------------------------- Path to the NHL
 function renderPath(el, d, name) {
-  if (!el || !d || (!d.notes?.length && !d.pre?.length && !d.wiki)) return;
+  if (!el || !d || (!d.notes?.length && !d.pre?.length)) return;
   const last = (name || "").split(" ").slice(1).join(" ") || name;
   const dr = d.draft;
   const near = (x) => (x ? (x.id && (D.skaters.some((s) => s.id === x.id) || (D.goalies || []).some((g) => g.id === x.id))
@@ -62,20 +64,12 @@ function renderPath(el, d, name) {
       { key: "nhl_gp", label: "NHL GP", nosort: true },
     ], null, "dcomp")}` : "";
   const awards = (d.awards || []).length ? `<h3 class="kicker">Hardware</h3><ul class="plist">${d.awards.map((a) => `<li><b>${esc(a.name)}</b> <span class="dim">${esc(a.seasons.join(", "))}</span></li>`).join("")}</ul>` : "";
-  const w = d.wiki;
-  const paras = w ? w.extract.split(/\n+/).filter(Boolean) : [];
-  const wiki = w ? `<div class="wiki">
-      <h3 class="kicker">Background</h3>
-      <div class="wiki-body">${paras.slice(0, 2).map((p) => `<p>${esc(p)}</p>`).join("")}</div>
-      ${paras.length > 2 ? `<details class="wiki-more"><summary>Read the rest of the introduction</summary>${paras.slice(2).map((p) => `<p>${esc(p)}</p>`).join("")}</details>` : ""}
-      <p class="note credit">From <a href="${esc(w.url)}" target="_blank" rel="noopener">Wikipedia's article on ${esc(w.title)}</a>, by its contributors, under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>. Shown as written.</p>
-    </div>` : "";
   el.innerHTML = `<h2>Path to the NHL</h2>
     <p class="lede">Where ${esc(name)} came from: the draft, the leagues before the NHL, and how players taken around the same spot have done.</p>
     <div class="path-top">${draftCard}${d.notes?.length ? `<ul class="notes">${d.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}</div>
     ${preTable ? `<h3 class="kicker">Before the NHL</h3>${preTable}` : ""}
     ${intlList ? `<h3 class="kicker">For his country</h3>${intlList}` : ""}
-    ${awards}${compTable}${wiki}
+    ${awards}${compTable}
     <p class="note">Career numbers from <a href="${esc(d.nhl_url)}" target="_blank" rel="noopener">his NHL.com page</a> (which lists every league he's played in); Central Scouting rankings and draft picks from the NHL. "NHL pace" is our own translation of a scoring rate into NHL terms, learned from players who moved between leagues; it's rough, especially for junior leagues. <a href="#about/glossary">More in the glossary</a>.</p>`;
   el.hidden = false;
 }
@@ -103,19 +97,20 @@ async function renderBuzz(el, pid, name) {
   if (!el) return;
   const [c, buzz] = await Promise.all([coverage(`players/${pid}.json`), coverage("buzz.json")]);
   if (!c) return;
-  const news = c.news || [], posts = c.posts || [], threads = c.threads || [], vids = c.videos || [];
+  const news = fresh(c.news), posts = fresh(c.posts), threads = fresh(c.threads), vids = fresh(c.videos);
   if (!news.length && !posts.length && !threads.length && !vids.length) return;
   const mine = buzz?.players?.[pid];
   let meter = "";
-  if (mine && mine[0] >= 2) {
+  if (mine && mine[0] >= 2 && buzz.fields?.[0] === "news_5d") {
     const all = Object.values(buzz.players).map((x) => x[0]);
-    const below = all.filter((x) => x < mine[0]).length, share = Math.round(100 * below / Math.max(1, all.length));
-    meter = `<p class="buzz-meter"><b>${mine[0]}</b> headlines in the last week, from ${mine[2]} outlet${mine[2] === 1 ? "" : "s"} over the last month${share >= 50 ? `: more than ${share}% of NHL players` : ""}.</p>`;
+    const above = all.filter((x) => x > mine[0]).length, share = Math.min(99, Math.floor(100 * all.filter((x) => x < mine[0]).length / Math.max(1, all.length)));
+    const rank = above === 0 ? ": the most of any NHL player" : share >= 50 ? `: more than ${share}% of NHL players` : "";
+    meter = `<p class="buzz-meter"><b>${mine[0]}</b> headlines in the last five days from ${mine[2]} outlet${mine[2] === 1 ? "" : "s"}${rank}.</p>`;
   }
   const more = (arr, n, item, cls) => `<ul class="plist ${cls}">${arr.slice(0, n).map(item).join("")}</ul>` +
     (arr.length > n ? `<details class="more-list"><summary>${arr.length - n} more</summary><ul class="plist ${cls}">${arr.slice(n).map(item).join("")}</ul></details>` : "");
   el.innerHTML = `<h2>The buzz</h2>
-    <p class="lede">What the hockey world is saying about ${esc(name)}: the latest headlines, reporters who cover him, his team's videos and what fans are talking about. Updated every hour.</p>
+    <p class="lede">What the hockey world is saying about ${esc(name)} right now: the last five days of headlines, posts from reporters who cover him, his team's videos and what fans are talking about. Updated every hour.</p>
     ${meter}
     <div class="buzz-grid">
       ${news.length ? `<div><h3 class="kicker">In the headlines</h3>${more(news, 6, headlineItem, "heads")}</div>` : ""}
@@ -133,11 +128,11 @@ async function renderRoom(el, team) {
   if (!el) return;
   const c = await coverage(`teams/${team}.json`);
   if (!c) return;
-  const vids = (c.videos || []).slice().sort((a, b) => (b.k === "presser") - (a.k === "presser") || (b.d || "").localeCompare(a.d || ""));
-  const posts = c.posts || [], threads = c.threads || [];
+  const vids = fresh(c.videos).sort((a, b) => (b.k === "presser") - (a.k === "presser") || (b.d || "").localeCompare(a.d || ""));
+  const posts = fresh(c.posts), threads = fresh(c.threads);
   if (!vids.length && !posts.length && !threads.length) return;
   el.innerHTML = `<h2>From the room</h2>
-    <p class="lede">Press conferences and interviews from the team's own channel, what the reporters on the ${esc(teamName(team))} beat are posting, and what fans are talking about. Updated every hour.</p>
+    <p class="lede">The last five days of press conferences and interviews from the team's own channel, posts from the reporters on the ${esc(teamName(team))} beat, and what fans are talking about. Updated every hour.</p>
     ${vids.length ? `<h3 class="kicker">Team videos</h3><div class="watch-grid">${vids.slice(0, 6).map(teamVideoCard).join("")}</div>` : ""}
     <div class="buzz-grid">
       ${posts.length ? `<div><h3 class="kicker">On the beat</h3><div class="bposts">${posts.slice(0, 5).map(postCard).join("")}</div></div>` : ""}
@@ -153,7 +148,8 @@ async function talkedAbout() {
   const b = await coverage("buzz.json");
   const top = (b?.top || []).slice(0, 10);
   if (!top.length) return "";
-  return `<h2 class="mt">Most talked about</h2><p class="lede">The players with the most headlines across outlets this week, plus reporters' posts and fan threads. Updated every hour.</p>
-    <ol class="talked">${top.map((x) => `<li>${D.skaters.some((s) => s.id === x.id) ? playerLink(x.id, x.name) : (D.goalies || []).some((g) => g.id === x.id) ? goalieLink(x.id, x.name) : esc(x.name)}
-      <span class="dim">${esc(x.team)} · ${x.news7} headline${x.news7 === 1 ? "" : "s"} from ${x.outlets} outlet${x.outlets === 1 ? "" : "s"}${x.posts7 ? `, ${x.posts7} reporter post${x.posts7 === 1 ? "" : "s"}` : ""}${x.threads7 ? `, ${x.threads7} fan thread${x.threads7 === 1 ? "" : "s"}` : ""}</span></li>`).join("")}</ol>`;
+  return `<h2 class="mt">Most talked about</h2><p class="lede">The players with the most headlines across outlets in the last five days, plus reporters' posts and fan threads. Updated every hour.</p>
+    <ol class="talked">${top.map((x) => { const n = x.news5 ?? x.news7, po = x.posts5 ?? x.posts7, th = x.threads5 ?? x.threads7;
+      return `<li>${D.skaters.some((s) => s.id === x.id) ? playerLink(x.id, x.name) : (D.goalies || []).some((g) => g.id === x.id) ? goalieLink(x.id, x.name) : esc(x.name)}
+      <span class="dim">${esc(x.team)} · ${n} headline${n === 1 ? "" : "s"} from ${x.outlets} outlet${x.outlets === 1 ? "" : "s"}${po ? `, ${po} reporter post${po === 1 ? "" : "s"}` : ""}${th ? `, ${th} fan thread${th === 1 ? "" : "s"}` : ""}</span></li>`; }).join("")}</ol>`;
 }
