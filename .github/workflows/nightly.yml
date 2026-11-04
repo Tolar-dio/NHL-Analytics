@@ -138,8 +138,14 @@ jobs:
           rm -f _site/data/fantasy.json
 
       - uses: actions/configure-pages@v5
+      # one artifact name per attempt: re-running a failed deploy otherwise finds two "github-pages"
+      # artifacts and refuses (Nov 4, 2026)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+          name: github-pages-${{ github.run_attempt }}
       - id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+          timeout: 1200000
