@@ -444,6 +444,37 @@ def fetch_draft_careers(season, out, last):
     print(f"Draft careers: fetched {done}; {len(car)} on file; {max(0, len(want) - done)} still due")
 
 
+# ---------------------------------------------------------------- the season schedule (for playoff odds)
+# api-web club-schedule-season for each team, regular season only, refreshed weekly (postponements move games).
+
+TEAMS32 = "ANA BOS BUF CGY CAR CHI COL CBJ DAL DET EDM FLA LAK MIN MTL NSH NJD NYI NYR OTT PHI PIT SJS SEA STL TBL TOR UTA VAN VGK WSH WPG".split()
+
+
+def fetch_schedule(season):
+    path = os.path.join(DATA, "external", "schedule", f"{season}.json")
+    today = dt.date.today()
+    if os.path.exists(path):
+        old = json.load(open(path))
+        if (today - dt.date.fromisoformat(old.get("fetched", "2000-01-01"))).days < 7:
+            print("Schedule: fresh")
+            return
+    games = {}
+    for t in TEAMS32:
+        try:
+            j = get_json(f"https://api-web.nhle.com/v1/club-schedule-season/{t}/{season}", tries=2)
+        except RuntimeError as e:
+            print(f"! schedule {t}: {e}")
+            return
+        for g in j.get("games") or []:
+            if g.get("gameType") == 2:
+                games[g["id"]] = dict(id=g["id"], date=g["gameDate"], home=g["homeTeam"]["abbrev"], away=g["awayTeam"]["abbrev"])
+        time.sleep(0.3)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    json.dump(dict(fetched=today.isoformat(), games=sorted(games.values(), key=lambda g: (g["date"], g["id"]))), open(path, "w"),
+              separators=(",", ":"))
+    print(f"Schedule: {len(games)} regular-season games")
+
+
 # ---------------------------------------------------------------- Wikipedia (CC BY-SA 4.0; credit and link every use)
 # Wikidata maps NHL.com player ids (property P3522) to English Wikipedia articles in one query; the article's lead
 # section comes from the Wikipedia REST summary. Refreshed every WIKI_REFRESH_DAYS, at most WIKI_MAX a night.
@@ -563,6 +594,7 @@ def main():
         jobs.append(("Edge", lambda: fetch_edge(a.season, a.force_edge)))
     jobs.append(("Bios", lambda: fetch_bios(a.season)))
     jobs.append(("Draft", lambda: fetch_draft(a.season)))
+    jobs.append(("Schedule", lambda: fetch_schedule(a.season)))
     jobs.append(("Wikipedia", lambda: fetch_wiki(a.season)))
     for name, fn in jobs:
         try:

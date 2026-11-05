@@ -150,6 +150,7 @@ async function renderGoalie(view, param) {
         ${areas ? `<h3 class="mix-h">By area (NHL EDGE)</h3><div class="table-wrap"><table class="mini"><thead><tr><th>Area</th><th class="tnum">Shots</th><th class="tnum">Save rate</th><th class="tnum">League</th></tr></thead><tbody>${areas}</tbody></table></div>` : ""}
       </div>
     </section>
+    <section class="zone plays" id="gRange" hidden></section>
     <section class="zone">
       <h2>Start by start</h2>
       <p class="lede">Every appearance this season, newest first. Saves above expected per game swing hard; streaks of five or more starts say more.</p>
@@ -161,6 +162,7 @@ async function renderGoalie(view, param) {
     </section>
     <section class="zone path" id="gPath" hidden></section>`;
   if (G.dossier) renderPath($("#gPath"), G.dossier, G.name);
+  renderGoalieRange($("#gRange"), G);
   renderBuzz($("#gBuzz"), G.id, G.name).catch(() => {});
 }
 

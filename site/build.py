@@ -569,6 +569,18 @@ def main():
                 a3z_cards.update({pid: x for pid, x in c.items() if season == PREV or pid not in a3z_cards or x["toi5"] >= 150})
                 if lg:
                     a3z_league[lg["season"]] = lg
+        try:   # possession value: what his entries, exits and denials were worth (analysis/a3z_value.py)
+            import a3z_value as AV
+            V = AV.values()
+            pv = {ss: AV.players(ss, V) for ss in (PREV, CUR) if A3.available(ss)}
+            for pid, card in a3z_cards.items():
+                cs = next((k for k, lab in A3.LABEL.items() if lab == card["season"]), None)
+                if cs in pv and pid in pv[cs]:
+                    card["value"] = pv[cs][pid]
+            dump("a3z_value.json", AV.table(V))
+            print(f"  possession value: {V['n']['entries']} entries, {V['n']['exits']} exits")
+        except Exception as e:
+            print(f"  possession value skipped: {e!r}")
         if a3z_cards:
             meta["credit"] += " " + A3.CREDIT
             dump("a3z_league.json", a3z_league)   # the style map on player pages (derived per-60 rates, credited)
@@ -607,12 +619,64 @@ def main():
     except Exception as e:
         print(f"  game context skipped: {e!r}")
         res_by_team = None
+    # win probability through every game, the goals and saves that swung it, and wins added (analysis/winprob.py)
+    try:
+        import winprob as WPM
+        wp_games, wp_sk, wp_gk = WPM.season(CUR)
+        nm_wp = {int(k): v for k, v in names.items()}
+        clutch = WPM.season_table(wp_sk, wp_gk, nm_wp)
+        dump("clutch.json", clutch)
+        print(f"  win probability: {len(wp_games)} games")
+    except Exception as e:
+        print(f"  win probability skipped: {e!r}")
+        wp_games, clutch = {}, None
+    def wins_of(pid):
+        """His wins added this season and where that ranks (skaters by goals, goalies by saves)."""
+        if not clutch:
+            return None
+        for key, rows, val in (("skater", clutch["skaters"], "goals"), ("goalie", clutch["goalies"], "saves_added")):
+            for i, r in enumerate(rows):
+                if r["id"] == pid:
+                    return dict(r, kind=key, rank=i + 1, of=len([x for x in rows if x.get(val, 0) > 0]) if val == "goals" else len(rows))
+        return None
+    # deserved standings and playoff odds (analysis/race.py)
+    try:
+        import race as RACE
+        r_out, r_left = RACE.race(CUR, PREV)
+        dump("race.json", RACE.publish(r_out, r_left))
+        print(f"  playoff race: {r_left} games left")
+    except Exception as e:
+        print(f"  playoff race skipped: {e!r}")
+    # talent ranges and rest-of-season projections (analysis/ranges.py)
+    rng_sk, rng_gk = {}, {}
+    try:
+        import ranges as RNG
+        sched = json.load(open(os.path.join(ROOT, "data", "external", "schedule", f"{CUR}.json")))["games"]
+        done = set(games.game_id)
+        g_left = {}
+        for g_ in sched:
+            if g_["id"] not in done and g_["date"] >= str(today):
+                for t_ in (g_["home"], g_["away"]):
+                    g_left[t_] = g_left.get(t_, 0) + 1
+        rng_sk = RNG.skaters(cur["pg"], prev["pg"], g_left)
+        sa_tot = sum(g["sa"] for g in goalie_rows)
+        rng_gk = RNG.goalies(cur["gg"], prev["gg"], sum(g["xga"] for g in goalie_rows) / sa_tot) if sa_tot else {}
+        print(f"  ranges: {len(rng_sk)} skaters, {len(rng_gk)} goalies")
+    except Exception as e:
+        print(f"  ranges skipped: {e!r}")
     for gi in game_index:
         try:
             with open(os.path.join(OUTD, "games", f"{gi['id']}.json")) as f:
                 G = json.load(f)
         except Exception:
             continue
+        if int(G["id"]) in wp_games:
+            try:
+                G["wp"] = WPM.summary(wp_games[int(G["id"])], nm_wp, G["home"], G["away"])
+                with open(os.path.join(OUTD, "games", f"{gi['id']}.json"), "w") as f:
+                    json.dump(G, f, separators=(",", ":"), allow_nan=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
+            except Exception as e:
+                print(f"  win probability for {G.get('id')} failed: {e!r}")
         if res_by_team is not None:
             try:
                 ctx = N.game_context(G, res_by_team, before_by_game.get(G["id"], {}), bios_ctx)
@@ -681,6 +745,8 @@ def main():
                 if os.path.exists(path):
                     gj = json.load(open(path))
                     gj["dossier"] = DOS.build(int(gid_), DCTX)
+                    gj["range"] = rng_gk.get(int(gid_))
+                    gj["wins"] = wins_of(int(gid_))
                     json.dump(gj, open(path, "w"), separators=(",", ":"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
         except Exception as e:
             print(f"  goalie dossiers skipped: {e!r}")
@@ -896,6 +962,19 @@ def main():
         for line in x["storylines"]:
             if line.get("pid"):
                 tonight_lines.setdefault(line["pid"], []).append(line["text"])
+    # plays like: closest skaters by usage and style (analysis/similar.py)
+    sim = {}
+    try:
+        import similar as SIM
+        a3rows = None
+        if a3z_league:
+            fr = [pd.DataFrame(lg["rows"], columns=lg["keys"]).set_index("id") for _, lg in sorted(a3z_league.items())]
+            a3rows = pd.concat(fr)
+            a3rows = a3rows[~a3rows.index.duplicated(keep="last")]
+        sim = SIM.comps(SIM.profile([PREV, CUR], sk, None, a3rows), {int(k): v for k, v in names.items()})
+        print(f"  plays like: {len(sim)} skaters")
+    except Exception as e:
+        print(f"  plays like skipped: {e!r}")
     for pid, rows in plogs.items():
         S = P["skater"].get(pid) or P["goalie"].get(pid) or {}
         story = {k: S.get(k) for k in ("bio", "form", "flags", "milestones", "career", "rookie", "age") if S.get(k) is not None}
@@ -907,7 +986,7 @@ def main():
             except Exception as e:
                 print(f"  ! dossier {pid}: {e!r}")
                 dos = None
-            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, a3z=a3z_cards.get(pid), eh=eh_cards.get(pid), defense=def_cards.get(pid),
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, range=rng_sk.get(pid), wins=wins_of(pid), like=sim.get(pid), a3z=a3z_cards.get(pid), eh=eh_cards.get(pid), defense=def_cards.get(pid),
                            dossier=dos,
                            reel=sorted(reel.get(pid, []), key=lambda r: (r["date"], r["period"], r["t"]), reverse=True)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))

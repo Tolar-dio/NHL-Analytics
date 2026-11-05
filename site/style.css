@@ -906,3 +906,27 @@ tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
 @media (max-width: 640px) { #dpath th, #dpath td, #dcomp th, #dcomp td { padding: 7px 5px; font-size: 14px; } }
 .tag-started { color: var(--muted); border-color: var(--muted); }
 .final-note { margin: 4px 0 14px; padding: 10px 14px; border-left: 3px solid var(--blue); background: var(--sheet); border-radius: 6px; font-size: 15px; }
+
+/* ---- talent ranges, wins added, plays like, the race (metrics.js) */
+.rbar { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) 56px; gap: 10px; align-items: center; font-size: 14px; margin: 10px 0; cursor: help; }
+.rb-track { position: relative; height: 14px; background: var(--neutral); border-radius: 7px; }
+.rb-band { position: absolute; top: 0; bottom: 0; background: var(--blue); opacity: .32; border-radius: 7px; }
+.rb-mid { position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1.5px; background: var(--blue); border-radius: 2px; }
+.rb-now { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--ink); }
+.rb-v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.rb-key { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.rb-band-k { display: inline-block; width: 22px; height: 10px; border-radius: 5px; background: var(--blue); opacity: .32; }
+.rb-now-k { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink); margin-left: 8px; }
+.rb-key .mix-key { margin-left: 8px; }
+.stat-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 6px 0 4px; }
+.like-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.like-list li { background: var(--sheet); border: 1px solid var(--hair); border-radius: 6px; padding: 10px 12px; }
+.like-top { display: flex; align-items: baseline; gap: 6px; }
+.like-score { margin-left: auto; font: 700 20px var(--display, inherit); font-variant-numeric: tabular-nums; }
+.rank-list { padding-left: 30px; margin: 6px 0; }
+.rank-list li { margin: 4px 0; }
+.rank-list b { font-variant-numeric: tabular-nums; margin-left: 4px; }
+.wp-notes ol, .wp-notes ul { padding-left: 20px; }
+table.worth { width: 100%; font-size: 14px; }
+table.worth td:first-child, table.worth th:first-child { text-align: left; }
+@media (max-width: 640px) { .rbar { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 50px; font-size: 13px; } }

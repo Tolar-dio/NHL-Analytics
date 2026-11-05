@@ -229,6 +229,7 @@ async function renderGame(view, id) {
       <div class="figure">${flowChart(g)}
         <div class="legend"><span><i style="background:var(--ink)"></i>${g.away}</span><span><i style="background:var(--blue)"></i>${g.home}</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
     </section>
+    <section class="zone" id="gWP" hidden></section>
     <section class="zone grid-2">
       <div><h2>Goals</h2><ol class="goal-list">${g.goals.map(goalItem).join("") || `<li class="empty">No goals.</li>`}</ol>
         ${so ? `<h3 style="margin-top:18px">Shootout</h3>${shootoutTable(g)}` : ""}
@@ -263,6 +264,7 @@ async function renderGame(view, id) {
     }
   };
   drawP();
+  renderWP($("#gWP"), g);
   view.querySelectorAll("[data-replay]").forEach((b) => b.addEventListener("click", () => {
     history.replaceState(null, "", `#game/${g.id}/${b.dataset.replay}`);
     openTheater(g, b.dataset.replay);

@@ -677,13 +677,15 @@ function renderLeague(view) {
       <p class="lede">The standings, plus the two things that make a record misleading. Finishing is goals scored minus what the team's chances usually produce. Goaltending is the chances against minus goals allowed, so positive means the goalies are stealing games. Both swing hard over a few weeks and usually drift back toward zero; a team winning on both is due for a cooler stretch.</p>
       <div id="standings"></div>
     </section>
+    <section class="zone" id="lRace" hidden></section>
     <section class="zone">
       <h2>Goalies: saves above expected</h2>
       <p class="lede">How many goals each goalie has saved compared with an average goalie facing the same shots. Goalies with at least 60 shots against (blocked shots excluded). Tap one for his full page: save rate by shot danger, rebounds and every shot he has faced.</p>
       <div class="figure">${divergingBars(goalies, "gsax", (g) => `${g.name} ${g.team}`,
         (g) => `<b>${esc(g.name)}</b> ${g.team}<br>${g.gp} GP, ${pct(g.sv_pct, 1)} save rate<br>Allowed ${g.ga} on ${num(g.xga, 1)} expected${g.prev_gsax != null ? `<br>Last season ${signed(g.prev_gsax)}` : ""}<br><span class="dim">Tap for his page</span>`,
         (g) => `#goalie/${g.id}`)}</div>
-    </section>`;
+    </section>
+    <section class="zone" id="lClutch" hidden></section>`;
   const draw = () => {
     const rows = sortRows(teams.map((t) => ({ ...t, id: t.team, rec: `${t.w}-${t.l}-${t.otl}`, gaLuck: t.xga - t.ga })), S.lSort);
     $("#standings").innerHTML = table(rows, [
@@ -698,6 +700,8 @@ function renderLeague(view) {
     bindSort($("#standings"), S.lSort, draw);
   };
   draw();
+  renderRace($("#lRace")).catch(() => {});
+  renderClutch($("#lClutch")).catch(() => {});
 }
 
 // ------------------------------------------------------------------ TEAMS
@@ -999,10 +1003,12 @@ function renderPlayers(view, param) {
         <div id="pEdge"></div>
       </div>
     </section>
+    <section class="zone plays" id="pRange" hidden></section>
     <section class="zone path" id="pPath" hidden></section>
     <section class="zone plays" id="pValue" hidden></section>
     <section class="zone plays" id="pDef" hidden></section>
     <section class="zone plays" id="pPlays" hidden></section>
+    <section class="zone" id="pLike" hidden></section>
     <section class="zone" id="pReel" hidden></section>
     <section class="zone"><h2>Game by game</h2><p class="lede">Every game this season, newest first. xG is the expected goals from his own shots; on-ice xG ± is chances for minus chances against while he was on the ice. Tap a game to open it.</p>
       <div id="pLog"><p class="note">Loading his games…</p></div></section>
@@ -1014,6 +1020,8 @@ function renderPlayers(view, param) {
     const rows = Array.isArray(file) ? file : file.log || [], ed = Array.isArray(file) ? null : file.edge;
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
     if (!Array.isArray(file) && file.story && $("#pBio")) $("#pBio").innerHTML = playerBio(file.story);
+    if (!Array.isArray(file) && $("#pRange")) renderRange($("#pRange"), file, p);
+    if (!Array.isArray(file) && file.like && $("#pLike")) renderLike($("#pLike"), file.like, p.name);
     if (!Array.isArray(file) && file.dossier && $("#pPath")) renderPath($("#pPath"), file.dossier, p.name);
     if (!Array.isArray(file) && file.eh && $("#pValue")) renderValue($("#pValue"), file.eh, p.id).catch(() => {});
     if (!Array.isArray(file) && file.defense && $("#pDef")) renderDefense($("#pDef"), { ...file.defense, name: p.name }, p.id, { eh: file.eh, a3z: file.a3z }).catch(() => {});

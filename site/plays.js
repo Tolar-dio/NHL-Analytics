@@ -125,8 +125,9 @@ function mixBars(title, mine, avg, cats, noun) {
 }
 
 async function renderPlays(el, card, pid, name) {
-  let lg = null;
+  let lg = null, worth = null;
   try { lg = (await getJSON("data/a3z_league.json"))[card.season]; } catch (e) { lg = null; }
+  if (card.value) try { worth = await getJSON("data/a3z_value.json"); } catch (e) { worth = null; }
   const maps = PLAY_MAPS[card.pos === "D" ? "D" : "F"];
   S.playMap = maps.some((m) => m.k === S.playMap) ? S.playMap : maps[0].k;
   const posName = card.pos === "D" ? "defensemen" : "forwards", posOne = card.pos === "D" ? "defenseman" : "forward";
@@ -163,6 +164,7 @@ async function renderPlays(el, card, pid, name) {
       <div>${mixBars("How his shots happen", card.mix?.play, card.avg?.play, plays, "shots")}</div>
     </div>
     ${card.mix?.shot ? `<p class="note"><span class="mix-key"></span> marks a typical ${posOne}. Bars run to 60%.</p>` : ""}
+    ${possessionBlock(card.value, card.pos, worth)}
     <details class="fold glossary"><summary>What these stats mean</summary>
       <dl>${GLOSSARY.map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join("")}</dl></details>
     <p class="note">Five-on-five tracking by All Three Zones (Corey Sznajder, allthreezones.com), which covers about a third of each season's games. A few games of tracking is noise; the numbers settle over a couple of months.</p>`;
