@@ -30,7 +30,7 @@ function wpChart(g, wp) {
   }).join("");
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${g.home} win probability through the game`)}">
     ${yl}${periods}
-    <path d="${area(true)}" fill="var(--blue)" opacity=".14"/><path d="${area(false)}" fill="var(--ink)" opacity=".10"/>
+    <path d="${area(true)}" fill="var(--th, var(--blue))" opacity=".22"/><path d="${area(false)}" fill="var(--ta, var(--ink))" opacity=".18"/>
     <line x1="${m.l}" x2="${W - m.r}" y1="${Y(0.5)}" y2="${Y(0.5)}" stroke="var(--muted)" stroke-width="1"/>
     <path d="${line}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
     ${bands}${dots}${plabels}</svg>`;

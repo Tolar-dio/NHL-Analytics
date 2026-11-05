@@ -133,7 +133,7 @@ jobs:
         run: |
           # the page, its scripts and the built data; never config.json (roster) or the Python sources
           mkdir -p _site
-          cp site/index.html site/style.css site/*.js _site/
+          cp site/index.html site/style.css site/*.js site/og.png _site/
           cp -r site/data _site/data
           rm -f _site/data/fantasy.json
 

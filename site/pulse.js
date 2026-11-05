@@ -36,9 +36,9 @@ function storyList(lines, opts = {}) {
 }
 
 // players to watch: three a team, with the stories around them and the model's numbers
-function watchCards(list) {
+function watchCards(list, team) {
   return (list || []).map((w) => `<article class="wcard">
-      <div class="wc-head">${playerLink(w.id, w.name)}${w.team ? `<span class="dim">${w.team}</span>` : ""}${typeof injuryTag === "function" ? injuryTag(w.name) : ""}</div>
+      <div class="wc-head">${(w.team || team) && typeof mug === "function" ? mug(w.team || team, w.id, w.name, 36) : ""}${playerLink(w.id, w.name)}${w.team ? `<span class="dim">${w.team}</span>` : ""}${typeof injuryTag === "function" ? injuryTag(w.name) : ""}</div>
       <div class="wc-chips">${w.chips.map((c) => `<span class="wchip wchip-${c.k}">${esc(c.t)}</span>`).join("")}</div>
       ${w.why ? `<p class="wc-why">${esc(w.why)}</p>` : ""}
       <p class="wc-line">${esc(w.line)} <span class="dim">Fair odds to score: ${fair(w.p_goal)}</span></p>
@@ -46,13 +46,13 @@ function watchCards(list) {
 }
 function watchBlock(watch, teams) {
   if (!watch) return "";
-  return `<div class="grid-2">${teams.map((t) => `<div><h3>${t}</h3><div class="wlist">${watchCards(watch[t])}</div></div>`).join("")}</div>`;
+  return `<div class="grid-2">${teams.map((t) => `<div><h3>${t}</h3><div class="wlist">${watchCards(watch[t], t)}</div></div>`).join("")}</div>`;
 }
 
 // one player card for the Pulse lists
 function pulseCard(x, kind) {
   const v = VERDICT[x.verdict];
-  const head = `<div class="pc-head">${playerLink(x.id, x.name)}<span class="dim">${x.team}${x.pos ? ", " + x.pos : ""}</span>${v ? `<span class="tag tag-v tag-v-${x.verdict}" data-tip="${esc(v[1])}">${v[0]}</span>` : ""}</div>`;
+  const head = `<div class="pc-head">${x.team ? mug(x.team, x.id, x.name, 40) : ""}${playerLink(x.id, x.name)}<span class="dim">${x.team}${x.pos ? ", " + x.pos : ""}</span>${v ? `<span class="tag tag-v tag-v-${x.verdict}" data-tip="${esc(v[1])}">${v[0]}</span>` : ""}</div>`;
   if (kind === "form") {
     return `<article class="pcard">${head}
       <div class="pc-stat"><b>${x.pts}</b> points in his last ${x.n} <span class="dim">(${x.g} G); about ${num(x.xpts, 1)} expected</span></div>

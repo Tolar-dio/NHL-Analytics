@@ -46,6 +46,33 @@ const TEAM_NAME = { ANA: "Anaheim Ducks", BOS: "Boston Bruins", BUF: "Buffalo Sa
 const DIVISIONS = [["Atlantic", "BOS BUF DET FLA MTL OTT TBL TOR"], ["Metropolitan", "CAR CBJ NJD NYI NYR PHI PIT WSH"],
   ["Central", "CHI COL DAL MIN NSH STL UTA WPG"], ["Pacific", "ANA CGY EDM LAK SEA SJS VAN VGK"]].map(([d, t]) => [d, t.split(" ")]);
 const teamName = (abbr) => TEAM_NAME[abbr] || abbr;
+// each team's main color, and a lighter one that reads on the dark theme (colors only: no logos, which are trademarks)
+const TEAM_COLOR = { ANA: ["#F47A38", "#F78F55"], BOS: ["#C99A1E", "#FFB81C"], BUF: ["#003087", "#5B8DEF"], CAR: ["#CE1126", "#F05A6B"],
+  CBJ: ["#002654", "#5E86C2"], CGY: ["#C8102E", "#F2C14E"], CHI: ["#CF0A2C", "#F25A6C"], COL: ["#6F263D", "#4A90D9"], DAL: ["#006847", "#3FB47E"],
+  DET: ["#CE1126", "#F05A6B"], EDM: ["#FF4C00", "#FF7A3D"], FLA: ["#C8102E", "#E8B74A"], LAK: ["#111111", "#A2AAAD"], MIN: ["#154734", "#53A07A"],
+  MTL: ["#AF1E2D", "#E8545F"], NJD: ["#CE1126", "#F05A6B"], NSH: ["#C99A1E", "#FFB81C"], NYI: ["#00539B", "#F47D30"], NYR: ["#0038A8", "#6A92E8"],
+  OTT: ["#C52032", "#E0B44C"], PHI: ["#F74902", "#FF7A3D"], PIT: ["#C9920E", "#FCB514"], SEA: ["#001628", "#99D9D9"], SJS: ["#006D75", "#3FBFC8"],
+  STL: ["#002F87", "#FCB514"], TBL: ["#002868", "#6A92E8"], TOR: ["#00205B", "#6A92E8"], UTA: ["#2C6FAE", "#71AFE5"], VAN: ["#00205B", "#3FB47E"],
+  VGK: ["#8C7341", "#C9AE72"], WPG: ["#041E42", "#5B8DEF"], WSH: ["#C8102E", "#F05A6B"] };
+// second colors, used for the home side when both teams wear nearly the same color (Bruins and Penguins)
+const TEAM_ALT = { ANA: ["#8C7341", "#D4B47C"], BOS: ["#111111", "#C8CDD2"], BUF: ["#C99A1E", "#FFB81C"], CAR: ["#111111", "#C8CDD2"],
+  CBJ: ["#CE1126", "#F05A6B"], CGY: ["#111111", "#F05A6B"], CHI: ["#111111", "#C8CDD2"], COL: ["#236192", "#B2496A"], DAL: ["#5A6A72", "#A2AAAD"],
+  DET: ["#111111", "#C8CDD2"], EDM: ["#041E42", "#5B8DEF"], FLA: ["#041E42", "#5B8DEF"], LAK: ["#6E7478", "#E8F0F6"], MIN: ["#A6192E", "#E8545F"],
+  MTL: ["#192168", "#6A7FE0"], NJD: ["#111111", "#C8CDD2"], NSH: ["#041E42", "#5B8DEF"], NYI: ["#F47D30", "#5B8DEF"], NYR: ["#CE1126", "#F05A6B"],
+  OTT: ["#111111", "#C8CDD2"], PHI: ["#111111", "#C8CDD2"], PIT: ["#111111", "#C8CDD2"], SEA: ["#355464", "#68A2B9"], SJS: ["#111111", "#C8CDD2"],
+  STL: ["#C99A1E", "#5B8DEF"], TBL: ["#111111", "#C8CDD2"], TOR: ["#4A5A6A", "#C8CDD2"], UTA: ["#090909", "#C8CDD2"], VAN: ["#00843D", "#6A92E8"],
+  VGK: ["#333F42", "#C8CDD2"], WPG: ["#AC162C", "#F05A6B"], WSH: ["#041E42", "#5B8DEF"] };
+const tc = (abbr, k = "tc", alt = false) => { const c = (alt && TEAM_ALT[abbr]) || TEAM_COLOR[abbr] || ["#1f4e9c", "#5b8deb"]; return `--${k}-l:${c[0]};--${k}-d:${c[1]}`; };
+const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const near = (a, b) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i])) < 110;
+// both sides of a matchup, with the home team on its second color when the two would blur together
+const tc2 = (away, home) => {
+  const A = TEAM_COLOR[away], H = TEAM_COLOR[home];
+  const clash = A && H && (near(A[0], H[0]) || near(A[1], H[1]));
+  return `${tc(away, "ta")};${tc(home, "th", clash)}`;
+};
+const mugUrl = (team, id) => `https://assets.nhle.com/mugs/nhl/${esc(D.meta.season)}/${esc(team)}/${id}.png`;
+const mug = (team, id, name, size = 44) => `<img class="mug" src="${mugUrl(team, id)}" alt="" width="${size}" height="${size}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'mug mug-empty'}))">`;
 // the visitor's team and the players they follow live in this browser only
 const myTeam = () => { const t = store.get("ice-team"); return t && TEAM_NAME[t] ? t : null; };
 const FOLLOW_KEY = "ice-follow";
@@ -504,7 +531,7 @@ function sleeperCard(x, game) {
     : `<b>${pct(x.p_1pt)}</b> for a point <span class="dim">(fair ${x.fair_point})</span> · ${pct(x.p_goal)} to score`;
   return `<article class="sleeper"><div class="sl-top"><span class="sleeper-kind">${SLEEPER_KIND[x.kind] || "Sleeper"}</span>
       ${game ? `<a class="sl-game" href="#preview/${game.id}">${game.away} at ${game.home}</a>` : ""}</div>
-    <h3>${playerLink(x.id, x.name)} <span class="dim">${x.team} vs ${x.opp}</span></h3>
+    <h3 class="sl-name">${mug(x.team, x.id, x.name, 44)}<span>${playerLink(x.id, x.name)} <span class="dim">${x.team} vs ${x.opp}</span></span></h3>
     <p>${esc(x.why.replace(/\s*We have him at [^.]*\.$/, ""))}</p><p class="sl-odds">${p}</p></article>`;
 }
 function sleeperSection(games) {
@@ -513,6 +540,30 @@ function sleeperSection(games) {
   return `<section class="zone"><h2>Sleepers</h2>
     <p class="lede">Our own under-the-radar picks: never "he's due", always something real. Depth scorers are third- and fourth-liners whose recent shots have been dangerous, facing a defense or goalie that gives chances up. Underrated point picks are players whose chance of a point tonight is clearly above what their season scoring suggests, because their role, line or matchup has changed. They're long shots by design, and we grade every one on the <a href="#model">Track record</a> page.</p>
     <div class="sleepers">${all.map(([x, g]) => sleeperCard(x, g)).join("")}</div></section>`;
+}
+
+// the game of the night: your team's game, else the closest game with the most goals in it, among those still to start
+function heroGame(games, mine) {
+  const now = Date.now(), ahead = games.filter((g) => Date.parse(g.start) > now - 3 * 3600e3);
+  const pool = ahead.length ? ahead : games;
+  const score = (g) => { const w = winHome(g); return (1 - Math.abs(2 * w - 1)) * 0.6 + Math.min(1, g.total / 7) * 0.4 + (g.sleepers || []).length * 0.02; };
+  const g = (mine && pool.find((x) => x.away === mine || x.home === mine)) || [...pool].sort((a, b) => score(b) - score(a))[0];
+  if (!g) return "";
+  const wh = winHome(g), yours = mine && (g.away === mine || g.home === mine);
+  const props = (D.tonight.props || []).filter((p) => p.game === g.id && !(injuryOf(p.name) && injuryOf(p.name).abbr !== "DTD"));
+  const top = (t) => props.filter((p) => p.team === t).sort((a, b) => b.p_goal - a.p_goal).slice(0, 2);
+  const goalie = (side, team) => { const x = goalieFor(g, side); return x && x.id ? `<a class="hero-g" href="#goalie/${x.id}">${mug(team, x.id, x.name, 36)}<span><small>In net</small>${esc(x.name)}</span></a>` : ""; };
+  const watch = (p) => `<a class="hero-p" href="#players/${p.id}">${mug(p.team, p.id, p.name, 44)}<span><b>${esc(p.name)}</b><small>${pct(p.p_goal)} to score · ${pct(p.p_1pt)} for a point</small></span></a>`;
+  const team = (t, side) => `<div class="hero-team hero-${side}"><a class="hero-abbr" href="#teams/${t}">${t}</a><span class="hero-name">${esc(teamName(t))}</span>${goalie(side, t)}</div>`;
+  return `<section class="hero tcol" style="${tc2(g.away, g.home)}" aria-label="Game of the night">
+    <div class="hero-kicker"><span>${yours ? "Your team tonight" : "Game of the night"}</span><span>${gameTime(g.start)}</span></div>
+    <div class="hero-match">${team(g.away, "away")}<div class="hero-at">at</div>${team(g.home, "home")}</div>
+    <div class="hero-split" role="img" aria-label="${esc(`Chance to win: ${g.away} ${pct(1 - wh)}, ${g.home} ${pct(wh)}`)}">
+      <span class="hs-a" style="width:${100 * (1 - wh)}%"><b data-count="${Math.round(100 * (1 - wh))}">${pct(1 - wh)}</b></span><span class="hs-h"><b data-count="${Math.round(100 * wh)}">${pct(wh)}</b></span></div>
+    <p class="hero-line">Our chance to win, with ${num(g.away_xg, 1)} and ${num(g.home_xg, 1)} expected goals${g.market && g.market.p_home != null ? `. The sportsbook says ${g.home} ${pct(g.market.p_home)}` : ""}.</p>
+    <div class="hero-watch">${[...top(g.away), ...top(g.home)].map(watch).join("")}</div>
+    <div class="hero-cta"><a class="chip chip-solid" href="#preview/${g.id}">Read the preview</a><span class="live-line" data-live="${g.id}"></span></div>
+  </section>`;
 }
 
 // first visit: what the site is, and a prompt to pick a team
@@ -548,7 +599,7 @@ function renderTonight(view) {
   const gameCard = (g) => {
     const side = (abbr, xg, key) => {
       const opts = g[key + "_goalies"] || [], chosen = goalieFor(g, key);
-      return `<div class="side"><span class="abbr">${abbr}</span>
+      return `<div class="side side-${key}"><span class="abbr">${abbr}</span>
         <span class="bar-track" data-tip="${esc(`${abbr} expected goals tonight: ${xg.toFixed(2)}`)}"><span class="bar-fill" style="width:${(100 * xg) / maxXg}%"></span></span>
         <span class="xg">${xg.toFixed(2)}</span></div>
         <label class="goalie"><select data-game="${g.id}" data-side="${key}" aria-label="${abbr} goalie">
@@ -556,14 +607,17 @@ function renderTonight(view) {
         </select><span class="g-src">${esc(goalieSource(g, key))}${g[key + "_b2b"] ? `<span class="tag tag-b2b" data-tip="${esc("Second night of a back-to-back. Last season, teams in that spot got 47.4% of the expected goals (286 games), and our numbers account for it.")}">Back-to-back</span>` : ""}</span></label>`;
     };
     const yours = mine && (g.away === mine || g.home === mine);
-    return `<article class="game ${S.game === g.id ? "is-picked" : ""} ${yours ? "is-mine" : ""}">
+    const wh = winHome(g);
+    return `<article class="game tcol ${S.game === g.id ? "is-picked" : ""} ${yours ? "is-mine" : ""}" style="${tc2(g.away, g.home)}" data-gid="${g.id}">
       <div class="game-time"><span>${gameTime(g.start)}</span><span class="row" style="gap:12px"><a class="preview-link" href="#preview/${g.id}">Preview</a><button type="button" data-pick="${g.id}">${S.game === g.id ? "Show all games" : "Only this game"}</button></span></div>
       ${side(g.away, g.away_xg, "away")}${side(g.home, g.home_xg, "home")}
+      <div class="winsplit" data-tip="${esc(`Our chance to win: ${g.away} ${pct(1 - wh)}, ${g.home} ${pct(wh)}`)}"><span class="ws-a" style="width:${100 * (1 - wh)}%"><b>${pct(1 - wh)}</b></span><span class="ws-h"><b>${pct(wh)}</b></span></div>
       ${marketLine(g)}
       <div class="live-line" data-live="${g.id}"></div>
     </article>`;
   };
   view.innerHTML = `${welcomeCard()}
+    ${heroGame(games, mine)}
     <section class="zone">
       <h1>${esc(new Date(T.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))}: ${games.length} game${games.length === 1 ? "" : "s"}</h1>
       <p class="lede">Each bar is how many goals we expect that team to score tonight, based on the chances both teams create and allow and who's in net. Choose a different goalie and every number on this page updates. Scores update live once the puck drops.</p>
@@ -619,7 +673,7 @@ function renderTonight(view) {
     };
     const other = mk === "p_goal" ? ["p_2pts", "2+ points"] : ["p_goal", "Goal chance"];
     const cols = [
-      { key: "name", label: "Player", fmt: (r) => `${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${started(r) ? `<span class="tag tag-started" data-tip="This game has started. These numbers were set before puck drop.">Started</span>` : ""}${sleeperTag(r)}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
+      { key: "name", label: "Player", fmt: (r) => `${mug(r.team, r.id, r.name, 26)}${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${started(r) ? `<span class="tag tag-started" data-tip="This game has started. These numbers were set before puck drop.">Started</span>` : ""}${sleeperTag(r)}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
       mk === "p_goal" ? { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" }
@@ -782,7 +836,7 @@ function renderTeams(view, param) {
   ].join(" ");
   S.tSort ||= { key: "pts", dir: -1 };
   view.innerHTML = `
-    <section class="zone">
+    <section class="zone tcol team-head" style="${tc(team)}">
       <div class="controls"><a class="crumbs-a" href="#teams/all">All teams</a>
         <select id="teamPick" aria-label="Team">${abbrs.map((a) => `<option value="${a}" ${a === team ? "selected" : ""}>${esc(teamName(a))}</option>`).join("")}</select>
         ${mine === team ? `<span class="tag tag-mine">Your team</span>` : `<button type="button" class="follow" data-setteam="${team}">Make this my team</button>`}</div>
@@ -965,7 +1019,7 @@ function renderPlayers(view, param) {
     <section class="zone">
       <p class="crumbs"><a href="#players">Players</a></p>
       ${searchBox()}
-      <div class="phead">
+      <div class="phead tcol" style="${tc(p.team)}">
         <div class="ph-photo"><img src="https://assets.nhle.com/mugs/nhl/${esc(D.meta.season)}/${esc(p.team)}/${p.id}.png" alt="" width="128" height="128"
           onerror="this.parentNode.classList.add('ph-none'); this.remove()">${p.num != null ? `<span class="ph-num">${p.num}</span>` : ""}</div>
         <div class="ph-text"><h1>${esc(p.name)}</h1>
@@ -1212,7 +1266,21 @@ function renderModel(view) {
 const ROUTES = { tonight: renderTonight, games: renderGames, game: renderGame, preview: renderPreview, goals: renderGoals, live: renderLive, news: renderNews, feature: renderFeature, pulse: renderPulse, league: renderLeague,
   teams: renderTeams, players: renderPlayers, goalie: renderGoalie, fantasy: renderFantasy, model: renderModel, about: renderAbout };
 const TAB_OF = { game: "games", goals: "games", preview: "tonight", live: "tonight", feature: "news", goalie: "players" };
+// page changes cross-fade where the browser supports it; numbers marked data-count tick up when they appear
+const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function countUp(root) {
+  if (calm()) return;
+  root.querySelectorAll("[data-count]").forEach((el) => {
+    const end = +el.dataset.count, suffix = el.textContent.replace(/^[\d.]+/, ""), t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / 800); el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))) + suffix; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
 function route(e) {
+  if (e !== "resize" && document.startViewTransition && !calm() && D.meta) return document.startViewTransition(() => routeNow(e));
+  return routeNow(e);
+}
+function routeNow(e) {
   const rerender = e === "resize";
   const keepY = scrollY;
   const [tab, param] = (location.hash.slice(1) || "tonight").split("/");
@@ -1222,6 +1290,7 @@ function route(e) {
   const view = $("#view");
   view.onclick = view.onkeydown = view.onchange = null;   // pages that delegate events set these; start clean
   const p = fn(view, param);
+  countUp(view);
   if (p && p.catch) p.catch((e) => (view.innerHTML = `<p class="empty">This page didn't load (${esc(e.message)}). Reload to try again.</p>`));
   tip.hidden = true;
   if (rerender) {

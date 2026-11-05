@@ -195,9 +195,9 @@ async function renderGame(view, id) {
   S.gpSort ||= { key: "gs", dir: -1 };
   const so = g.shootout && g.shootout.length;
   view.innerHTML = `
-    <section class="zone">
+    <section class="zone tcol" style="${tc2(g.away, g.home)}">
       <p class="crumbs"><a href="#games">All games</a></p>
-      <h1>${g.away} ${g.a}, ${g.home} ${g.h}${g.end !== "REG" ? ` (${g.end})` : ""}</h1>
+      <h1><span class="t-a">${g.away}</span> ${g.a}, <span class="t-h">${g.home}</span> ${g.h}${g.end !== "REG" ? ` (${g.end})` : ""}</h1>
       <p class="lede">${esc(new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))} at ${esc(g.venue)}. <a href="${esc(g.gamecenter)}" target="_blank" rel="noopener">Watch the recap and condensed game on NHL.com</a></p>
       <div class="game-open">
         <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>${AI_LABEL}` : ""}
@@ -229,7 +229,7 @@ async function renderGame(view, id) {
       <div class="figure">${flowChart(g)}
         <div class="legend"><span><i style="background:var(--ink)"></i>${g.away}</span><span><i style="background:var(--blue)"></i>${g.home}</span><span><i style="background:var(--red)"></i>Goal</span></div></div>
     </section>
-    <section class="zone" id="gWP" hidden></section>
+    <section class="zone tcol" id="gWP" style="${tc2(g.away, g.home)}" hidden></section>
     <section class="zone grid-2">
       <div><h2>Goals</h2><ol class="goal-list">${g.goals.map(goalItem).join("") || `<li class="empty">No goals.</li>`}</ol>
         ${so ? `<h3 style="margin-top:18px">Shootout</h3>${shootoutTable(g)}` : ""}
@@ -331,9 +331,9 @@ async function renderPreview(view, id) {
   const series = p.series.filter((x) => x.a != null);
   const xgBar = (t, v) => `<div class="xgbar"><b>${t}</b><span class="bar-track"><span class="bar-fill" style="width:${Math.min(100, (100 * v) / 4.5)}%"></span></span><span>${num(v, 2)}</span></div>`;
   view.innerHTML = `
-    <section class="zone">
+    <section class="zone tcol" style="${tc2(p.away, p.home)}">
       <p class="crumbs"><a href="#tonight">Tonight</a></p>
-      <h1>${esc(teamName(p.away))} at ${esc(teamName(p.home))}</h1>
+      <h1><span class="t-a">${esc(teamName(p.away))}</span> at <span class="t-h">${esc(teamName(p.home))}</span></h1>
       <p class="lede">${gameTime(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "not known yet"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "not known yet"}.</p>
       ${finalNote}
       <div class="game-open">

@@ -84,6 +84,14 @@ function liveApply() {
       const y = scrollY; renderTonight($("#view")); requestAnimationFrame(() => scrollTo(0, y));
     }
   }
+  // a goal since the last poll: flash that game on the strip and its Tonight card
+  LIVE.scores ||= {};
+  const scored = new Set();
+  for (const [id, L] of Object.entries(LIVE.byNhl)) {
+    const s = (L.a || 0) + (L.h || 0), was = LIVE.scores[id];
+    if (was != null && s > was) scored.add(id);
+    LIVE.scores[id] = s;
+  }
   // site-wide strip
   const strip = $("#liveStrip");
   const games = D.tonight.games.map((g) => ({ g, L: LIVE.byNhl[g.id] })).filter((x) => x.L);
@@ -94,6 +102,9 @@ function liveApply() {
       <span class="ls-st">${L.state === "in" ? `<i class="live-dot" aria-hidden="true"></i>` : ""}${esc(liveStatus(L))}</span></a>`).join("");
   }
   fillLiveLines();
+  for (const id of scored) {
+    $$(`.ls-game[href$="/${id}"], .game[data-gid="${id}"]`).forEach((el) => { el.classList.remove("just-scored"); void el.offsetWidth; el.classList.add("just-scored"); });
+  }
 }
 function fillLiveLines() {
   $$(".live-line[data-live]").forEach((el) => {
@@ -416,7 +427,7 @@ async function renderLive(view, id) {
           </div>
         </div>
       </section>
-      ${G.wp && G.wp.series.length > 2 ? `<section class="zone">
+      ${G.wp && G.wp.series.length > 2 ? `<section class="zone tcol" style="${tc2(G.away, G.home)}">
         <h2>${done ? "Who was going to win, moment by moment" : "Who's going to win"}</h2>
         ${done ? "" : `<div class="wp-now"><div class="bignum">${Math.max(wpNow, 1 - wpNow) > 0.995 ? "99%+" : pct(Math.max(wpNow, 1 - wpNow))}</div><p>${esc(wpNow >= 0.5 ? G.home : G.away)}'s chance to win from here, from the score, the clock and who's on the power play. It moves with every goal, penalty and pulled goalie.</p></div>`}
         <div class="figure">${wpChart({ home: G.home, away: G.away }, G.wp)}</div>

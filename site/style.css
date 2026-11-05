@@ -930,3 +930,87 @@ tr.is-mine td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
 table.worth { width: 100%; font-size: 14px; }
 table.worth td:first-child, table.worth th:first-child { text-align: left; }
 @media (max-width: 640px) { .rbar { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 50px; font-size: 13px; } }
+
+/* ---------------------------------------------------------------- team colors (app.js TEAM_COLOR; colors only, no logos) */
+.tcol { --ta: var(--ta-l, var(--blue)); --th: var(--th-l, var(--blue)); --tc: var(--tc-l, var(--blue)); }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .tcol { --ta: var(--ta-d, var(--blue)); --th: var(--th-d, var(--blue)); --tc: var(--tc-d, var(--blue)); } }
+:root[data-theme="dark"] .tcol { --ta: var(--ta-d, var(--blue)); --th: var(--th-d, var(--blue)); --tc: var(--tc-d, var(--blue)); }
+
+.game.tcol { position: relative; overflow: hidden; padding-top: 16px; }
+.game.tcol::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--ta) 0 50%, var(--th) 50% 100%); }
+.game.tcol .side-away .bar-fill { background: var(--ta); }
+.game.tcol .side-home .bar-fill { background: var(--th); }
+.game.tcol .side-away .abbr { color: var(--ta); }
+.game.tcol .side-home .abbr { color: var(--th); }
+.winsplit { display: flex; height: 18px; border-radius: 9px; overflow: hidden; font-size: 11px; line-height: 18px; color: #fff; cursor: help; }
+.winsplit span { display: block; padding: 0 8px; white-space: nowrap; overflow: hidden; }
+.ws-a { background: var(--ta); }
+.ws-h { background: var(--th); flex: 1; text-align: right; }
+.winsplit b, .hero-split b { font-weight: 700; text-shadow: 0 1px 1px rgb(0 0 0 / .35); }
+
+/* ---------------------------------------------------------------- Tonight: the game of the night */
+.hero { max-width: 1240px; margin: 18px auto 0; padding: 22px 24px 20px; position: relative; overflow: hidden;
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 10px; }
+.hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .10;
+  background: linear-gradient(110deg, var(--ta) 0 46%, transparent 46% 54%, var(--th) 54% 100%); }
+.hero > * { position: relative; }
+.hero-kicker { display: flex; justify-content: space-between; gap: 12px; font: 700 13px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.hero-match { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin: 10px 0 14px; }
+.hero-team { display: grid; gap: 4px; }
+.hero-home { justify-items: end; text-align: right; }
+.hero-abbr { font: 800 clamp(56px, 11vw, 112px)/.9 var(--display); text-decoration: none; letter-spacing: .01em; }
+.hero-away .hero-abbr { color: var(--ta); }
+.hero-home .hero-abbr { color: var(--th); }
+.hero-name { font: 600 15px var(--body); color: var(--ink-2); }
+.hero-at { font: 700 20px var(--display); color: var(--muted); text-transform: uppercase; }
+.hero-g { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 600; margin-top: 4px; }
+.hero-home .hero-g { flex-direction: row-reverse; }
+.hero-g small, .hero-p small { display: block; color: var(--muted); font-weight: 500; font-size: 12px; }
+.hero-split { display: flex; height: 34px; border-radius: 17px; overflow: hidden; color: #fff; font: 700 18px/34px var(--display); }
+.hero-split span { display: block; padding: 0 14px; white-space: nowrap; transform-origin: left; animation: grow .9s cubic-bezier(.2, .8, .2, 1) both; }
+.hs-a { background: var(--ta); }
+.hs-h { background: var(--th); flex: 1; text-align: right; transform-origin: right !important; }
+.hero-line { margin: 8px 0 14px; color: var(--ink-2); font-size: 15px; }
+.hero-watch { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.hero-p { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: var(--ice); color: var(--ink); text-decoration: none; }
+.hero-p:hover { background: var(--crease); }
+.hero-p b { font-weight: 700; }
+.hero-cta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+.mug { border-radius: 50%; background: var(--neutral); object-fit: cover; flex: none; }
+.mug-empty { display: inline-block; width: 36px; height: 36px; }
+@media (max-width: 640px) {
+  .hero { margin: 12px 12px 0; padding: 16px 14px; }
+  .hero-name { font-size: 13px; }
+  .hero-g span { display: none; }
+}
+
+/* ---------------------------------------------------------------- motion (all off under prefers-reduced-motion, above) */
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.slate .bar-fill, .winsplit span, .cellbar .bar-fill, .meter .bar-fill { transform-origin: left; animation: grow .7s cubic-bezier(.2, .8, .2, 1) both; }
+.slate .game { animation: rise .45s ease-out both; }
+.slate .game:nth-child(2) { animation-delay: .04s; } .slate .game:nth-child(3) { animation-delay: .08s; } .slate .game:nth-child(4) { animation-delay: .12s; }
+.slate .game:nth-child(5) { animation-delay: .16s; } .slate .game:nth-child(6) { animation-delay: .2s; } .slate .game:nth-child(n+7) { animation-delay: .24s; }
+.hero { animation: rise .5s ease-out both; }
+@keyframes goalflash { 0% { box-shadow: 0 0 0 0 var(--red); } 30% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--red) 45%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.just-scored { animation: goalflash 1.6s ease-out 3; }
+.ls-game.just-scored b { color: var(--red); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .18s; }
+td .mug { vertical-align: middle; margin-right: 8px; }
+.sl-name { display: flex; align-items: center; gap: 10px; }
+.wc-head .mug, .pc-head .mug { vertical-align: middle; margin-right: 8px; }
+.wc-head, .pc-head { align-items: center; }
+.tcol .t-a { color: var(--ta); }
+.tcol .t-h { color: var(--th); }
+.team-head h1 { display: inline-block; padding-bottom: 4px; border-bottom: 5px solid var(--tc); }
+.phead.tcol .ph-photo { box-shadow: 0 0 0 4px var(--tc); }
+
+/* ---------------------------------------------------------------- brand: the faceoff-circle mark and wordmark */
+.wordmark { display: inline-flex; align-items: center; gap: 10px; }
+.wm-mark { width: 36px; height: 36px; color: var(--ink); flex: none; }
+.wm-text { display: inline-flex; align-items: baseline; gap: 6px; font: 800 32px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.wm-the { font: 700 15px var(--body); text-transform: lowercase; color: var(--muted); letter-spacing: 0; }
+.wm-ice { color: var(--blue); }
+.wordmark:hover .wm-mark circle:last-of-type { transform-origin: 20px 20px; animation: puckspin .6s ease-out; }
+@keyframes puckspin { 50% { transform: scale(.6); } }
+@media (max-width: 640px) { .wm-text { font-size: 26px; } .wm-mark { width: 30px; height: 30px; } }
