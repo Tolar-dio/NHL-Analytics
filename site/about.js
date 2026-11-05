@@ -87,7 +87,7 @@ function renderAbout(view) {
     ${sec("glossary", "Glossary", `<dl class="about-dl gloss">${SITE_GLOSSARY.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl>`)}
     ${sec("data", "Data and credits", `
       <ul class="about-list">
-        <li><b>The NHL</b>: schedules, play-by-play, shift charts, box scores and NHL EDGE player tracking (skating speed, shot speed, shot locations). Player headshots and highlight clips are the NHL's own: headshots load from the NHL's servers, clips open on NHL.com, and highlight videos play through the NHL's YouTube channel.</li>
+        <li><b>The NHL</b>: schedules, play-by-play (live during games, through a small relay of ours, because the NHL's data can't be read directly by a web page), shift charts, box scores and NHL EDGE player tracking (skating speed, shot speed, shot locations). Player headshots and highlight clips are the NHL's own: headshots load from the NHL's servers, clips open on NHL.com, and highlight videos play through the NHL's YouTube channel.</li>
         <li><b><a href="https://moneypuck.com">MoneyPuck.com</a></b>: shot-by-shot expected goals for every finished game.</li>
         <li><b><a href="https://www.allthreezones.com">All Three Zones</a></b> (Corey Sznajder): hand-tracked passing, zone entries and zone exits for about a third of each season's games, shown with permission.</li>
         <li><b><a href="https://evolving-hockey.com">Evolving-Hockey</a></b>: GAR, WAR, xWAR and RAPM player value models, shown with permission.</li>
@@ -108,5 +108,6 @@ function renderAbout(view) {
       <p><b>Gambling problem? Call 1-800-GAMBLER</b> (US, free and confidential, 24/7). In Canada, contact your provincial problem gambling helpline.</p>`)}
     ${sec("privacy", "Privacy", `
       <p>There are no accounts and no ads. Your team, the players you follow, odds you type, goalie picks and your light or dark setting are saved in your own browser and never sent to us. Clearing your browser data resets them.</p>
-      <p>Some things load from other services as you browse: fonts from Google Fonts, headshots from the NHL, live scores and injuries from ESPN, and videos from YouTube (only when you press play). Those services see the request like any other website visit.</p>`)}`;
+      <p>Some things load from other services as you browse: fonts from Google Fonts, headshots from the NHL, live scores and injuries from ESPN, live play-by-play from the NHL through our relay on Vercel, and videos from YouTube (only when you press play). Those services see the request like any other website visit.</p>
+      <p>When something on the page breaks, your browser sends an error report to Sentry, the service we use to find and fix bugs: the error message, the page it happened on, and your browser and device type. It doesn't include your name, what you typed or what you saved, and we don't record sessions.</p>`)}`;
 }

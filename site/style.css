@@ -286,8 +286,8 @@ a.game-row:hover { background: var(--sheet); }
 
 .story { max-width: 68ch; font-size: 18px; line-height: 1.6; color: var(--ink); }
 .story p { margin: 0 0 12px; }
-.deserve { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-.deserve p { margin: 0; color: var(--ink-2); max-width: 46ch; }
+.deserve, .wp-now { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.deserve p, .wp-now p { margin: 0; color: var(--ink-2); max-width: 46ch; }
 .vs-grid { max-width: 680px; border: 1px solid var(--hair); border-radius: 6px; background: var(--sheet); }
 .vs { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--hair); font-variant-numeric: tabular-nums; }
 .vs:last-child { border-bottom: 0; }

@@ -184,6 +184,89 @@ function deserveHome(home, away) {
   return w + t / 2;
 }
 
+// ------------------------------------------------------------------ the NHL's own play-by-play, through our proxy
+// (api-web.nhle.com sends no CORS headers, so the site can't read it directly; proxy/api/nhl.js relays a few
+// public endpoints with a 15-second edge cache). Same event model as the overnight data, so shots carry the NHL's
+// strength codes, real player ids and shot types, and our win probability can run live.
+const NHL_PROXY = "https://readtheice-api.vercel.app/api/nhl?path=";
+async function nhl(path) {
+  const r = await fetch(NHL_PROXY + encodeURIComponent(path), { cache: "no-store" });
+  if (!r.ok) throw new Error(`NHL ${r.status}`);
+  return r.json();
+}
+const NHL_ATT = { "shot-on-goal": 1, "missed-shot": 1, goal: 1, "blocked-shot": 1 };
+function skaters(sc, home) {   // own and opposing skaters, own goalie in net, from the 4-digit code
+  const c = String(sc || "1551").padStart(4, "0"), ag = +c[0], as = +c[1], hs = +c[2], hg = +c[3];
+  return home ? { own: hs, opp: as, g: hg, og: ag } : { own: as, opp: hs, g: ag, og: hg };
+}
+function buildLiveNHL(pbp, g0, model, wpm) {
+  const home = pbp.homeTeam.abbrev, away = pbp.awayTeam.abbrev;
+  const abbr = { [pbp.homeTeam.id]: home, [pbp.awayTeam.id]: away };
+  const names = {}, teamOf = {}, heads = {};
+  for (const r of pbp.rosterSpots || []) {
+    names[r.playerId] = `${r.firstName?.default || ""} ${r.lastName?.default || ""}`.trim();
+    teamOf[r.playerId] = abbr[r.teamId]; heads[r.playerId] = r.headshot;
+  }
+  const secsOf = (p) => { const [m, s] = (p.timeInPeriod || "0:00").split(":").map(Number); return (p.periodDescriptor.number - 1) * 1200 + m * 60 + (s || 0); };
+  const plays = (pbp.plays || []).filter((p) => p.periodDescriptor && p.periodDescriptor.periodType !== "SO" && p.periodDescriptor.number < 5);
+  const shots = [], goals = [], pens = [], attempts = { [away]: 0, [home]: 0 }, sogP = {}, wpGoals = [], series = [];
+  const penEnd = {};
+  let hsc = 0, asc = 0, prev = null, last = null;
+  const at = (t, per, sc) => (wpm ? wpm.at(hsc - asc, t, per, sc, Object.fromEntries(Object.entries(penEnd).filter(([, v]) => v > t))) : null);
+  for (const p of plays) {
+    const d = p.details || {}, t = secsOf(p), per = p.periodDescriptor.number, k = p.typeDescKey;
+    if (k === "penalty") {
+      const team = abbr[d.eventOwnerTeamId];
+      pens.push({ per, clock: p.timeInPeriod, team, min: d.duration,
+        text: `${names[d.committedByPlayerId] || names[d.servedByPlayerId] || team || ""}: ${String(d.descKey || "penalty").replace(/-/g, " ")}` });
+      if ([2, 4, 5].includes(d.duration) && team) penEnd[team] = Math.max(penEnd[team] ?? -1, t) + 60 * d.duration;
+    }
+    const pw = at(t, per, p.situationCode);
+    if (pw != null && (last == null || Math.abs(pw - last) >= 0.004 || k === "period-end")) { series.push([t, +pw.toFixed(4)]); last = pw; }
+    if (NHL_ATT[k]) {
+      const shooter = d.shootingPlayerId || d.scoringPlayerId;
+      const team = teamOf[shooter] || (k === "blocked-shot" ? null : abbr[d.eventOwnerTeamId]);
+      if (team) attempts[team] = (attempts[team] || 0) + 1;
+      if (team && k !== "blocked-shot") {
+        if (k !== "missed-shot") sogP[per + team] = (sogP[per + team] || 0) + 1;
+        const isHome = team === home, sk = skaters(p.situationCode, isHome);
+        const state = sk.own > sk.opp ? "PP" : sk.own < sk.opp ? "SH" : "EV";
+        // which net: the home team defends the side the NHL names, so it attacks the other one
+        const dir = (p.homeTeamDefendingSide === "right") === isHome ? -1 : 1;
+        let xg = null;
+        if (d.xCoord != null && model) {
+          const dt = prev ? t - secsOf(prev) : 99, pd = prev?.details || {};
+          const rebound = prev && NHL_ATT[prev.typeDescKey] && dt <= 3 ? 1 : 0;
+          const rush = prev && pd.xCoord != null && dt <= 4 && !["faceoff", "stoppage"].includes(prev.typeDescKey) && pd.xCoord * dir <= 25 ? 1 : 0;
+          const st = SHOT_TYPES.includes(d.shotType) ? d.shotType : "other";
+          xg = xgOf(model, featurise(d.xCoord, d.yCoord, dir, st, state, rebound, rush));
+          const side = isHome ? 1 : -1, dist = Math.round(Math.hypot(89 - d.xCoord * dir, d.yCoord));
+          shots.push([Math.round(d.xCoord * dir * side), Math.round(d.yCoord * dir * side), Math.round(xg * 1000), k === "goal" ? 1 : 0, isHome ? 1 : 0, t,
+            shooter || 0, state, LIVE_CODE[st] || "", dist, d.goalieInNetId || 0, p.eventId, (rebound ? 1 : 0) | (rush ? 2 : 0) | (k === "missed-shot" ? 0 : 4), -1]);
+        }
+        if (k === "goal") {
+          const before = pw == null ? null : isHome ? pw : 1 - pw;
+          if (isHome) hsc++; else asc++;
+          let after = at(t + 0.5, per, p.situationCode);
+          if (after != null) { if (per >= 4) after = isHome ? 1 : 0; series.push([t, +after.toFixed(4)]); last = after; after = isHome ? after : 1 - after; }
+          const ast = [d.assist1PlayerId, d.assist2PlayerId].filter(Boolean).map((i) => names[i]).filter(Boolean);
+          goals.push({ per, clock: p.timeInPeriod, team, xg, state, score: `${d.awayScore ?? asc}-${d.homeScore ?? hsc}`, head: heads[d.scoringPlayerId],
+            id: d.scoringPlayerId, clip: d.highlightClipSharingUrl || null, name: names[d.scoringPlayerId] || "Goal",
+            rest: `${d.scoringPlayerTotal ? ` (${d.scoringPlayerTotal})` : ""}, ${ast.length ? `from ${ast.join(" and ")}` : "unassisted"}`,
+            text: `${names[d.scoringPlayerId] || "Goal"}${d.scoringPlayerTotal ? ` (${d.scoringPlayerTotal})` : ""}, ${ast.length ? `from ${ast.join(" and ")}` : "unassisted"}` });
+          if (before != null) wpGoals.push({ t, period: per, team, id: d.scoringPlayerId, name: names[d.scoringPlayerId], before, after, swing: after - before });
+        }
+      }
+    }
+    prev = p;
+  }
+  const xh = shots.filter((s) => s[4] === 1).map((s) => s[2] / 1000), xa = shots.filter((s) => s[4] === 0).map((s) => s[2] / 1000);
+  const lastPer = Math.max(1, ...plays.map((p) => p.periodDescriptor.number));
+  return { home, away, shots, goals, pens, names, attempts, sogP, box: {}, lastPer, src: "nhl", hsc, asc,
+    wp: series.length ? { series, goals: wpGoals, now: (t, per, sc) => at(t, per, sc) } : null,
+    xg_h: xh.reduce((a, b) => a + b, 0), xg_a: xa.reduce((a, b) => a + b, 0), dtw_home: deserveHome(xh, xa) };
+}
+
 function buildLive(sum, g0, model) {
   const home = g0.home, away = g0.away, other = (t) => (t === home ? away : home);
   const plays = (sum.plays || []).filter((p) => p.period && p.period.number < 5);
@@ -246,6 +329,7 @@ async function renderLive(view, id) {
   view.innerHTML = `<p class="empty">Connecting to the game…</p>`;
   const here = location.hash;
   const model = await getJSON("data/xg_live.json").catch(() => null);
+  const wpm = wpModel(await getJSON("data/winprob.json").catch(() => null));
   await liveStart();
   clearTimeout(LIVE.gameTimer);
   const gen = (LIVE.gen = (LIVE.gen || 0) + 1);   // a redraw of this page (resize) retires the old loop
@@ -258,10 +342,14 @@ async function renderLive(view, id) {
       LIVE.gameTimer = setTimeout(draw, 60000);
       return;
     }
-    let sum;
-    try { sum = await espn(`summary?event=${L.eid}`); } catch (e) { LIVE.gameTimer = setTimeout(draw, 60000); return; }
+    // the NHL's play-by-play when our proxy answers (strength codes, player ids, live win probability), ESPN's otherwise
+    const [pbp, sum] = await Promise.all([nhl(`gamecenter/${g0.id}/play-by-play`).catch(() => null), espn(`summary?event=${L.eid}`).catch(() => null)]);
     if (location.hash !== here || gen !== LIVE.gen) return;
-    const G = buildLive(sum, g0, model);
+    if (!sum && !(pbp && pbp.plays)) { LIVE.gameTimer = setTimeout(draw, 60000); return; }
+    let G;
+    try { G = pbp && pbp.plays && pbp.plays.length ? buildLiveNHL(pbp, g0, model, wpm) : null; } catch (e) { G = null; }
+    if (G && sum) G.box = buildLive(sum, g0, null).box;
+    if (!G) G = buildLive(sum, g0, model);
     const [cm, cs] = String(L.clock || "0:00").split(":").map(Number), rem = (cm || 0) * 60 + (cs || 0);
     const now = L.state === "post" ? null : L.period >= 4 ? 3600 + Math.max(0, 300 - rem) : (L.period - 1) * 1200 + (1200 - rem);
     D._names = G.names;
@@ -273,6 +361,17 @@ async function renderLive(view, id) {
     const perLabel = (p) => (p > 3 ? "OT" : ["", "1st", "2nd", "3rd"][p]);
     const updated = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" });
     const done = L.state === "post";
+    // win probability right now, from the last play's strength and the clock
+    let wpNow = null;
+    if (G.wp) {
+      const lp = [...(pbp.plays || [])].reverse().find((p) => p.situationCode);
+      const tNow = done ? null : now;
+      if (tNow != null && tNow > G.wp.series[G.wp.series.length - 1][0]) {
+        const pn = G.wp.now(tNow, L.period, lp?.situationCode);
+        if (pn != null) { G.wp.series.push([tNow, +pn.toFixed(4)]); wpNow = pn; }
+      }
+      if (wpNow == null) wpNow = done ? (L.h > L.a ? 1 : 0) : G.wp.series[G.wp.series.length - 1][1];
+    }
     const y = scrollY;
     const keep = smKeep(view);
     view.innerHTML = `
@@ -286,7 +385,7 @@ async function renderLive(view, id) {
             <h3 class="kicker">Goals</h3>
             ${G.goals.length ? `<ol class="goal-list">${G.goals.map((x) => `<li class="goal-item">${headshot(x.head, "")}
               <div><div class="gi-top"><span class="gi-when">${perLabel(x.per)} ${esc(x.clock || "")}</span> <span class="gi-team">${x.team}</span></div>
-              <div class="gi-sub">${esc(x.text)}${x.xg != null ? `. A ${pct(x.xg)} chance` : ""}${x.state !== "EV" ? `, ${x.state === "PP" ? "power play" : "shorthanded"}` : ""}. <span class="dim">${G.away} ${x.score.split("-")[0]}, ${G.home} ${x.score.split("-")[1]}</span></div></div></li>`).join("")}</ol>`
+              <div class="gi-sub">${x.id ? playerLink(x.id, x.name) + esc(x.rest) : esc(x.text)}${x.xg != null ? `. A ${pct(x.xg)} chance` : ""}${x.state !== "EV" ? `, ${x.state === "PP" ? "power play" : "shorthanded"}` : ""}. <span class="dim">${G.away} ${x.score.split("-")[0]}, ${G.home} ${x.score.split("-")[1]}</span></div></div>${x.clip ? `<span class="gi-acts"><a class="watch" href="${esc(x.clip)}" target="_blank" rel="noopener">Watch</a></span>` : ""}</li>`).join("")}</ol>`
               : `<p class="note">No goals yet.</p>`}
             <h3 class="kicker">By period</h3>
             <div class="table-wrap ls-wrap"><table class="linescore"><thead><tr><th></th><th></th>${pers.map((p) => `<th>${perLabel(p)}</th>`).join("")}<th class="tot">Total</th></tr></thead><tbody>
@@ -296,7 +395,7 @@ async function renderLive(view, id) {
               <tr><th scope="row">${G.home}</th>${pers.map((p) => `<td>${num(G.shots.filter((s) => s[4] === 1 && Math.min(4, Math.floor(s[5] / 1200) + 1) === p).reduce((a, s) => a + s[2] / 1000, 0), 2)}</td>`).join("")}<td class="tot">${num(G.xg_h, 2)}</td></tr>
             </tbody></table></div>
             <h3 class="kicker">Penalties</h3>
-            ${G.pens.length ? `<ol class="pen-list">${G.pens.map((x) => `<li><span class="gi-when">${perLabel(x.per)} ${esc(x.clock || "")}</span> <span class="gi-team">${x.team || ""}</span> ${esc(x.text)} <span class="dim">${x.min} min</span></li>`).join("")}</ol>` : `<p class="note">None yet.</p>`}
+            ${G.pens.length ? `<ol class="pen-list">${G.pens.map((x) => `<li><span class="gi-when">${perLabel(x.per)} ${esc(x.clock || "")}</span> <span class="gi-team">${x.team || ""}</span> ${esc(x.text)} ${x.min ? `<span class="dim">${x.min} min</span>` : ""}</li>`).join("")}</ol>` : `<p class="note">None yet.</p>`}
           </div>
           <div>
             <div class="deserve" data-tip="${esc("Every shot so far replayed thousands of times using its chance of going in; ties split evenly")}">
@@ -313,10 +412,16 @@ async function renderLive(view, id) {
               ${stat("Hits", bx(G.away, "hits"), bx(G.home, "hits"))}
               ${stat("Blocked shots", bx(G.away, "blockedShots"), bx(G.home, "blockedShots"))}
             </div>
-            <p class="note">Score, shots and game stats from ESPN. ${model ? `Live chance ratings come from our in-game model, trained on ${model.shots.toLocaleString()} shots from the last two seasons. It's a little less sharp than MoneyPuck's model, which we use for the full breakdown the next morning.` : ""}</p>
+            <p class="note">${G.src === "nhl" ? "Play-by-play from the NHL; score and game stats from ESPN." : "Score, shots and game stats from ESPN."} ${model ? `Live chance ratings come from our in-game model, trained on ${model.shots.toLocaleString()} shots from the last two seasons. It's a little less sharp than MoneyPuck's model, which we use for the full breakdown the next morning.` : ""}</p>
           </div>
         </div>
       </section>
+      ${G.wp && G.wp.series.length > 2 ? `<section class="zone">
+        <h2>${done ? "Who was going to win, moment by moment" : "Who's going to win"}</h2>
+        ${done ? "" : `<div class="wp-now"><div class="bignum">${Math.max(wpNow, 1 - wpNow) > 0.995 ? "99%+" : pct(Math.max(wpNow, 1 - wpNow))}</div><p>${esc(wpNow >= 0.5 ? G.home : G.away)}'s chance to win from here, from the score, the clock and who's on the power play. It moves with every goal, penalty and pulled goalie.</p></div>`}
+        <div class="figure">${wpChart({ home: G.home, away: G.away }, G.wp)}</div>
+        <p class="note">Above the middle line, ${esc(G.home)} are favored; below it, ${esc(G.away)}. Red dots are goals.</p>
+      </section>` : ""}
       <section class="zone">
         <h2>How the chances are piling up</h2>
         <div class="figure">${flowChart({ shots: G.shots, end: G.lastPer > 3 || L.period > 3 ? "OT" : "REG", away: G.away, home: G.home, now })}

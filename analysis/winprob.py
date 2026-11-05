@@ -132,7 +132,7 @@ class WP:
         la = np.array([self.lam(False, t, as_, pp_left) for t in np.atleast_1d(t_left)]).reshape(diff.shape)
         # the trailing team pulls its goalie late: both sides score at empty-net rates for that stretch
         for k, secs in self.pull.items():
-            s = np.where(t_left <= 180, np.minimum(t_left, secs * t_left / 180), 0.0)
+            s = np.where(t_left <= 180, np.minimum(t_left, secs), 0.0)   # the net sits empty for the last `secs` seconds
             th, ta = (diff == -k) * s, (diff == k) * s          # seconds the home / away side plays 6-on-5
             lh = lh + th * (self.r[("en_att", True)] - self.r[("ev", True)]) + ta * (self.r[("en_def", True)] - self.r[("ev", True)])
             la = la + ta * (self.r[("en_att", False)] - self.r[("ev", False)]) + th * (self.r[("en_def", False)] - self.r[("ev", False)])

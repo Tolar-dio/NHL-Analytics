@@ -208,3 +208,46 @@ function possessionBlock(v, pos, tbl) {
       <p class="note">Each carry-in, dump-in, failed entry, exit and denial is valued by the chances that usually follow it; these are his plays' value above a typical ${pos === "D" ? "defenseman" : "forward"}, in expected goals per 60 minutes at five on five.</p></div>
       <div>${worth}</div></div>`;
 }
+
+// ------------------------------------------------------------------ live win probability (mirrors analysis/winprob.py)
+function wpModel(P) {
+  if (!P || !P.rate) return null;
+  const r = (k, home) => P.rate[`${k}|${home ? "h" : "a"}`];
+  const cal = (p) => { p = Math.min(1 - 1e-6, Math.max(1e-6, p)); const [a, b] = P.cal || [0, 1]; return 1 / (1 + Math.exp(-(a + b * Math.log(p / (1 - p))))); };
+  const pois = (lam, n = 24) => { const o = [Math.exp(-lam)]; for (let i = 1; i <= n; i++) o.push((o[i - 1] * lam) / i); return o; };
+  const side = (sc, home) => {
+    const c = String(sc || "1551").padStart(4, "0"), ag = +c[0], as = +c[1], hs = +c[2], hg = +c[3];
+    const [og, xg, own, opp] = home ? [hg, ag, hs, as] : [ag, hg, as, hs];
+    return og === 0 ? "en_att" : xg === 0 ? "en_def" : own > opp ? "pp" : own < opp ? "pk" : "ev";
+  };
+  const lam = (home, left, st, ppl) => {
+    if (st !== "pp" && st !== "pk") return r("ev", home) * left;
+    const d = Math.min(ppl, left);
+    return r("ev", home) * (left - d) + r(st, home) * d;
+  };
+  return {
+    at(diff, t, period, sc, penEnd) {
+      if (period >= 4) {
+        if (diff) return diff > 0 ? 1 : 0;
+        const left = Math.max(0, 3900 - t), rh = r("ot", true) * left, ra = r("ot", false) * left;
+        const any = 1 - Math.exp(-(rh + ra));
+        return cal(any * (rh / Math.max(rh + ra, 1e-9)) + (1 - any) * 0.5);
+      }
+      let hs = side(sc, true), as = side(sc, false);
+      if (hs.startsWith("en") || as.startsWith("en")) hs = as = "ev";
+      const left = Math.max(0, 3600 - t);
+      let ppl = 60;
+      if (hs === "pp" || hs === "pk") { const ends = Object.values(penEnd || {}).filter((v) => v > t); ppl = ends.length ? Math.min(...ends) - t : 60; }
+      let lh = lam(true, left, hs, ppl), la = lam(false, left, as, ppl);
+      for (const [k, secs] of Object.entries(P.pull || {})) {
+        const n = +k, s = left <= 180 ? Math.min(left, secs) : 0, th = diff === -n ? s : 0, ta = diff === n ? s : 0;
+        lh += th * (r("en_att", true) - r("ev", true)) + ta * (r("en_def", true) - r("ev", true));
+        la += ta * (r("en_att", false) - r("ev", false)) + th * (r("en_def", false) - r("ev", false));
+      }
+      const H = pois(Math.max(lh, 1e-9)), A = pois(Math.max(la, 1e-9));
+      let win = 0, tie = 0;
+      H.forEach((ph, i) => A.forEach((pa, j) => { const m = i - j + diff; if (m > 0) win += ph * pa; else if (m === 0) tie += ph * pa; }));
+      return cal(win + tie * P.ot_home);
+    },
+  };
+}

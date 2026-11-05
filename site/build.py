@@ -626,6 +626,7 @@ def main():
         nm_wp = {int(k): v for k, v in names.items()}
         clutch = WPM.season_table(wp_sk, wp_gk, nm_wp)
         dump("clutch.json", clutch)
+        dump("winprob.json", WPM.params())   # the live pages run the same win probability in the browser
         print(f"  win probability: {len(wp_games)} games")
     except Exception as e:
         print(f"  win probability skipped: {e!r}")
