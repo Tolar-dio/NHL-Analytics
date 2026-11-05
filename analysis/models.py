@@ -62,6 +62,15 @@ A3Z_B = dict(chance_assists=0.08, chances=0.08, carries=0.04)
 A3Z_Z = {}
 A3Z_NORM = 1.0
 B2B = 0.025          # shrunk from the 2025-26 gap (47.4% vs 50%); too small to show up in prop log loss
+# Home ice (Nov 5, 2026): the model had none, so it gave home teams 50% when they won 52.5% in 2025-26 (3.19 goals
+# a game to 3.06) and 56% early in 2026-27. 0.02 is last season's gap; walk-forward it improved winner Brier in both
+# seasons (2025-26 0.2439 to 0.2434, 2026-27 with priors 0.2379 to 0.2344) and 1+ points log loss slightly; goal and
+# 2+ unchanged. 0.035 tied on 2025-26 (it only helped this season's unusually strong home record), so it stays 0.02.
+HOME = float(os.environ.get("MODEL_HOME", "0.02"))   # home means x (1 + HOME), away x (1 - HOME)
+
+
+def home_factor(is_home):
+    return 1 + HOME if is_home else 1 - HOME
 
 
 def back_to_back(games):
@@ -308,6 +317,9 @@ def price_players(rows, p, tm):
     if B2B and "b2b" in d:
         f = (1 - B2B * d.b2b.astype(float)) * (1 + B2B * d.opp_b2b.astype(float))
         d["lam_g"], d["lam_p"] = d.lam_g * f, d.lam_p * f
+    if HOME and "home" in d:
+        f = np.where(d.home.astype(bool), 1 + HOME, 1 - HOME)
+        d["lam_g"], d["lam_p"] = d.lam_g * f, d.lam_p * f
     d["p_goal"] = nb_tail(d.lam_g, DISP["g"], 1)
     d["p_1pt"] = nb_tail(d.lam_p, DISP["p"], 1)
     d["p_2pts"] = nb_tail(d.lam_p, DISP["p"], 2)
@@ -366,6 +378,8 @@ def run_backtest(cur, dates, priors=None, k=K):
         rows["opp_goalie"] = [st.get((gid, o)) for gid, o in zip(rows.game_id, rows.opp)]
         rows["b2b"] = [tired.get((gid, t), False) for gid, t in zip(rows.game_id, rows.team)]
         rows["opp_b2b"] = [tired.get((gid, o), False) for gid, o in zip(rows.game_id, rows.opp)]
+        hm = cur["games"].set_index("game_id").home
+        rows["home"] = [hm.get(gid) == t for gid, t in zip(rows.game_id, rows.team)]
         d = price_players(rows.set_index("player_id"), p, tm).reset_index()
         pgb = cur["pg"][(cur["pg"].date < cut) & (cur["pg"].game_type == "regular")]
         for pos in ("F", "D"):
@@ -378,14 +392,15 @@ def run_backtest(cur, dates, priors=None, k=K):
         base_lam = tm["lg60"] * tm["calib"]
         for _, gm in cur["games"][(cur["games"].date == cut) & (cur["games"].game_type == "regular")].iterrows():
             ta, th = tired.get((gm.game_id, gm.away), False), tired.get((gm.game_id, gm.home), False)
-            la = team_lambda(tm, gm.away, gm.home, st.get((gm.game_id, gm.home))) * b2b_factor(ta, th)
-            lh = team_lambda(tm, gm.home, gm.away, st.get((gm.game_id, gm.away))) * b2b_factor(th, ta)
+            la = team_lambda(tm, gm.away, gm.home, st.get((gm.game_id, gm.home))) * b2b_factor(ta, th) * home_factor(False)
+            lh = team_lambda(tm, gm.home, gm.away, st.get((gm.game_id, gm.away))) * b2b_factor(th, ta) * home_factor(True)
             dm, db = total_dist(la, lh), total_dist(base_lam, base_lam)
             y = int(gm.home_score + gm.away_score)
             kk = np.arange(len(dm))
             trow.append(dict(date=cut, pred=(dm * kk).sum(), base=(db * kk).sum(), actual=y,
                              ll_m=np.log(dm[min(y, len(dm) - 1)]), ll_b=np.log(db[min(y, len(db) - 1)]),
-                             p_o55=dm[kk >= 6].sum(), p_o65=dm[kk >= 7].sum()))
+                             p_o55=dm[kk >= 6].sum(), p_o65=dm[kk >= 7].sum(), p_home=win_prob(la, lh),
+                             home_won=int(gm.home_score > gm.away_score)))
     P = pd.concat(prow)
     P["y_goal"], P["y_2"] = (P.y_g >= 1).astype(int), (P.y_pts >= 2).astype(int)
     return P, pd.DataFrame(trow)
@@ -400,6 +415,9 @@ def report(P, Tt, label):
           f" | pred {P.p_2pts.sum():.0f} vs actual {P.y_2.sum()}")
     print(f"totals RMSE model {rm('pred'):.3f} | baseline {rm('base'):.3f} | loglik/game "
           f"{Tt.ll_m.mean():.4f} vs {Tt.ll_b.mean():.4f} | corr {np.corrcoef(Tt.pred, Tt.actual)[0, 1]:.3f}")
+    if "p_home" in Tt:
+        print(f"winner Brier {((Tt.p_home - Tt.home_won) ** 2).mean():.4f} (home won {Tt.home_won.mean():.3f}, "
+              f"model said {Tt.p_home.mean():.3f}) | 1+ logloss {logloss((P.y_pts >= 1).astype(int), P.p_1pt):.5f}")
 
 
 def calib_table(P, col, ycol, bins):
@@ -457,8 +475,8 @@ if __name__ == "__main__":
         d.to_csv(os.path.join(OUTROOT, CUR, f"props_{cut}.csv"), index=False)
         trows = []
         for _, s in slate.iterrows():
-            la = team_lambda(tm, s.away, s.home, gid.get(s.home_goalie.lower(), -1))
-            lh = team_lambda(tm, s.home, s.away, gid.get(s.away_goalie.lower(), -1))
+            la = team_lambda(tm, s.away, s.home, gid.get(s.home_goalie.lower(), -1)) * home_factor(False)
+            lh = team_lambda(tm, s.home, s.away, gid.get(s.away_goalie.lower(), -1)) * home_factor(True)
             dist = total_dist(la, lh)
             kk = np.arange(len(dist))
             o55, o65 = dist[kk >= 6].sum(), dist[kk >= 7].sum()

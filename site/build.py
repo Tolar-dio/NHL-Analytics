@@ -809,10 +809,10 @@ def main():
             (ga_, gas), (gh_, ghs) = proj_goalie(g["away"]), proj_goalie(g["home"])
             for team, opp, og in ((g["away"], g["home"], gh_), (g["home"], g["away"], ga_)):
                 rows += [{"player_id": i, "team": team, "opp": opp, "opp_goalie": og, "game": g["id"],
-                          "lineup": st, "lineup_note": note, "b2b": tired(team), "opp_b2b": tired(opp)}
+                          "lineup": st, "lineup_note": note, "b2b": tired(team), "opp_b2b": tired(opp), "home": team == g["home"]}
                          for i, (st, note) in lu["pool"].get(team, {}).items()]
-            la = M.team_lambda(tm, g["away"], g["home"], gh_) * M.b2b_factor(tired(g["away"]), tired(g["home"]))
-            lh = M.team_lambda(tm, g["home"], g["away"], ga_) * M.b2b_factor(tired(g["home"]), tired(g["away"]))
+            la = M.team_lambda(tm, g["away"], g["home"], gh_) * M.b2b_factor(tired(g["away"]), tired(g["home"])) * M.home_factor(False)
+            lh = M.team_lambda(tm, g["home"], g["away"], ga_) * M.b2b_factor(tired(g["home"]), tired(g["away"])) * M.home_factor(True)
             dist = M.total_dist(la, lh)
             k = np.arange(len(dist))
             def options(team, chosen):
