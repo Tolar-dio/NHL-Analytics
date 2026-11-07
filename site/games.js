@@ -200,7 +200,7 @@ async function renderGame(view, id) {
       <h1><span class="t-a">${g.away}</span> ${g.a}, <span class="t-h">${g.home}</span> ${g.h}${g.end !== "REG" ? ` (${g.end})` : ""}</h1>
       <p class="lede">${esc(new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }))} at ${esc(g.venue)}. <a href="${esc(g.gamecenter)}" target="_blank" rel="noopener">Watch the recap and condensed game on NHL.com</a></p>
       <div class="game-open">
-        <div>${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>${AI_LABEL}` : ""}
+        <div><div id="gStory">${g.story ? `<div class="story">${g.story.split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("")}</div>${AI_LABEL}` : ""}</div>
           ${g.context && g.context.length ? `<h3 class="kicker">The story</h3><ul class="notes story-notes">${g.context.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
           ${g.notes && g.notes.length ? `<h3 class="kicker">What decided it</h3><ul class="notes">${g.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
           <h3 class="kicker">By period</h3>${linescore(g)}</div>
@@ -265,6 +265,7 @@ async function renderGame(view, id) {
   };
   drawP();
   renderWP($("#gWP"), g);
+  writerInto($("#gStory"), `recaps/${g.id}.json`);
   view.querySelectorAll("[data-replay]").forEach((b) => b.addEventListener("click", () => {
     history.replaceState(null, "", `#game/${g.id}/${b.dataset.replay}`);
     openTheater(g, b.dataset.replay);
@@ -337,7 +338,7 @@ async function renderPreview(view, id) {
       <p class="lede">${gameTime(p.start)}. Projected goalies: ${p.goalies[p.away] ? esc(p.goalies[p.away].name) : "not known yet"} and ${p.goalies[p.home] ? esc(p.goalies[p.home].name) : "not known yet"}.</p>
       ${finalNote}
       <div class="game-open">
-        <div>${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>${AI_LABEL}` : ""}
+        <div><div id="pvStory">${p.story ? `<div class="story">${p.story.split(/\n\s*\n/).map((x) => `<p>${esc(x)}</p>`).join("")}</div>${AI_LABEL}` : ""}</div>
           ${p.notes && p.notes.length ? (p.story
             ? `<details class="fold"><summary>The numbers behind it</summary><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul></details>`
             : `<h3 class="kicker">Where it tilts</h3><ul class="notes">${p.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`) : ""}</div>
@@ -386,6 +387,7 @@ async function renderPreview(view, id) {
       <details class="fold"${p.watch && Object.keys(p.watch).length ? "" : " open"}><summary>Likeliest scorers and two-point players</summary>
       <div class="grid-2"><div>${props(p.away)}</div><div>${props(p.home)}</div></div></details></section>
     ${series.length ? `<section class="zone"><h2>Earlier this season</h2><ul class="game-list">${series.map((x) => `<li><a class="game-row" href="#game/${x.id}"><span class="gr-date">${shortDate(x.date)}</span><span class="gr-score">${x.away} ${x.a} <span class="dim">at</span> ${x.home} ${x.h}${endTag(x.end)}</span><span class="dim">${x.h > x.a ? x.home : x.away} deserved ${pct(x.h > x.a ? x.dtw_home : 1 - x.dtw_home)}</span></a></li>`).join("")}</ul></section>` : ""}`;
+  writerInto($("#pvStory"), `previews/${p.date}/${p.id}.json`, { hunch: true });
 }
 
 // team season log (appended to the Teams page)

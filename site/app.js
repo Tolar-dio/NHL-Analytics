@@ -842,6 +842,7 @@ function renderTeams(view, param) {
         ${mine === team ? `<span class="tag tag-mine">Your team</span>` : `<button type="button" class="follow" data-setteam="${team}">Make this my team</button>`}</div>
       <h1>${esc(teamName(team))}</h1>
       <p class="lede">${t ? `<b>${t.w}-${t.l}-${t.otl}, ${t.pts} points</b>, ${ordinal(rank)} in the league. ` : ""}${story}</p>
+      <div id="teamTake"></div>
       <div id="teamStory"></div>
       <div class="stat-row" id="teamTiles"></div>
     </section>
@@ -881,6 +882,7 @@ function renderTeams(view, param) {
       tile(signed(t.xga - t.ga), "Goaltending", "goals saved above expected"),
     ].join("") : "";
     $("#teamTrend").innerHTML = trendChart(team, idx);
+    writerInto($("#teamTake"), `writeups/teams/${team}.json`, { kicker: "Our take" });
     if ((P.story || []).length) $("#teamStory").innerHTML = `<h3 class="kicker">Storylines</h3><ul class="notes team-notes">${P.story.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
     getJSON("data/features.json").then((fs) => {   // the latest deep dive on this team
       const f = (fs || []).find((x) => x.kind === "team" && x.subject && x.subject.team === team);
@@ -1033,6 +1035,7 @@ function renderPlayers(view, param) {
         ${tile(p.sog, "Shots", `${p.hits} hits, ${p.blk} blocks`)}
       </div>
       <p class="verdict">${esc(verdictFor(p))}</p>
+      <div id="pTake"></div>
       <div id="pStory"></div>
     </section>
     <section class="zone buzz" id="pBuzz" hidden></section>
@@ -1081,6 +1084,7 @@ function renderPlayers(view, param) {
     if (!Array.isArray(file) && file.defense && $("#pDef")) renderDefense($("#pDef"), { ...file.defense, name: p.name }, p.id, { eh: file.eh, a3z: file.a3z }).catch(() => {});
     if (!Array.isArray(file) && file.a3z && $("#pPlays")) renderPlays($("#pPlays"), file.a3z, p.id, p.name).catch(() => {});
     if ($("#pReel")) renderReel($("#pReel"), Array.isArray(file) ? [] : file.reel, rows, p.name).catch(() => {});
+    writerInto($("#pTake"), `writeups/players/${p.id}.json`, { kicker: "Our take" });
     if (!Array.isArray(file) && file.story && $("#pStory")) $("#pStory").innerHTML = playerStory(file.story);
     getJSON("data/features.json").then((fs) => {   // a deep dive on him, if there is one
       const f = (fs || []).find((x) => x.kind === "player" && x.subject && x.subject.id === p.id);

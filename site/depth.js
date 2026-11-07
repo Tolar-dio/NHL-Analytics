@@ -128,6 +128,7 @@ async function renderGoalie(view, param) {
           ${followBtn({ id: G.id, kind: "goalie", name: G.name, team: G.team })}</div>
         <div class="meta ph-bio"><a href="#league">Every goalie, ranked</a></div>
       </div>
+      <div id="gTake"></div>
       <div class="stat-row">
         ${tile(signed(G.gsax, 1), "Saves above expected", pctTxt(G.pct.gsax60) ? `${pctTxt(G.pct.gsax60)} per 60` : `${G.ga} allowed on ${num(G.xga, 1)} expected`)}
         ${tile(svStr(G.sv), "Save rate", `${G.sa} shots on goal`)}
@@ -161,6 +162,7 @@ async function renderGoalie(view, param) {
       <p class="note">Shot data and expected goals courtesy of MoneyPuck.com. A goalie's season barely predicts his next one, so our projections pull goalie numbers hard toward average.</p>
     </section>
     <section class="zone path" id="gPath" hidden></section>`;
+  writerInto($("#gTake"), `writeups/players/${G.id}.json`, { kicker: "Our take" });
   if (G.dossier) renderPath($("#gPath"), G.dossier, G.name);
   renderGoalieRange($("#gRange"), G);
   renderBuzz($("#gBuzz"), G.id, G.name).catch(() => {});

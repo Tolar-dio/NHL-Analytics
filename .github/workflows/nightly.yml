@@ -115,6 +115,10 @@ jobs:
           FEATURE_MAX: "3"          # at most one scheduled piece a night, plus up to two requests
         run: python scripts/write_features.py
 
+      - name: Build the writer's queue (fact sheets for the scheduled Claude writer, published with the site)
+        continue-on-error: true
+        run: python scripts/writer_queue.py
+
       - name: Save stories and the pre-game archive
         run: |
           git config user.name "github-actions[bot]"

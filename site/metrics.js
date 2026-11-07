@@ -251,3 +251,26 @@ function wpModel(P) {
     },
   };
 }
+
+// ------------------------------------------------------------------ Claude's writing, read live from the repo
+// A scheduled Claude session writes recaps, previews, takes and player/team writeups (WRITING.md) and commits them
+// to data/stories/; the site reads them straight from GitHub so they show without a rebuild. Until one exists,
+// the page keeps whatever the build put there (the API writer's version, or nothing).
+const STORIES_RAW = "https://raw.githubusercontent.com/Tolar-dio/NHL-Analytics/main/data/stories/";
+const WRITER_LABEL = `<p class="ai-label">Written by Claude, an AI, from our data and the season's story. Opinions and hunches are labeled as ours. <a href="#about/ai">How we use AI</a></p>`;
+async function writerInto(el, path, opts = {}) {
+  if (!el) return;
+  const here = location.hash;
+  let d;
+  try {
+    const r = await fetch(`${STORIES_RAW}${esc(D.meta.season)}/${path}`, { cache: "no-cache" });
+    if (!r.ok) return;
+    d = await r.json();
+  } catch (e) { return; }
+  if (!d || d.by !== "session" || !d.text || location.hash !== here || !el.isConnected) return;
+  const paras = d.text.trim().split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("");
+  const h = d.hunch && d.hunch.text && opts.hunch ? `<aside class="hunch"><b>Our hunch</b> ${esc(d.hunch.text)}</aside>` : "";
+  el.innerHTML = `${opts.kicker ? `<h3 class="kicker">${esc(opts.kicker)}</h3>` : ""}${d.headline ? `<h2 class="story-head">${esc(d.headline)}</h2>` : ""}
+    <div class="story">${paras}</div>${h}${WRITER_LABEL}`;
+  el.classList.add("writer");
+}
