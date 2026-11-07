@@ -50,9 +50,8 @@ jobs:
     needs: pull
     runs-on: ubuntu-24.04   # pinned: ubuntu-latest moves to 26 on Oct 19
     timeout-minutes: 30
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      attempt: ${{ github.run_attempt }}   # which upload the deploy job should take
     env:
       HAS_PRIVATE: ${{ secrets.PRIVATE_DATA_TOKEN != '' }}
     steps:
@@ -148,8 +147,28 @@ jobs:
         with:
           path: _site
           name: github-pages-${{ github.run_attempt }}
+
+  # its own job: when GitHub Pages is slow, "Re-run failed jobs" redeploys the built site
+  # without rerunning the models or paying for the stories again
+  deploy:
+    needs: site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url || steps.retry.outputs.page_url }}
+    steps:
+      # deploy-pages caps timeout at 10 minutes (600000); larger values are ignored with a warning
       - id: deploy
+        continue-on-error: true
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: github-pages-${{ github.run_attempt }}
-          timeout: 1200000
+          artifact_name: github-pages-${{ needs.site.outputs.attempt }}
+          timeout: 600000
+      # one more try when Pages doesn't finish in time (Nov 7, 2026: three runs timed out here)
+      - id: retry
+        if: steps.deploy.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ needs.site.outputs.attempt }}
+          timeout: 600000
