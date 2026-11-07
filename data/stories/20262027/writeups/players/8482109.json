@@ -1,0 +1,9 @@
+{
+ "text": "Six years after going first overall, Alexis Lafrenière is having the season the Rangers drafted him for. Sports Illustrated called it everything they could have hoped for, and the usage backs that up: he's playing 18:39 a night, up from 17:36, and he's on the ice for 73% of New York's power-play time, up from 54%.\n\nThe production is built on chances, not just bounces. He has 16 points in 17 games, and his own chances have jumped to 1.27 expected goals per 60 (the quality of his shots) from 0.94. Nine goals on 6.7 expected is a bit hot, but his teammates have scored 4.4 fewer goals than their chances with him on, so his point pace has room to hold. By our win model his goals rank 30th in the league in wins added. Evolving-Hockey liked his defense last season, too (93rd percentile at taking chances away). Seventeen games is a small sample, but ice time settles faster than scoring, and his ice time says the Rangers now trust him with the big minutes.",
+ "headline": "Lafrenière is finally getting the big minutes",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T22:57:59Z",
+ "gp": 17
+}
