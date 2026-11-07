@@ -1,1 +1,19 @@
-{"text": "Detroit and Colorado both arrive on the back of one-goal losses two nights ago. The Red Wings fell 2-1 to Vegas when Trevor Connelly scored with 1:42 left, and they're 2-3-0 in their last five. They're also without Dylan Larkin, who is serving a suspension and has an estimated return of Nov 14. In the five games since he went out, Alex DeBrincat has taken his spot beside Lucas Raymond and Arvidsson, and Emmitt Finnie has moved onto the first power-play unit. Colorado lost 3-2 in overtime to Nashville, on a night Vitali Pinchuk scored his first NHL goal, and sits 3-1-1 over its last five without Josh Manson.\n\nThe chance numbers are close. At five on five, both teams have taken 53% of the expected goals (the quality of shots each side creates and allows). Colorado has the edge in chance creation, 3.40 expected goals per 60 minutes to Detroit's 3.24, and on the penalty kill. Our model has Colorado at 3.20 goals tonight and Detroit at 2.87. In net, projected starter Daniil Tarasov is at +7.2 goals saved above expected this season but was -2.8 last year, while Mackenzie Blackwood is at -0.5 after a +8.0 season.\n\nNathan MacKinnon is our top Colorado pick, with a 39% chance to score and an 84% chance to record a point, and Artturi Lehkonen has 11 points in his last ten. For Detroit, Arvidsson plays his 700th game, and Prashanth Iyer of Expected By Whom posted that in Finnie \"the Wings have finally found\" their 1C, with a note of \"slightest of hyperbole.\"", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8480193, 8478406], "written": "2026-11-07T21:44:03+00:00"}
+{
+ "text": "Detroit started the season with a captain and arrives in Denver with a standoff. Dylan Larkin told the Red Wings he would no longer play for them, and on October 29 they suspended him without pay. The trade talk hasn't cooled: Michael Russo of The Athletic reported the Wild are pushing hard, The Hockey News has linked the Bruins, and this week's headlines are about timelines. Meanwhile the Wings keep trying to show they can manage. Alex DeBrincat has taken Larkin's spot beside Lucas Raymond and Viktor Arvidsson, Emmitt Finnie has moved onto the top power play, and Andrew Copp is up to 19:11 a night from 17:01. Arvidsson plays his 700th NHL game tonight, Finnie his 100th.\n\nNow there's a second problem. John Gibson got hurt, Michal Postava was recalled under emergency conditions, and Daniil Tarasov gets the net. That may not be a downgrade: Tarasov has stopped .930 in seven games and is 7.2 goals better than his shots deserved. Detroit's leak has been at the other end. It takes 52% of the expected goals (the quality of chances for and against) and still sits at -3 in goal difference, with finishing costing it 9.0 goals. Thursday was the season in miniature, a 2-1 home loss to Vegas on Trevor Connelly's winner with 1:42 left.\n\nColorado's week has been bumpy by its standards: three straight 5-2 wins, then a 7-2 loss in Columbus and a 3-2 overtime loss to Nashville on a Steven Stamkos winner. Mackenzie Blackwood starts again and has been ordinary (.893, about even with expected) after a strong year last season. Artturi Lehkonen is the hot hand, 11 points and eight goals in his last ten, and it's earned: 5.3 expected goals on his own shots against 3.7 usual. Nathan MacKinnon is 84% for a point. Josh Manson is out for weeks, and Zachary L'Heureux's absence is \"long-term, for sure,\" Jared Bednar said, per Evan Rawal of the Denver Gazette.\n\nOur numbers have Colorado ahead, 3.20 expected goals to 2.87, and the Avs at 93% to make the playoffs against Detroit's 32%. For the Wings, every win without Larkin is leverage in the standoff.",
+ "headline": "Larkin's gone, Gibson's hurt, and Tarasov gets Denver",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T22:50:27Z",
+ "goalies": [
+  8480193,
+  8478406
+ ],
+ "hunch": {
+  "text": "Tarasov has been the best goalie on either side this season, and Detroit's finishing can't stay this cold forever. Our numbers lean Colorado; our hunch is a Red Wings win.",
+  "claim": {
+   "type": "win",
+   "team": "DET"
+  }
+ }
+}

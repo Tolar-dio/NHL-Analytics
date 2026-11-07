@@ -1,1 +1,19 @@
-{"text": "Pittsburgh arrives winless in four (0-3-1) after a 6-2 home loss to Boston on Wednesday, and it is playing without Bryan Rust, Elmer Soderblom and Trevor van Riemsdyk. Tommy Novak has taken Rust's spot beside Sidney Crosby and Rickard Rakell, up to 18:10 a night from 14:05. Los Angeles is coming off a 7-2 win over San Jose in which Adrian Kempe scored three, though Mats Zuccarello is still out. Artemi Panarin has taken his spot beside Haula and Laferriere.\n\nThe chances are close. Our model has the Kings at 3.19 expected goals tonight to Pittsburgh's 3.09, and at five on five the teams are 50% and 52% in share of expected goals. The gap is on special teams: LAK's power play generates 0.84 expected goals a game to PIT's 0.46, and the Kings take 4.2 penalties a game, which keeps handing the other side power plays. In net, projected starter Sergei Murashov (PIT) is at -3.9 goals saved above expected this season, meaning he has allowed about four more goals than an average goalie would on those shots. Projected starter Darcy Kuemper (LAK) is at -3.1, and -6.8 last season.\n\nKempe is our top goal pick at 40%, and Panarin is 77% for a point. We'd also watch Quinton Byfield, one of our under-the-radar picks: he's 53% for a point, above his season pace of 44%, with his ice time up and his line creating chances. For Pittsburgh, Rakell leads at 31% to score, and Crosby is 57% for a point.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8483703, 8475311], "written": "2026-11-07T21:44:12+00:00"}
+{
+ "text": "Pittsburgh's season is starting to sound like an ending. The Penguins are winless in four (0-3-1) after a 6-2 home loss to Boston, outscored 18-11 in that stretch, and the headlines have moved past the standings: reports say Evgeni Malkin must submit a three-team trade list, Darren Dreger has linked him to Minnesota, another report has the Penguins fielding calls on Rickard Rakell, and the coverage of Sidney Crosby has turned to questions about how long he keeps going. \"It is probably time for Dubas to brush up his sales pitches,\" Ryan Wilson of Hockey Hot Stove posted.\n\nThe frustrating part is that the play hasn't been terrible. Pittsburgh takes 52% of the expected goals at five on five and won the chance battle in three of its last five, but the power play creates just 0.46 expected goals a game, and Wilson's headline for it was one word: \"Dreck.\" Bryan Rust is out until early December, so Tommy Novak has moved up beside Crosby and Rakell. Sergei Murashov starts over Arturs Silovs, and he has struggled (.871, 3.9 goals worse than expected).\n\nThe Kings come in loose after a 7-2 rout of San Jose in which Adrian Kempe scored three and passed Dustin Brown on a franchise list, and Kempe and Artemi Panarin combined for eight points. With Mats Zuccarello hurt, Panarin has slid into his spot beside Erik Haula and Alex Laferriere, and Corey Perry is up to 15:24 a night. Laferriere has gone eight games without a goal on 4.3 expected goals, which is the kind of drought that ends. Our sleeper is Quinton Byfield, 53% for a point with his ice time up and a line creating 3.97 expected goals per 60. Darcy Kuemper (.885) hasn't been much better than Murashov.\n\nOur numbers call it close, 3.19 expected goals to 3.09 for Los Angeles. Both teams have 12 points; the Kings sit at 44% for the playoffs, the Penguins 19%. Another loss and the trade talk gets louder.",
+ "headline": "The Penguins bring their trade rumors to Los Angeles",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T22:50:27Z",
+ "goalies": [
+  8483703,
+  8475311
+ ],
+ "hunch": {
+  "text": "Eight games, 4.3 expected goals, no goals: Alex Laferriere is overdue, and a shaky Murashov is the right goalie to break it against.",
+  "claim": {
+   "type": "goal",
+   "player": 8482155
+  }
+ }
+}
