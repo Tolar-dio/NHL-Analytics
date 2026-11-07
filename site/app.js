@@ -1342,6 +1342,14 @@ async function boot() {
   $("#teamBtn").addEventListener("click", () => openTeamPicker());
   showFantasyTab(!!store.get(FKEY));
   addEventListener("hashchange", route);
+  // the site opens on Tonight: a bookmark, the home-screen icon or a typed address that carries an old page goes to
+  // Tonight; a reload keeps the page you were on, and so does a link followed from another website
+  try {
+    const nav = (performance.getEntriesByType("navigation")[0] || {}).type || "navigate";
+    const ref = document.referrer ? new URL(document.referrer).host : "";
+    if (nav === "navigate" && (!ref || ref === location.host) && location.hash && !/^#(tonight)?$/.test(location.hash))
+      history.replaceState(null, "", location.pathname + location.search + "#tonight");
+  } catch (e) {}
   route();
   liveStart();      // ESPN scoreboard: live scores and probable goalies
   liveInjuries();   // ESPN injury report: flags on the odds
