@@ -68,6 +68,22 @@ def player_facts(row, f, goalie=False):
     ))
 
 
+def team_news(team, roster, days=14, players=4, per=4):
+    """The biggest stories around a team right now, by how much is being written: its players with the most
+    headlines in the last two weeks (a trade request, a suspension, an injury, a slump), plus the team's own
+    coverage and reporters' posts. A preview or writeup that misses the top story here has missed the story."""
+    rows = []
+    for pid, name in roster:
+        cov = coverage(pid) or {}
+        heads = [n for n in cov.get("news", []) if age_days(n.get("d")) <= days]
+        if heads:
+            rows.append(dict(player=name, headlines_last_two_weeks=len(heads),
+                             headlines=[dict(headline=n["t"], outlet=n.get("o"), date=(n.get("d") or "")[:10]) for n in heads[:per]]))
+    rows.sort(key=lambda r: -r["headlines_last_two_weeks"])
+    tc = said(team_coverage(team), news=6, posts=4, videos=2, days=days)
+    return tidy(dict(most_written_about_players=rows[:players] or None, **tc))
+
+
 def main():
     now = dt.datetime.now(dt.timezone.utc)
     items = []
@@ -91,6 +107,18 @@ def main():
                           current=(jl(out) or {}).get("text"), facts=facts))
 
     tonight = jl(os.path.join(SITE, "tonight.json"), {})
+    roster = {}
+    for f in ("skaters.json", "goalies.json"):
+        for r in jl(os.path.join(SITE, f), []):
+            roster.setdefault(r["team"], []).append((r["id"], r["name"]))
+    for pid, x in ((jl(os.path.join(SITE, "depth.json"), {}) or {}).get("players") or {}).items():
+        if x.get("team") and x.get("name") and int(pid) not in {i for i, _ in roster.get(x["team"], [])}:
+            roster.setdefault(x["team"], []).append((int(pid), x["name"]))
+    news_cache = {}
+    tn = lambda t: news_cache.setdefault(t, team_news(t, roster.get(t, [])))
+    for it in items:   # recaps: what each team's season is about, so a game is told inside its story
+        if it["kind"] == "recap":
+            it["facts"]["biggest_stories_around_each_team"] = {t: tn(t) for t in (it["facts"].get("away"), it["facts"].get("home")) if t}
     race = {r["team"]: r for r in (jl(os.path.join(SITE, "race.json"), {}) or {}).get("rows", [])}
     for p_path in sorted(glob.glob(os.path.join(SITE, "previews", "*.json"))):
         p = jl(p_path)
@@ -102,6 +130,7 @@ def main():
             continue
         facts = preview_facts(p)
         facts["playoff_race"] = {t: {k: race[t].get(k) for k in ("pts", "xpts", "proj", "playoffs", "division")} for t in (p["away"], p["home"]) if t in race} or None
+        facts["biggest_stories_around_each_team"] = {t: tn(t) for t in (p["away"], p["home"])}
         items.append(dict(kind="preview", id=p["id"], date=tonight.get("date"), goalies=goalies,
                           out=f"data/stories/{SEASON}/previews/{tonight.get('date')}/{p['id']}.json",
                           current=(jl(out) or {}).get("text"), facts=facts))
@@ -142,7 +171,7 @@ def main():
             continue
         tp = jl(os.path.join(SITE, "tactics", f"{t}.json"), {}) or {}
         items.append(dict(kind="team", id=t, gp=row.get("gp"), out=f"data/stories/{SEASON}/writeups/teams/{t}.json", current=old.get("text"),
-                          facts=tidy(dict(team=t, standings=row, profile=prof.get(t), playoff_race=race.get(t),
+                          facts=tidy(dict(team=t, standings=row, profile=prof.get(t), playoff_race=race.get(t), biggest_stories=tn(t),
                                           top_lines=(tp.get("lines") or [])[:3], top_pairs=(tp.get("pairs") or [])[:2], style=tp.get("style"),
                                           **said(team_coverage(t), news=6, posts=4, videos=3, days=10)))))
 

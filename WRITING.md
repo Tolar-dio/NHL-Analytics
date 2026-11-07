@@ -59,6 +59,20 @@ replace it.
 - Never use em dashes or en dashes. Commas, periods, parentheses, colons.
 - Full names first time, last names after. Team abbreviations or full names as fits.
 
+## Find the story first
+
+Before you write a word about a team or a game, ask: what is the biggest story around these teams right now? A
+trade request, a holdout, a suspension, a firing, a long injury, a goalie controversy, a record chase. The fact
+sheets carry `biggest_stories_around_each_team` (previews and recaps) and `biggest_stories` (team writeups): the
+players with the most headlines in the last two weeks, with the headlines, plus the team's coverage and reporters'
+posts. Read them first. If a player has far more headlines than his play explains, there's a story off the ice:
+find out what it is (a quick web search is fine) before you write.
+
+The biggest story leads, or at least is told plainly, and never as an aside or as "noise". A player listed as
+suspended or out is never just a line on the injury report when the reason is the story of the season (Nov 7,
+2026: a Red Wings preview mentioned Dylan Larkin only as "out with a suspension" when the season's story was his
+refusal to play until traded).
+
 ## Lengths
 
 | Piece | Words | Notes |
