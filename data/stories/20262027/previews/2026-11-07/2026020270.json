@@ -1,1 +1,19 @@
-{"text": "The Devils arrive on a three-game winning streak, the latest a 5-4 overtime win over STL that Jesper Bratt won, and they are 4-1-0 in their last five. The Islanders are 2-3-0 over the same stretch after a 5-3 home loss to CAR, and they're playing without Ryan Pulock, Matias Maccelli and Calum Ritchie. There is also a rematch: NYI won the Oct. 3 meeting 6-0, though by chances NJD was the better side that night in expected-goals terms (we had NYI deserving to win just 44% of the time).\n\nOur numbers favor NJD in how the games are played. At five on five the Devils have taken 59% of the expected goals (the quality of shots) to NYI's 50%, and they've been better than their record: a +9 goal difference on +17.8 expected. NJD's power play creates 0.79 expected goals a game against a penalty kill allowing 0.86, and NYI takes 4.5 penalties a game. The goalie matchup is the one place NYI has the edge. Projected starter Ilya Sorokin is +5.6 goals saved above expected (how many goals a goalie stops beyond what the shots predict) after +22.3 last season. Jake Allen is at -4.0 this season, though +5.4 last year. With Maccelli out, Bo Horvat has moved beside Cizikas and Holmstrom, and Simon Holmstrom is up to 20:55 a night.\n\nJack Hughes is our top pick to score at 40% and to reach two points. Hughes and Arseny Gritsyuk are tied for the Devils' goal lead with 8. For NYI, Horvat is at 36% to score. Matthew Schaefer, the 2025 first overall pick, is our best bet at 28% for two or more points.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8474596, 8478009], "written": "2026-11-07T17:16:28+00:00"}
+{
+ "text": "The scoreboard on Oct 3 said Islanders 6, Devils 0. The shots said something else: New York deserved that game only 44% of the time, and Stefen Rosner wrote this week that Bo Horvat \"admits that performance wasn't as dominant as the score suggested.\" A month on, New Jersey looks like the team the chances described. The Devils have taken 59% of the expected goals at five on five, and they've won three straight with 62% of the chances in those games. Thursday, Jesper Bratt finished St. Louis in overtime.\n\nIf anything, the Devils are better than their record. They're +9 in goal difference on chances worth +17.8, and goaltending has cost them 6.4 goals. Jake Allen is the projected starter, and he is .881 over his last five starts. Nico Hischier is two points from 500 for his career, and Mike Fink of The Hockey News pointed out that it's Hischier's wingers who need to get going. Jack Hughes, at 40% to score in our numbers, needs no such help.\n\nThe Islanders are 2-3-0 in their last five, outscored 21-14, with 45% of the expected goals. Ryan Pulock, Matias Maccelli and Calum Ritchie are out, which has pushed Simon Holmstrom onto the top power play and up to 20:55 a night from 15:43. Rosner called Thursday's 5-3 loss to Carolina \"a microcosm of their season.\" Matthew Schaefer, last year's first overall pick, keeps growing into a bigger role; this week, Newsday reports, he and the club unveiled a cancer center room for children named for his mom.\n\nIlya Sorokin is why this isn't a formality: .911 and 5.6 goals saved above expected, after +22.3 last season. Our numbers like New Jersey, 3.32 expected goals to 2.77, and the race already shows it: 91% playoff odds for the Devils, 24% for the Islanders.",
+ "headline": "The Devils get another shot at that 6-0",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:54.019543Z",
+ "goalies": [
+  8474596,
+  8478009
+ ],
+ "hunch": {
+  "text": "Sorokin shut them out once already, and New Jersey's finishing has been running cold. Our hunch: a tighter game than the chances suggest, five goals or fewer.",
+  "claim": {
+   "type": "under",
+   "goals": 5.5
+  }
+ }
+}

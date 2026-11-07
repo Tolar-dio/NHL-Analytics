@@ -1,1 +1,19 @@
-{"text": "Montreal comes in with points in nine straight games (7-0-2), though the Canadiens have taken only 50% of the expected goals (a measure of chance quality) in that run. Their last game was a 5-4 overtime win over Utah after trailing by two, with Logan Cooley scoring three for the Mammoth and Adam Engstrom getting his first NHL goal. The Canadiens are without Ivan Demidov and Mike Matheson. Toronto, off three days, is 2-3-0 in its last five and lost 3-2 to Utah, missing John Tavares and Kirill Marchenko.\n\nMontreal has controlled more of the play at five on five (52% of expected goals to Toronto's 45%), and our numbers have this one close, 3.34 to 3.16 for the Canadiens. The Maple Leafs' results are running ahead of their chances: a +7 goal difference on -7.2 expected, with finishing and goaltending doing the lifting. Montreal takes 5.4 penalties a game, which keeps feeding power plays. In net, projected starters Jacob Fowler (+9.7 goals saved above expected, meaning saves beyond what shot quality predicts) and Sergei Bobrovsky (+2.1) are on opposite curves, and Bobrovsky was at -13.5 last season. Montreal won the September meeting 3-2.\n\nNick Suzuki, on a five-game point streak, is at 78% for a point. Cole Caufield, who scored twice on the power play last week, is 41% to score. For Toronto, Auston Matthews and William Nylander are each at 40% to score, and Jack Roslovic has points in seven straight. Our under-the-radar pick is Josh Anderson, a third-liner with 3.1 expected goals in his last 10 games against a Toronto defense that allows the 7th-most chances per 60. We have him at 23% to score, a player to watch.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8484170, 8475683], "written": "2026-11-07T11:28:12+00:00"}
+{
+ "text": "Saturday night in Toronto, and the Canadiens arrive with points in nine straight (7-0-2). Thursday was the kind of win that builds that sort of run: down two to Utah, Logan Cooley with a hat trick, and Montreal came back to win 5-4 in overtime. Here's the honest part, though. The Canadiens took 50% of the expected goals across those nine games. They're winning with balance, and with Jacob Fowler, who is at .925 and 9.7 goals saved above expected.\n\nNick Suzuki has points in five straight and had three in his return to the lineup, per CBS Sports. Montreal is without Ivan Demidov and Mike Matheson; Cole Caufield has taken Demidov's spot beside Juraj Slafkovský and Alex Newhook, and Zachary Bolduc has moved onto the top power play. One more to watch: our Sleeper, Josh Anderson, with 3.1 expected goals in his last ten games from the third line.\n\nToronto is the mirror image. The Maple Leafs are +7 in goal difference on chances worth -7.2, at 47% of the expected goals. Finishing (10.1 goals more than their chances usually produce) and goaltending have done the lifting, and in Tuesday's 3-2 loss to Utah they had only 30% of the expected goals. Kirill Marchenko is out, Easton Cowan has moved up beside Paul and William Nylander, and Jack Roslovic has a seven-game point streak. John Tavares is off ESPN's injury report, and a Daily Faceoff Toronto post put it this way: \"Auston Matthews says John Tavares has been best player on the ice at practice ahead of return vs. Canadiens.\"\n\nDiscipline is the hinge. Montreal takes 5.38 penalties a game and draws 4.38. Our numbers lean Montreal, 3.34 expected goals to 3.18, and the playoff race already looks lopsided: 60% for the Canadiens, 16% for the Leafs. The preseason meeting went to Montreal 3-2, a game the Habs deserved only 44% of the time.",
+ "headline": "Montreal's nine-game run meets Toronto's hot finishing",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:54.019543Z",
+ "goalies": [
+  8484170,
+  8475683
+ ],
+ "hunch": {
+  "text": "A captain's practice report, a home crowd and a goalie on the other end who has been almost too good. Our hunch: John Tavares scores in his return.",
+  "claim": {
+   "type": "goal",
+   "player": 8475166
+  }
+ }
+}

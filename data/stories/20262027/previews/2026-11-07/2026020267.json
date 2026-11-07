@@ -1,1 +1,19 @@
-{"text": "The Rangers arrive in Seattle at 2-3-0 over their last five, outscored 20-14, though they've won two straight, including 3-2 over Philadelphia on Wednesday. They're without defenseman Sean Durzi and goalie Igor Shesterkin, so Adam Fox is playing 24:17 a night. The Kraken, 3-2-0 in their last five, won 2-1 over Calgary in overtime on Matty Beniers' goal. They're missing Jared McCann, whose minutes have gone to Jordan Eberle beside Beniers. Two Rangers, Tye Kartye and Eeli Tolvanen, return to their old building for the first time.\n\nOur numbers favor New York in how the play unfolds. At five on five, the Rangers have taken 52% of the expected goals (the quality of chances) and Seattle 45%. Our model has NYR at 3.21 goals tonight and SEA at 2.85. Special teams are close: the NYR power play is worth 0.66 expected goals a game and SEA's 0.58. In net, projected starter Dylan Garand sits at +2.2 goals saved above expected (how many goals better than the shots he faced deserved), while Philipp Grubauer is at -1.5 and has struggled lately.\n\nAmong players to watch, Pavel Dorofeyev is our under-the-radar pick. He skates on the third line but has put up 4.8 expected goals in his last 10 games, and we give him a 31% chance to score. Alexis Lafreni\u00e8re, the first overall pick in 2020, is at 30%. For Seattle, Berkly Catton carries a seven-game point streak into the game.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8482193, 8475831], "written": "2026-11-07T11:28:07+00:00"}
+{
+ "text": "Tye Kartye played 180 games for Seattle and Eeli Tolvanen 288, and tonight both walk back into that building in Rangers colours for the first time. Kartye's story is the better one this month. The New York Post's headline says he is \"making every minute count with Rangers after he was claimed off waivers,\" and our numbers flag him as a breakout: more ice, more chances.\n\nThe Rangers are getting by without Igor Shesterkin, and that's the sentence that frames their season so far. Dylan Garand has carried it: 13 games, .906, 2.2 goals saved above expected. New York lost three straight either side of Halloween, then beat St. Louis and Philadelphia with 63% and 57% of the expected goals. Sean Durzi is out too; Braden Schneider has moved up beside Pettersson and Adam Fox is playing 24:17 a night. Our Sleeper here is Pavel Dorofeyev, a third-liner whose shots have been dangerous: 4.8 expected goals in his last ten games, better per 60 minutes than 99% of depth forwards. We have him at 31% to score.\n\nSeattle is a puzzle. The Kraken have 19 points, the same as New York, but their chances say they should have about 14. They're at 45% of the expected goals at five on five and scoring 3.47 a game anyway. Jared McCann is out until January; Jordan Eberle has taken his spot beside Matty Beniers and Mackie Samoskevich, and Beniers, who won Wednesday's game against Calgary in overtime, is on the top power play. Berkly Catton, the eighth pick in 2024, has points in seven straight.\n\nThe worry is in net. Philipp Grubauer is at .863 and 5.5 goals worse than expected over his last five starts. Our numbers like New York, 3.21 expected goals to 2.85, and give the Rangers a 48% playoff chance against Seattle's 41%. If the Kraken's finishing cools before Grubauer warms up, this could get away from them.",
+ "headline": "Two old Kraken come back to Seattle",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:54.019543Z",
+ "goalies": [
+  8482193,
+  8475831
+ ],
+ "hunch": {
+  "text": "Old buildings, old teammates, a player on waivers a few weeks ago who keeps getting chances. Our hunch: Tye Kartye scores in his first game back in Seattle.",
+  "claim": {
+   "type": "goal",
+   "player": 8481789
+  }
+ }
+}

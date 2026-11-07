@@ -1,1 +1,19 @@
-{"text": "Tampa Bay comes in 3-0-2 over its last five, riding a 4-1 win over a Chicago team that has now gone winless in five. Minnesota is on the second night of a back-to-back, having beaten San Jose 4-1 last night for its third straight win. The Wild are without Nick Foligno, Marcus Foligno and Jared Spurgeon, and they lost the chance battle in four of their last five, so the streak leans on goaltending more than chances. TBL won the October meeting 3-2.\n\nOn the numbers, there's little between them. At five on five, TBL has taken 55% of the expected goals (the quality of chances) in its games and MIN 54%. Minnesota's power play creates more (0.97 expected goals per game to 0.76), and its penalty kill gives up a bit more (0.63 to 0.54). In net, both backups are projected: Dennis Hildeby for TBL, at -0.18 goals saved above expected this season (a measure of how many goals a goalie stops beyond what the shot quality predicts), and Calvin Pickard for MIN, at -2.27. Hildeby was at +10.06 over 20 games last year, Pickard at -3.54 over 16.\n\nKirill Kaprizov is on a seven-game point streak and has a 47% chance to score, our highest on the night. Matt Boldy and Joel Eriksson Ek are on seven-game streaks too. For Tampa Bay, Brayden Point is one point shy of 700 for his career, and Brandon Hagel has the Lightning's best goal probability at 39%.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8483710, 8475717], "written": "2026-11-07T17:58:20+00:00"}
+{
+ "text": "Neither starter is playing. Dennis Hildeby gets the net for Tampa Bay over Andrei Vasilevskiy, who has 12 of the Lightning's 15 starts, and Calvin Pickard starts for Minnesota over Jesper Wallstedt, who has 16 of 18. Pickard has stopped .833 in two games. Hildeby is at -0.2 goals saved above expected this season after +10.1 in 20 games last year. Put two teams that generate this many chances in front of those two, and you get our numbers' projection: 3.25 goals for Tampa, 3.19 for Minnesota.\n\nThe Wild come in on the second night of a back-to-back, after a 4-1 win over San Jose that made it three straight. They've outscored teams 13-4 in that run, though the chances only half back it (52% of the expected goals, with the goaltending saving 4.7 above expected). Kirill Kaprizov scored his league-leading 16th goal last night and has points in seven straight. \"Can't say it enough, I just feel like we can tilt the ice when they're out there,\" Quinn Hughes said of the Kaprizov, Matt Boldy and Joel Eriksson Ek line, per NHL.com's Heather Rule. All three are on seven-game point streaks. Minnesota is without both Folignos and Jared Spurgeon.\n\nTampa has points in five straight (3-0-2). Brayden Point is one point from 700 for his career and has points in six straight. Brandon Hagel, named NHL.com's Bolts best player of the month, is our likeliest Lightning scorer at 39%, and Nikita Kucherov is 81% for a point.\n\nBoth teams tilt the ice at five on five (55% of the expected goals for Tampa, 54% for Minnesota). The Lightning won the first meeting 3-2 on Oct 8, a game they deserved 57% of the time.",
+ "headline": "Two backups, two hot teams, one coin flip",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:47.107040Z",
+ "goalies": [
+  8483710,
+  8475717
+ ],
+ "hunch": {
+  "text": "Two backups behind two teams that create this much: our gut says the projection undersells it and this one clears seven goals.",
+  "claim": {
+   "type": "over",
+   "goals": 6.5
+  }
+ }
+}

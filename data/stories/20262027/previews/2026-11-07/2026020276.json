@@ -1,1 +1,19 @@
-{"text": "Edmonton hosts Vancouver tonight with the Oilers on the better run and the Canucks on the worse one. The Canucks are winless in four (0-4-0 in that stretch, 1-4-0 in their last five) after a 6-2 loss at Winnipeg, and they're without Filip Chytil, with Elias Pettersson taking his spot beside Jonathan Lekkerim\u00e4ki and Brock Boeser. The Oilers lost 5-4 to Anaheim on Wednesday but are 3-1-1 in their last five. They're missing Zach Hyman, and Colton Dach has stepped into his place on the line with Kasperi Kapanen and Ryan Nugent-Hopkins.\n\nOur numbers favor Edmonton, 3.59 expected goals to 2.55. Expected goals measure the quality of chances. At five on five, Vancouver has taken 41% of them and Edmonton 49%. Edmonton's power play creates 0.88 expected goals a game against a Vancouver penalty kill that allows 0.91, and the Canucks take 4.2 penalties a game. In net, Leevi Meril\u00e4inen (projected) is 1.74 goals worse than expected this season and Tristan Jarry (projected) 1.73 worse, though Meril\u00e4inen has been rougher lately, 4.1 goals below expected over his last five starts.\n\nConnor McDavid is 95% for a point, riding a 17-game point streak. Leon Draisaitl is 51% to score. For Vancouver, Boeser is 53% for a point and has seven points in six games against Edmonton. We'd also watch Kapanen, one of our under-the-radar picks: he's 50% for a point, up from 39% on his season pace, with more ice time and a Canucks defense that gives up the second-most expected goals per 60. The teams split two high-scoring games in September and October.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8482447, 8477465], "written": "2026-11-07T11:28:57+00:00"}
+{
+ "text": "Connor McDavid has a point in all 17 of Edmonton's games: 10 goals and 34 assists. We have him at 95% to make it 18 tonight, which is about as close to certain as a hockey number gets. The Canucks, meanwhile, have seven points all season and arrive winless in four, outscored 18-10, after a 6-2 loss in Winnipeg. Daniel Wagner of Pass it to Bulis wrote that Manny Malhotra called out the team's \"lack of effort\" after that one. Our playoff simulations give Vancouver about 0.1%.\n\nThe matchup that worries us most for Vancouver is in its own crease. Leevi Meriläinen has stopped .847 over his last five starts, 4.1 goals worse than expected, after finishing 17.9 below expected last season. He faces an Oilers power play creating 0.88 expected goals a game, against a Canucks penalty kill allowing 0.91. Evan Bouchard has 13 points in six games against Vancouver and goals in three straight.\n\nThere's a caveat on the Edmonton side. The Oilers are +19 in goal difference on chances worth +4.4, with 18.5 more goals than their shots usually produce, and they've dropped their last two, including a 5-4 home loss to Anaheim on Thursday. With Zach Hyman out (neck), Colton Dach has taken his spot beside Kapanen and Nugent-Hopkins, and Kasperi Kapanen has moved onto the top power play. Kapanen is our sleeper, 50% for a point against a pace that says 39%.\n\nFor Vancouver, Filip Hronek is one point from 300 and one goal from 50, and Brock Boeser has seven points in six games against Edmonton. The two met twice in late September, a 6-5 Vancouver overtime win and a 9-7 Edmonton win. Our numbers have it 3.59 to 2.55 Oilers.",
+ "headline": "McDavid has a point in every game. Vancouver has seven.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:47.107040Z",
+ "goalies": [
+  8482447,
+  8477465
+ ],
+ "hunch": {
+  "text": "Vancouver probably loses, but Hronek gets his 300th point on a night when the Oilers' goalies give up a few too.",
+  "claim": {
+   "type": "point",
+   "player": 8479425
+  }
+ }
+}

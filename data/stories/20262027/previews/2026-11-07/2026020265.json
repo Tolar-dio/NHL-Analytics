@@ -1,1 +1,19 @@
-{"text": "Florida arrives on a 4-1-0 run, most recently a 5-3 win over Chicago three days ago, and it opens a three-game road trip in Washington short-handed. Brad Marchand (knee) is on injured reserve and Anton Lundell is out, though ESPN's estimated return for Lundell is Nov 8. Carter Verhaeghe has taken Marchand's spot beside Sam Reinhart and Brady Tkachuk. Washington has lost two straight, including a 6-5 loss to Dallas in which Jason Robertson scored three goals. The Capitals are without Vincent Desharnais.\n\nThe numbers see little between them. At five on five, FLA has taken 55% of the expected goals (the quality of chances) in its games and WSH 53%, and our model has it 3.21 to 3.29 tonight. The special-teams matchup to watch: FLA's power play creates 1.14 expected goals a game against a WSH penalty kill that allows 0.80, and Florida takes 5.2 penalties a game. In net, projected starters Akira Schmid (FLA) and Logan Thompson (WSH) are both at .888 or below in save percentage this season. Thompson is +1.2 goals saved above expected, Schmid +0.3, and Thompson was +28.2 last season.\n\nTkachuk has 16 points in his last ten games, and Reinhart has scored in four straight. Our model gives Reinhart a 39% chance to score. On the Washington side, Alex Tuch is the likeliest to score at 38%. Tom Wilson has no points in ten games despite 3.4 expected goals, so we'd call him due.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8481033, 8480313], "written": "2026-11-07T16:29:04+00:00"}
+{
+ "text": "Take Aleksander Barkov, Brad Marchand and Anton Lundell out of most lineups and you'd expect the wheels to wobble. Florida hasn't noticed. The Panthers are 4-1-0 in their last five, outscoring teams 21-13, and they won the chance battle in four of those games. Since Marchand went down, Carter Verhaeghe has slid in beside Sam Reinhart and Tkachuk, and he has 13 points in his last ten. Reinhart has scored in four straight. Brady Tkachuk has 16 points in ten, against about 8.8 we'd expect at his ice time, and it's earned: the team creates more with him on the ice.\n\nWashington's week has gone the other way. Two straight home losses, 5-1 to Minnesota and then a 6-5 track meet against Dallas in which Jason Robertson scored three. The Capitals have scored and allowed 19 goals apiece over their last five. Tom Wilson is the face of it: no points in ten games, no goals on 3.4 expected goals (the quality of his chances, in goals). He has had slightly fewer chances than usual, and the ones he gets aren't going in. NHL.com reported this week that re-signing him is a \"big priority\" for the Capitals, which is an odd backdrop for a ten-game blank.\n\nThe special teams matchup leans Florida. The Panthers' power play creates 1.14 expected goals a game, and Washington's creates 0.5. The catch is that Florida also takes 5.25 penalties a game, so the Capitals should get their looks. In net, Logan Thompson (.887, +1.2 goals saved above expected) gets the edge on reputation alone after a +28.16 season, while Akira Schmid sits at .888 and +0.3.\n\nOur numbers call this close to even: 3.21 expected goals for Florida, 3.29 for Washington. Their playoff odds are close too: 60% for the Panthers, 55% for the Capitals. It's game one of a three-game trip for Florida.",
+ "headline": "Florida is missing its spine and winning anyway",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:54.019543Z",
+ "goalies": [
+  8481033,
+  8480313
+ ],
+ "hunch": {
+  "text": "Ten games, 3.4 expected goals, nothing. Our hunch is the dam breaks tonight against a short-handed team that lives in the penalty box: Tom Wilson scores.",
+  "claim": {
+   "type": "goal",
+   "player": 8476880
+  }
+ }
+}

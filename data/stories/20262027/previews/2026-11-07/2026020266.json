@@ -1,1 +1,19 @@
-{"text": "The Blues close a four-game road trip in Nashville after losing 5-4 in overtime at New Jersey on Wednesday, when Jesper Bratt won it for the Devils. They're 2-2-1 in their last five and playing without Dillon Dube. The Predators arrive on a three-game winning streak, the latest a 3-2 overtime win at Colorado in which Steven Stamkos got the winner and Vitali Pinchuk scored his first NHL goal. Nashville also won the first meeting this season, 5-2 on Oct. 17, and deserved it: 66% of simulated replays of the shots went its way.\n\nOur numbers see an even game, with expected goals (the quality of chances) at 3.08 for NSH and 2.99 for STL. Both teams have been outchanced at five on five more often than not. Nashville's power play, at 0.74 expected goals per game, is the stronger of the two units, while STL sits at 0.55. In net, the projected starters are Joel Hofer and Juuse Saros, each about five goals saved above expected this season. Last year Hofer was at +11.1, while Saros was at -10.2, and Saros has been better lately: 3.8 over his last five starts.\n\nFor the Blues, Pius Suter is one goal from 100 career goals, and Mason McTavish, at 30%, is their likeliest scorer in our model. For Nashville, Stamkos (36% to score) and Filip Forsberg (33%) both scored in the last meeting's neighborhood: they have 9 and 8 points in five games against STL.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8480981, 8477424], "written": "2026-11-07T11:28:02+00:00"}
+{
+ "text": "The Predators have won three straight, and it isn't smoke: 12-7 on the scoreboard, 54% of the expected goals in those games. Tuesday it was Carolina, 4-1. Thursday in Denver it was overtime, Steven Stamkos finishing it and Vitali Pinchuk scoring his first NHL goal along the way. Stamkos has nine points in his last five games against St. Louis, Filip Forsberg eight, so the Blues know exactly whose sticks to watch.\n\nSt. Louis closes a four-game road trip tonight, 1-1-1 so far, and the last two stops were rough. The Blues got 37% of the expected goals in a 3-1 loss at the Rangers and 38% in Thursday's 5-4 overtime loss in New Jersey, where Jesper Bratt won it. They're at 48% at five on five for the season. What has kept them level is Joel Hofer: .918 and 5.1 goals saved above expected, after saving 11 goals above expected last season. Pius Suter is one goal from 100 and one point from 200 for his career, and Justin Barron has eight points in ten, a run that looks earned.\n\nHere is the oddity of the night. Juuse Saros sits at exactly the same +5.1, a season after he was 10.2 goals worse than expected. Over his last five starts he has saved 3.8 above expected and stopped .913 of the hard shots, so this looks like a real recovery rather than a hot week. Both teams have been outchanced more often than not (Nashville is at 46% at five on five), which makes the goaltending matter even more.\n\nNashville won the first meeting 5-2 on Oct 17 and deserved it in 66% of replays of the shots. Our numbers make tonight close: 3.06 expected goals for Nashville, 2.99 for St. Louis. In the Central, the Predators sit fifth and three points ahead of the sixth-place Blues, with a 51% playoff chance against 34%. A regulation win either way moves that gap a lot for November.",
+ "headline": "Two goalies at +5.1 and a division gap",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:54.019543Z",
+ "goalies": [
+  8480981,
+  8477424
+ ],
+ "hunch": {
+  "text": "Nashville's run is genuine, but a team at 46% at five on five doesn't keep winning by default. Our hunch: Hofer steals the last game of the trip and the Blues win.",
+  "claim": {
+   "type": "win",
+   "team": "STL"
+  }
+ }
+}

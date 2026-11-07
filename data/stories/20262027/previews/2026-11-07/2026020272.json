@@ -1,1 +1,19 @@
-{"text": "San Jose arrives in Dallas on the second night of a back-to-back, winless in four (0-4-0) and outscored 18-5 in that run after a 4-1 loss at Minnesota last night. The Sharks are without Igor Chernyshov and Alexander Wennberg, and Michael Misa has taken on more minutes. Dallas, two days removed from a shootout loss at Columbus, is missing Miro Heiskanen, with Thomas Harley moving onto the first power-play unit. The Stars won the Oct 5 meeting 5-0.\n\nThe numbers favor Dallas. At five on five, the Stars have taken 52% of the expected goals (the quality of chances) in their games, while San Jose sits at 44%, and our model projects 3.5 expected goals for Dallas against 2.53 for the Sharks. Dallas also allows far fewer on the penalty kill, 0.53 expected goals a game to San Jose's 0.99, and the Sharks take 4.2 penalties a game. In net, projected starter Jake Oettinger is +7.6 goals saved above expected this season, against +4.7 for Alex Nedeljkovic, who was at -2.06 last year.\n\nWyatt Johnston and Jason Robertson are both at 40% to score, and Mikko Rantanen is at 77% for a point after reaching 800 career points, as Tom Gulitti of NHL.com posted. For San Jose, Macklin Celebrini is 74% for a point. Our under-the-radar pick is Tyler Seguin, a third-liner with 2.8 expected goals over his last 10 games, at 23% to score. We also like Harley for a point (46%) against the league's leakiest defense in chance quality.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8477968, 8479979], "written": "2026-11-07T11:28:33+00:00"}
+{
+ "text": "Jamie Benn is two points from 1,000 for his career, and the schedule has handed him a tired opponent to chase it against. The Sharks played in St. Paul last night, lost 4-1, and arrive in Dallas winless in four, outscored 18-5. Our numbers don't think it's bad luck: they've had 39% of the expected goals in that stretch, and no team gives up more expected goals per 60 minutes.\n\nDallas isn't flawless either. The Stars are 2-2-1 in their last five and lost in a shootout in Columbus on Thursday, and they're without Miro Heiskanen (upper body). Thomas Harley has picked up the slack in the most literal way possible: 28:31 a night and the top power-play spot in the game since. He's one of our sleepers, 46% for a point tonight against a pace that says 40%. Then there's Mikko Rantanen, with goals in three straight and eight points in four games against San Jose. Earlier this week, NHL.com's Tom Gulitti noted, he became the fourth Finnish player to reach 800 points, and Jason Robertson scored a hat trick in 5:20, the third-fastest in franchise history.\n\nThe Sharks' night runs through Macklin Celebrini, who we have at 37% to score. With Igor Chernyshov out, Michael Misa has moved up beside Celebrini and Will Smith and is playing 16:25 a night. Mason Marchment, one goal from 100 for his career, gets a shot at it against his former team.\n\nThe goalies are a quiet subplot. Jake Oettinger is at +7.6 goals saved above expected this season; Alex Nedeljkovic is at +4.7 in six games. The last meeting, on Oct 5, was a 5-0 Dallas win that the Stars deserved 92% of the time. Our numbers have it 3.50 to 2.53 tonight.",
+ "headline": "Benn chases 1,000 as the Sharks limp in",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-07T18:15:47.107040Z",
+ "goalies": [
+  8477968,
+  8479979
+ ],
+ "hunch": {
+  "text": "Benn gets a point, but the milestone headline belongs to the other side: Marchment scores his 100th against the team he used to play for.",
+  "claim": {
+   "type": "goal",
+   "player": 8478975
+  }
+ }
+}
