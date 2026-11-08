@@ -1,10 +1,10 @@
 /* Player dossiers and coverage: "Path to the NHL" (from the nightly build, site/dossier.py), "The buzz" on player
    pages and "From the room" on team pages (live from data/coverage/, written hourly by scripts/buzz.py and read
-   straight from GitHub so it doesn't wait for the nightly deploy). Buzz shows only the last BUZZ_DAYS days.
+   live through our data relay so it doesn't wait for the nightly deploy). Buzz shows only the last BUZZ_DAYS days.
    Loaded before app.js; reuses $, esc, table, playerLink, teamName, ago, bindMedia. */
 "use strict";
 
-const COVERAGE = "https://raw.githubusercontent.com/Tolar-dio/NHL-Analytics/main/data/coverage/";
+const COVERAGE = "https://readtheice-api.vercel.app/api/data?path=coverage/";
 const covCache = {};
 async function coverage(path) {
   if (!covCache[path]) covCache[path] = fetch(COVERAGE + path, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);

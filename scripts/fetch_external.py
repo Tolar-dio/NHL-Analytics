@@ -481,7 +481,7 @@ def fetch_schedule(season):
 
 WIKI_REFRESH_DAYS = 30
 WIKI_MAX = int(os.environ.get("WIKI_MAX", "400"))
-WIKI_UA = {"User-Agent": "NHL-Analytics/1.0 (https://github.com/Tolar-dio/NHL-Analytics; site build)", "Accept": "application/json"}
+WIKI_UA = {"User-Agent": "ReadTheIce/1.0 (https://readtheice.app; site build)", "Accept": "application/json"}
 
 
 def _wiki_get(url, accept="application/json", tries=3):

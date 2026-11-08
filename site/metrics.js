@@ -252,11 +252,11 @@ function wpModel(P) {
   };
 }
 
-// ------------------------------------------------------------------ Claude's writing, read live from the repo
+// ------------------------------------------------------------------ Claude's writing, read live
 // A scheduled Claude session writes recaps, previews, takes and player/team writeups (WRITING.md) and commits them
-// to data/stories/; the site reads them straight from GitHub so they show without a rebuild. Until one exists,
+// to data/stories/; the site reads them live through our data relay (proxy/api/data.js) so they show without a rebuild. Until one exists,
 // the page keeps whatever the build put there (the API writer's version, or nothing).
-const STORIES_RAW = "https://raw.githubusercontent.com/Tolar-dio/NHL-Analytics/main/data/stories/";
+const STORIES_RAW = "https://readtheice-api.vercel.app/api/data?path=stories/";
 const WRITER_LABEL = `<p class="ai-label">Written by Claude, an AI, from our data and the season's story. Opinions and hunches are labeled as ours. <a href="#about/ai">How we use AI</a></p>`;
 async function writerInto(el, path, opts = {}) {
   if (!el) return;

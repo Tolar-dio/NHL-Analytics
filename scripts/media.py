@@ -17,7 +17,7 @@ import datetime as dt, email.utils, hashlib, html, json, os, re, sys, time, unic
 import xml.etree.ElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-UA = "Mozilla/5.0 (compatible; NHL-Analytics news job; +https://github.com/Tolar-dio/NHL-Analytics)"
+UA = "Mozilla/5.0 (compatible; ReadTheIce news job; +https://readtheice.app)"
 NOW = dt.datetime.now(dt.timezone.utc)
 
 TEAMS = {

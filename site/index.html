@@ -33,10 +33,10 @@
 <script src="https://browser.sentry-cdn.com/11.7.0/bundle.min.js" crossorigin="anonymous"></script>
 <script>
   try {
-    if (window.Sentry && /(^|\.)github\.io$|readtheice\.app$/.test(location.hostname)) Sentry.init({
+    if (window.Sentry && /(^|\.)readtheice\.app$/.test(location.hostname)) Sentry.init({
       dsn: "https://e683a1c8e31a4512fcc2585ae4ffa0c0@o4512381194207232.ingest.us.sentry.io/4512381325148160",
       environment: "production", sendDefaultPii: false, tracesSampleRate: 0,
-      allowUrls: [/tolar-dio\.github\.io/, /readtheice\.app/],
+      allowUrls: [/readtheice\.app/, /readtheice-api\.vercel\.app/],
       ignoreErrors: ["ResizeObserver loop", "Non-Error promise rejection captured", /^Script error\.?$/],
       beforeSend(e) { if (e.request) delete e.request.cookies; return e; },
     });

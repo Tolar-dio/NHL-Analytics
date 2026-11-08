@@ -12,7 +12,7 @@ const ESPN_TEAM = { 1: "BOS", 2: "BUF", 3: "CGY", 4: "CHI", 5: "DET", 6: "EDM", 
   11: "NJD", 12: "NYI", 13: "NYR", 14: "OTT", 15: "PHI", 16: "PIT", 17: "COL", 18: "SJS", 19: "STL", 20: "TBL", 21: "TOR",
   22: "VAN", 23: "WSH", 25: "ANA", 26: "FLA", 27: "NSH", 28: "WPG", 29: "CBJ", 30: "MIN", 37: "VGK", 124292: "SEA", 129764: "UTA" };
 const ESPN_ID = Object.fromEntries(Object.entries(ESPN_TEAM).map(([k, v]) => [v, k]));
-const NEWS_INDEX = "https://raw.githubusercontent.com/Tolar-dio/NHL-Analytics/main/data/news/index.json";
+const NEWS_INDEX = "https://readtheice-api.vercel.app/api/data?path=news/index.json";
 const normName = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
 
 const LIVE = { games: {}, byNhl: {}, at: 0, timer: null, ready: null, injuries: null, gameTimer: null, probSig: "" };
