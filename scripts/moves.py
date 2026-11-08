@@ -108,7 +108,7 @@ def gather(skaters, goalies, days=DAYS):
 
 if __name__ == "__main__":
     import json, collections, urllib.request
-    site = "https://tolar-dio.github.io/NHL-Analytics/data/"
+    site = "https://readtheice.app/data/"
     load = lambda f: {x["id"]: x for x in json.load(urllib.request.urlopen(site + f, timeout=30))}
     mv = gather(load("skaters.json"), load("goalies.json"))
     print(len(mv), collections.Counter(m["kind"] for m in mv))

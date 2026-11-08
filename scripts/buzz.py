@@ -466,7 +466,7 @@ def gather(skaters, goalies, tonight_ids=()):
 
 
 if __name__ == "__main__":
-    site = os.environ.get("SITE_DATA_URL", "https://tolar-dio.github.io/NHL-Analytics/data/")
+    site = os.environ.get("SITE_DATA_URL", "https://readtheice.app/data/")
     local = os.path.join(ROOT, "site", "data")
     def get(name):
         p = os.path.join(local, name)

@@ -9,11 +9,11 @@ const ALLOW = [
   /^gamecenter\/\d{10}\/(play-by-play|landing|boxscore)$/,
 ];
 const ORIGINS = [/^https:\/\/tolar-dio\.github\.io$/, /^https:\/\/(www\.)?readtheice\.(app|hockey)$/, /^http:\/\/localhost(:\d+)?$/];
-const UA = "ReadTheIce/1.0 (+https://tolar-dio.github.io/NHL-Analytics)";
+const UA = "ReadTheIce/1.0 (+https://readtheice.app)";
 
 function cors(origin) {
   const ok = origin && ORIGINS.some((r) => r.test(origin));
-  return { "access-control-allow-origin": ok ? origin : "https://tolar-dio.github.io", "access-control-allow-methods": "GET, OPTIONS", vary: "origin" };
+  return { "access-control-allow-origin": ok ? origin : "https://readtheice.app", "access-control-allow-methods": "GET, OPTIONS", vary: "origin" };
 }
 
 export default async function handler(req) {

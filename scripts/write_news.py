@@ -19,7 +19,7 @@ from writer_context import coverage as player_coverage, dossier_remote, path as 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data", "news")
-SITE = os.environ.get("SITE_DATA_URL", "https://tolar-dio.github.io/NHL-Analytics/data/")
+SITE = os.environ.get("SITE_DATA_URL", "https://readtheice.app/data/")
 NEWS_MAX = int(os.environ.get("NEWS_MAX", "8"))
 MOVES_MAX = int(os.environ.get("MOVES_MAX", "4"))   # Claude notes on trades and staff changes per run
 

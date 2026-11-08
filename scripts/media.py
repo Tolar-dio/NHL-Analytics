@@ -414,7 +414,7 @@ def gather(site_url, cache_dir, games_index=None):
 
 
 if __name__ == "__main__":
-    site = os.environ.get("SITE_DATA_URL", "https://tolar-dio.github.io/NHL-Analytics/data/")
+    site = os.environ.get("SITE_DATA_URL", "https://readtheice.app/data/")
     out, log = gather(site, os.path.join(os.path.dirname(HERE), "data", "news", "cache"))
     print("\n".join(log))
     print({k: len(v) for k, v in out.items()})

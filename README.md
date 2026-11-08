@@ -1,6 +1,6 @@
 # NHL Analytics
 
-**Dashboard:** https://tolar-dio.github.io/NHL-Analytics/ (rebuilt every morning and again mid-afternoon)
+**Dashboard:** https://readtheice.app/ (rebuilt every morning and again mid-afternoon)
 
 Personal NHL analytics project for the 2026-27 season. A GitHub Action pulls every completed game from the NHL's public API each night and stores it here.
 
