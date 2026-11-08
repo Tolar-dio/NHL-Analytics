@@ -1,1 +1,19 @@
-{"text": "Tampa Bay arrives on the second night of a back-to-back, having rallied from two goals down to beat Minnesota 4-3 in overtime last night for a third straight win (4-0-1 in their last five). Winnipeg is 2-3-0 in its last five after a 6-2 win over Vancouver, where Viggo Bj\u00f6rck picked up his first NHL point. The Jets are still without Josh Morrissey (wrist), so Mario Ferraro has moved in beside DeMelo and Neal Pionk has taken a spot on the first power-play unit. TBL won the first meeting 6-4 on Oct 29, a game it deserved to win 76% of the time (the share of simulated replays of every shot that it wins).\n\nOur numbers favor the Lightning, who have taken 55% of the expected goals (the quality of chances) at five on five, against 47% for Winnipeg. The model has TBL at 3.47 expected goals tonight and WPG at 2.89. Tampa's power play creates 0.82 expected goals a game, and Winnipeg's penalty kill allows 0.90, the matchup to watch. In net, projected starters Andrei Vasilevskiy (-0.51 goals saved above expected this season, +23.15 last year) and Stuart Skinner (+1.07, then +5.96) are both near .885.\n\nKyle Connor is our top Jet at 43% to score, and Jake Guentzel (40%) and Brandon Hagel (39%) lead Tampa. Nikita Kucherov is 84% for a point. One under-the-radar pick: Pontus Holmberg, a third-line forward with 2.5 expected goals in his last 10 games, at 18% to score. He's a player to watch, not a lock.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8476883, 8479973], "written": "2026-11-08T11:28:36+00:00"}
+{
+ "text": "The strangest thing about Nikita Kucherov's trade request is how little it has shown up on the ice. He asked out of Tampa Bay at the end of October, the league has spent a week drawing up landing spots (Sportsnet ran a list, The Athletic reranked the power rankings around his impact), and last night in Minnesota he scored the overtime winner after the Lightning came back from two goals down. Tampa has won three straight with 61% of the expected goals in those games (expected goals measure the quality of chances). Whatever the room feels like, the hockey has been good.\n\nThe other goaltending story in Tampa is the reassuring one: Andrei Vasilevskiy's agent has indicated he intends to finish his career with the Lightning. His season has not caught up with that commitment yet. He is at .886 and -0.5 goals saved above expected after a +23.2 season, and he is the projected starter on the second night of a back-to-back.\n\nWinnipeg is in a different place. The Jets are 2-3-0 in their last five and our numbers give them a 14% shot at the playoffs, but this week had life in it: a historic comeback in Montreal sparked by Tyrel Bauer's Gordie Howe hat trick, then a 6-2 rout of Vancouver. Stuart Skinner signed a two-year deal on Thursday and has won two straight. Josh Morrissey (wrist) has been out, and Ken Wiebe of the Winnipeg Free Press raised the possibility of a return on Sunday; until he's back, Neal Pionk runs the first power play.\n\nThe matchup still tilts hard. Tampa has taken 55% of the five-on-five expected goals, Winnipeg 47%, and the Lightning won the first meeting 6-4 on Oct 29, a game they deserved 76% of the time. Kyle Connor (43% to score) is the Jet most likely to change that. Our sleeper is Tampa's Pontus Holmberg, a third-liner with 2.5 expected goals in his last ten. Our numbers make it 3.47 expected goals to 2.89 for the Lightning.",
+ "headline": "Kucherov wants out, and keeps winning games anyway",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-08T12:50:51Z",
+ "goalies": [
+  8476883,
+  8479973
+ ],
+ "hunch": {
+  "text": "Our numbers like Tampa Bay by a lot. Our gut says the second night of a back-to-back, a Vasilevskiy who hasn't found his game yet and a Jets team that has looked alive this week add up to a Winnipeg win.",
+  "claim": {
+   "type": "win",
+   "team": "WPG"
+  }
+ }
+}

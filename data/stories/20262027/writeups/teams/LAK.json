@@ -1,9 +1,9 @@
 {
- "text": "Los Angeles is 5-7-2, and it's hard to find the part of the game that's broken. The Kings take 50% of the expected goals, score almost exactly what their chances deserve (43 goals on 43.6 expected), and have allowed about four more than the shots against would predict. Our numbers have them three points behind where their play should have them. That's a goaltending gap more than a hockey one, and it's early enough to close.\n\nThe headline is Artemi Panarin, already looking at home on a line with Adrian Kempe. With Alex Laferriere on the right side, that trio has outscored teams 8-1 at five on five and made 4.0 expected goals per hour. With Quinton Byfield instead, the chances were even better (65%) and the goals went the other way, 5-1 against. Same players, very different luck.\n\nOn the blue line, Erik Gustafsson and Brandt Clarke are driving play at 62%. Clarke took a hit from Ottawa's Hayden Hodgson that drew a two-game suspension, per The Athletic's Julian McKenzie. Brian Dumoulin and Mikey Anderson sit at 46%.\n\nA 3-2 loss to Buffalo, part of the Sabres' perfect California trip, didn't help. Still, 45% playoff odds on an 88-point pace is a team that's one good goaltending month from looking fine. Darcy Kuemper is the name to watch.",
- "headline": "The Kings are waiting for their goalies to catch up",
+ "text": "Los Angeles keeps losing games it controls. Saturday's 5-2 loss to Pittsburgh was the purest version: the Kings outshot the Penguins badly and still lost by three. At 5-8-2, our race model says the Kings have left 4.6 points on the table compared with what their play deserved.\n\nThe process isn't dominant, though. LA takes 51 percent of the five-on-five expected goals (the quality of chances), and its goalies have allowed about six more goals than the chances against them should produce. That second number is the real story. Fix the saves and this is a playoff team; our simulations give them 41 percent as it stands.\n\nThe good news has a name. Brandt Clarke is having the breakout everyone waited for, playing in a \"leadership role\" per NHL.com, and his pair with Erik Gustafsson takes 62 percent of the expected goals. Adrian Kempe passed Dustin Brown on the franchise list with a hat trick against San Jose, and the Kempe, Artemi Panarin and Alex Laferriere line has outscored teams 8-1. Quinton Byfield's name has popped up in trade chatter, which is the kind of thing that happens to young players on teams that are losing. We'd be patient.",
+ "headline": "The Kings are better than 5-8-2, but not by enough yet",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-07T18:15:17Z",
- "gp": 14
+ "written": "2026-11-08T12:47:23Z",
+ "gp": 15
 }

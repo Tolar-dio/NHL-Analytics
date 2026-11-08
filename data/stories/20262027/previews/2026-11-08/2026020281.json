@@ -1,1 +1,19 @@
-{"text": "Philadelphia arrives on game two of a five-game road trip, three days after a 3-2 loss at the Rangers, and the Flyers are 1-3-1 in their last five without Rasmus Ristolainen. Calgary is two days removed from a 5-3 home loss to Anaheim, which came back from two goals down and won on Cutter Gauthier's goal with 1:34 left. The Flames are missing Connor Zary and Samuel Honzek. It's the first meeting this season; Calgary won both last year.\n\nOur numbers say the Flames are better than their record. At five on five they have 46% of the expected goals (the quality of chances taken and allowed) to Philadelphia's 41%, and their poor results trace to finishing and goaltending. That puts the projected goalies in focus. Dan Vladar is slightly below expected this season but was 12.74 goals saved above expected last year (how many goals a goalie stopped beyond what his shots should have produced). Dustin Wolf is at -6.6 this season and -2.8 last. Our model has it close to even, 2.93 expected goals for the Flyers and 2.90 for the Flames.\n\nMatvei Michkov has 11 points in his last ten games, and we have him at 27% to score. Trevor Zegras is our top Philadelphia pick at 28%. For Calgary, Joel Farabee, a former Flyer, leads at 30%. A deeper pick: we like Flyers fourth-liner Cole Knuble as an under-the-radar player to watch, since his shots have been dangerous (2.2 expected goals in his last 8 games), and we have him at 14% to score.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8478435, 8481692], "written": "2026-11-08T11:28:42+00:00"}
+{
+ "text": "The most talked-about thing in Philadelphia right now is not the standings, though those are bad enough. It is Matvei Michkov's ice time. He has 11 points in his last ten games, eight of them goals, and our numbers say that run is earned: 3.6 expected goals on his own shots (the quality of his chances) against 2.8 at his usual rate. He is the team's leading goal scorer, and yet Rick Tocchet keeps limiting his minutes, a split Philly Sports Reports and Markerzone have both picked apart this week. PHLY's Charlie O'Connor has written about possible tension in the room around it. Add Trevor Zegras sitting for ten minutes in a loss after what The New York Times described as \"showing the ref up,\" and this road trip, game two of five, is carrying a lot.\n\nThe hockey underneath is the real worry. The Flyers have taken 41% of the five-on-five expected goals, the worst share in either of these teams by a distance, and they've lost three of their last five, the last a 3-2 third-period collapse at the Rangers. Our numbers give them a 2% shot at the playoffs.\n\nCalgary is not far off. The Flames are 2-2-1 in their last five without winning the chance battle in any of those games, and our numbers rate them as unlucky on top of it: a -18 goal difference on -9.4 expected, with Dustin Wolf (.869, 6.6 goals allowed above expected) the biggest reason. Devin Cooley came off injured reserve this week after a strong start, so Wolf's leash is a live question. Joel Farabee and Morgan Frost face the team that traded them, and Farabee (30% to score) is the Flame our numbers like most.\n\nOur sleeper is Philadelphia's Cole Knuble, a fourth-liner whose 2.2 expected goals in his last eight games rate better than 95% of depth forwards. Our numbers make it nearly even: 2.93 expected goals for the Flyers, 2.90 for the Flames. Two teams near the bottom, both with something to prove before November gets away.",
+ "headline": "Michkov keeps scoring, and the Flyers keep arguing",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-08T12:51:07Z",
+ "goalies": [
+  8478435,
+  8481692
+ ],
+ "hunch": {
+  "text": "Matvei Michkov is the Flyers' leading goal scorer, he has earned his hot streak with real chances, and Dustin Wolf is 6.6 goals below expected. Our gut says the minutes debate gets another data point tonight.",
+  "claim": {
+   "type": "goal",
+   "player": 8484387
+  }
+ }
+}

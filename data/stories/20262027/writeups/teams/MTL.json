@@ -1,9 +1,9 @@
 {
- "text": "The Canadiens have points in nine straight (7-0-2) and sit at 10-3-3 with 23 points. Our numbers like the team. They aren't sure about the record. Montreal has 49% of the expected goals this season and exactly 50% during the streak, and our model counts six points of luck, a big number this early.\n\nMost of that luck has a name. Jacob Fowler is .938 with 7.7 goals saved above expected over his last five starts, a run that has turned coin-flip nights into wins. Across the season the Habs have allowed five fewer goals than their chances against would predict.\n\nThere's real hockey underneath. Nick Suzuki, Cole Caufield and Juraj Slafkovský make 4.04 expected goals per hour together with 64% of the shot attempts. Phillip Danault's line with Alexandre Texier and Zachary Bolduc has smothered opponents (1.22 expected against per hour, 71% of the chances), even if it's been outscored 3-2. Lane Hutson and Noah Dobson are a 59% pair.\n\nThe concerns: the Chris Kreider, Josh Anderson and Alex Newhook line is giving up 4.25 expected goals an hour, and Montreal takes 5.38 penalties a game while the penalty kill leaks 0.89 expected goals a night. The playoff odds (59%) reflect a good team that's been a bit fortunate. Saturday in Toronto, against a Leafs team welcoming back John Tavares, is a fair test.",
- "headline": "Montreal's streak rests on Jacob Fowler",
+ "text": "Ten straight games with a point (8-0-2), a 4-2 win in Toronto on Saturday, and a rookie goalie Sportsnet's Eric Engels is already writing about next to Carey Price. The Canadiens are having the kind of November that makes a city loud.\n\nOur numbers are more careful. Montreal got 50 percent of the expected goals during the streak, and for the season it sits slightly under even at 49 percent. Our race model says the Habs have banked 7.2 more points than their play earned, a big cushion this early. Most of that is Jacob Fowler, who has saved 8.1 goals above expected over his last five starts, and Cole Caufield's overtime magic, which has headline writers comparing him favourably to Connor McDavid.\n\nThere's also a penalty problem: 5.24 minors taken a game against 4.24 drawn, and a penalty kill that allows 0.9 expected goals a night. Saturday's big kill on a Juraj Slafkovsky double minor is the version that works; most nights it won't. Nick Suzuki's return and Ivan Demidov's progress from injury help. We'd enjoy the streak and expect the record to drift toward the playoff line, where our simulations put them at 64 percent.",
+ "headline": "Montreal is riding a rookie goalie and its luck",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-07T18:15:17Z",
- "gp": 16
+ "written": "2026-11-08T12:47:23Z",
+ "gp": 17
 }

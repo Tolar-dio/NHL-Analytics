@@ -1,1 +1,19 @@
-{"text": "New Jersey arrives on a four-game winning streak, the latest a 5-4 overtime win at NYI last night after trailing by two goals, with Jack Hughes scoring the winner. Toronto has gone 1-4-0 in its last five, falling 4-2 to MTL, and is without Kirill Marchenko (lower body, on injured reserve), Nick Blankenburg and Marshall Rifai. Both teams are on the second night of a back-to-back, so the tired legs are shared.\n\nOur numbers favor the Devils. At five on five, NJD has taken 59% of the expected goals (the quality of chances) in its games, TOR 46%. We project NJD for 3.53 goals tonight, TOR for 2.84. Toronto's penalty kill allows 0.80 expected goals a game against a New Jersey power play that creates 0.81, and the Leafs take 4.3 penalties a game. In net, Anthony Stolarz (projected) is at +2.3 goals saved above expected this season but -6.6 last year, while Connor Hellebuyck (projected) is at -0.5 after a +3.4 season in 2025-26's predecessor year.\n\nWatch Jack Hughes, at 44% to score and 81% for a point, and Auston Matthews, at 38% and 70% on a six-game point streak. With Marchenko out, Easton Cowan has moved beside Matthews's line and William Nylander is up to 21:34 a night. Our under-the-radar picks are Anthony Mantha, 24% to score thanks to dangerous recent shots, and Luke Hughes, 51% for a point with his ice time up.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8476945, 8476932], "written": "2026-11-08T11:28:32+00:00"}
+{
+ "text": "The Maple Leafs are 1-4-0 in their last five, winless in four Atlantic Division games, and last night's 4-2 home loss to Montreal drew a headline from The Leafs Nation about mastering \"the fake comeback.\" The noise around the team is getting louder: coach Jim Hiller has publicly challenged William Nylander about time spent waiting in the neutral zone, Gavin McKenna was bumped off the first power-play unit, and rumour sites have floated blockbusters involving Kirill Marchenko (lower body, out until about Nov 17), some of them for Nikita Kucherov, and Easton Cowan. Into all of that steps John Tavares, activated off injured reserve, with Auston Matthews saying he had been the best player on the ice at practice.\n\nThe problem Tavares cannot fix alone is the five-on-five game. Toronto has taken just 46% of the expected goals at even strength (expected goals measure the quality of chances) and allows 3.41 per 60. The Leafs are scoring more than that process deserves, 3.56 goals a game, and Matthews has a six-game point streak (three goals, six assists). Our numbers give them a 13% shot at the playoffs.\n\nNew Jersey is the opposite story. The Devils have won four straight, and the chances back it: 62% of the expected goals in those games and 59% at five on five on the season, best in this matchup by a distance. Last night they came back from 4-2 down on Long Island, scoring three unanswered, and Jack Hughes ended it on a breakaway in overtime. Hughes has nine points in a four-game streak and our numbers give him a 44% chance to score. Nico Hischier is one point from 500.\n\nBoth teams played last night. Toronto starts Anthony Stolarz over Sergei Bobrovsky, while Connor Hellebuyck, four games into his Devils season, is at -0.5 goals saved above expected. Toronto may also be without Morgan Rielly, who left last night after 5:45 with a lower-body injury, per Daily Faceoff. Our sleepers are both Devils: Anthony Mantha and Luke Hughes. Our numbers make it 3.53 expected goals to 2.84 for New Jersey.",
+ "headline": "Tavares returns to a Leafs team running out of patience",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-08T12:52:01Z",
+ "goalies": [
+  8476945,
+  8476932
+ ],
+ "hunch": {
+  "text": "Two teams on the second night of back-to-backs, a Leafs backup in net and a Leafs defense that gives up 3.41 expected goals per 60. Our gut says this one gets loose.",
+  "claim": {
+   "type": "over",
+   "goals": 6.5
+  }
+ }
+}

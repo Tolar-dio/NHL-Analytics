@@ -1,9 +1,9 @@
 {
- "text": "New Jersey is 11-5-0, and the record undersells how well the Devils are playing. They have 59% of the expected goals, allow only 2.51 per hour, and take just 2.56 penalties a game while drawing 3.5. That's a sturdy profile, and our model calls their 22 points almost exactly what they've earned.\n\nJack Hughes and Jesper Bratt with Arseny Gritsyuk have outscored teams 10-3 at five on five and made 4.02 expected goals per hour. Gritsyuk has 10 points in ten games on 5.9 expected, so some of that will cool. The Nico Hischier line with Timo Meier and Luke Evangelista does the harder work at 61%. On the back end, Luke Hughes and Brett Pesce have been on for 17 goals for and eight against in 257 minutes, though both are also scoring a bit above their chances.\n\nThe soft spot is in net. Jake Allen is .881 and 4.4 goals worse than expected over his last five starts, and the team has allowed about six more goals than its chances against suggest. The 5-4 overtime win over St. Louis, after leading 4-1 late in the third, showed both sides of that: the skaters built it, the late defending nearly gave it away. Mike Fink of The Hockey News noted they finished that game with 11 forwards.\n\nA three-game road trip starts tonight on Long Island. Our numbers say 91% for the playoffs.",
- "headline": "The Devils are winning the way that lasts",
+ "text": "The Devils came back from 4-2 down to beat the Islanders 5-4 in overtime on Saturday, Jack Hughes finishing it on a breakaway, and it was their fourth straight win. Three straight games to overtime, too. That's the noisy part. The quiet part is better.\n\nNew Jersey takes 59 percent of the five-on-five expected goals (the quality of chances), which is elite, and it stays out of the box: 2.53 penalties taken a game, 3.76 drawn. Our race model has them at 24.3 deserved points against 24 actual: no luck either way. The record is the play.\n\nThe reason the Devils aren't higher is in net. The goaltending, Connor Hellebuyck's included, has allowed about seven more goals than the chances against them would predict. If that turns, this team runs away with things. Arseny Gritsyuk has 10 points in his last ten on the Jesper Bratt and Hughes line, which has outscored teams 11-3, and Luke Hughes has made the leap The Hockey News keeps writing about: the Brett Pesce and Luke Hughes pair has outscored opponents 18-9. Saturday also brought a fight between Luke Hughes and Matthew Schaefer. We doubt it's the last time those two teams get heated.",
+ "headline": "New Jersey might be the East's best team on process",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-07T18:15:17Z",
- "gp": 16
+ "written": "2026-11-08T12:47:23Z",
+ "gp": 17
 }

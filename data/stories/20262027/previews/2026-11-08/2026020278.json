@@ -1,1 +1,19 @@
-{"text": "Vegas arrives in Buffalo three days after beating Detroit 2-1, a game the Golden Knights trailed in the third period before Trevor Connelly scored the winner with 1:42 left. They're 3-1-1 in their last five and still without Parker Wotherspoon. Buffalo is 4-1-0 over the same stretch after a 5-2 win over Columbus on Friday, though Konsta Helenius, Justin Danforth and Matt Grzelcyk are out. Rasmus Dahlin plays his 600th NHL game, one that matters in a building where Jack Eichel is the former franchise player.\n\nThe teams look close on paper. At five on five, Vegas has taken 53% of the expected goals (the quality of chances) in its games and Buffalo 50%, so there's little between them. Our model makes it 3.16 to 2.93 for Vegas. Buffalo has taken 4.1 penalties a game, and Vegas is generating 0.72 power play expected goals a game. In net, projected starters Carter Hart and Colten Ellis are both above average this season in goals saved above expected (how many goals a goalie stopped beyond what the chances should have allowed): Hart at +2.1, Ellis at +2.3. Last season, Hart was at -4.4 and Ellis at +2.2.\n\nEichel gives Vegas a 76% chance of a point by our numbers, and a reporter posted this week that Vegas has been generating plenty of chances. Victor Olofsson, drafted by Buffalo in 2014, is on a five-game point streak with six points. For the Sabres, Tage Thompson has a 37% chance to score and is one assist from 200 career assists.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8479394, 8481551], "written": "2026-11-08T11:28:27+00:00"}
+{
+ "text": "Five years ago this week, Buffalo traded Jack Eichel to Vegas, and the Buffalo News marked the anniversary with a long look back. The deal is still the lens for every Sabres season: Eichel has a Stanley Cup in Vegas, and the Sabres are still trying to prove they can play into the spring. This afternoon he is back in Buffalo, and The Hockey Beast notes his best points rate against any NHL team comes against his old one. Our numbers give him a 76% chance of a point.\n\nThe Sabres arrive in better form than reputation. They are 4-1-0 in their last five, outscoring teams 18-12, and Friday's 5-2 win over Columbus came after Ryan McLeod was scratched, a move The Athletic's Matthew Fairburn described as a wake-up call for the room. Tage Thompson has a five-game point streak (five goals, five assists) since a position change and sits one assist from 200. Zach Benson has a six-game point streak of his own. The catch is that the process behind the run is flat: 50% of the expected goals over those five games (expected goals measure the quality of chances), and 50% at five on five on the season.\n\nVegas is the steadier team. The Golden Knights have taken 53% of the five-on-five expected goals, allow 2.70 expected goals per 60, and their penalty kill gives up just 0.48 expected goals a game. They won in Detroit on Thursday after trailing in the third, Trevor Connelly scoring with 1:42 left to keep a strong road trip rolling. Carter Hart (+2.1 goals saved above expected) is the projected starter.\n\nBuffalo goes with its backup: Colten Ellis starts over Ukko-Pekka Luukkonen, who has 11 of 16 starts. Ellis has been good (+2.3), and the Sabres wasted a strong game from him in a late collapse against Ottawa. Rasmus Dahlin plays his 600th game and Josh Norris his 300th. Our numbers make Vegas a modest favourite, 3.16 expected goals to 2.93, and give the Golden Knights a 95% shot at the playoffs against Buffalo's 41%.",
+ "headline": "Five years on, Eichel comes back to Buffalo",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-08T12:50:14Z",
+ "goalies": [
+  8479394,
+  8481551
+ ],
+ "hunch": {
+  "text": "Victor Olofsson has points in five straight games (four goals), the latest in his return from injury, and he gets a backup goalie in the building where his NHL career started. Our numbers give him 18%; our gut says he finds one.",
+  "claim": {
+   "type": "goal",
+   "player": 8478109
+  }
+ }
+}

@@ -1,1 +1,19 @@
-{"text": "Florida arrives on the second night of a back-to-back, having lost 4-3 at Washington last night, where Jack St. Ivany scored his first NHL goal. The Panthers are 3-2-0 in their last five and playing without Brad Marchand (knee), Anton Lundell and Sandis Vilmanis. With Marchand out, Lars Eller is up to 16:56 a night from 12:14. Boston has won three straight, most recently 6-2 at Pittsburgh, and is missing James Hagens (back). Elias Lindholm is next in line for his minutes.\n\nThe chances are close. At five on five, FLA has taken 53% of the expected goals (the quality of shots) and BOS 52%. Boston's results run ahead of that: finishing and goaltending are doing much of the lifting. Florida takes 5.2 penalties a game, which keeps feeding opposing power plays. The goalie matchup favors the home side. Projected starter Jeremy Swayman is +7.3 in goals saved above expected (how many goals he's stopped beyond what the shots should allow) this season and +26.5 last year, while Jacob Markstrom is at -0.6 and -16.0.\n\nAmong players to watch, Sam Reinhart has a six-game point streak and is 38% to score, while Matthew Tkachuk is 71% for a point. For Boston, David Pastrnak is 79% for a point. Our under-the-radar pick is JJ Peterka, 55% for a point, above what his season pace says (48%), with his ice time up to a projected 18:52 a night.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8474593, 8480280], "written": "2026-11-08T11:28:22+00:00"}
+{
+ "text": "Boston has won three straight and sits 25 points into the season, five clear of Florida. Look under the hood and the picture gets murkier. The Bruins are +23 in goal difference on a +1.5 expected-goals difference (expected goals measure the quality of chances), which means they are scoring 8.9 more goals than their looks usually produce and getting 12.6 goals saved above expected in net. Their three-game streak runs the same way: 14 goals on 9.9 expected. That is a team riding finishing and Jeremy Swayman, and Swayman (+7.3 this season, .912) has been worth riding.\n\nFlorida arrives tired and shorthanded. The Panthers lost 4-3 in Washington last night, they play without Brad Marchand (knee, ESPN estimates Nov 21) and Anton Lundell, and Jacob Markstrom (-0.6 this season after -16.0 last year) is the projected starter. Marchand's absence in Boston carries extra weight this weekend, with Patrice Bergeron being inducted into the Hockey Hall of Fame; Marchand has been in the headlines talking about Bergeron's impact and about a knee injury he feared might end his career. The lineup without him has meant Matthew Tkachuk sliding next to Sam Reinhart, and Reinhart has a six-game point streak (four goals, five assists).\n\nThe Tkachuks are the other noise around this team. Brady, now a Panther, scored in his return to Ottawa this week and the brothers have been trading barbs with the Senators about the crowd. He sits on the top power play, and Florida's power play generates 1.19 expected goals a game against Boston's 0.55. That gap matters, because the Panthers take 5.2 penalties a game and draw 5.6.\n\nFor Boston, watch JJ Peterka, our sleeper: 55% for a point tonight against a 48% season pace, with his ice time up to a projected 18:52. James Hagens is out for weeks after a cross-check in Pittsburgh, so the middle of the lineup is thinner than the streak suggests. Our numbers make it 3.24 expected goals to 2.99 for Boston.",
+ "headline": "The Bruins are winning more than they're earning",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-08T12:49:45Z",
+ "goalies": [
+  8474593,
+  8480280
+ ],
+ "hunch": {
+  "text": "Our numbers lean Boston, and the back-to-back is real. Our gut says the Bruins' finishing bill comes due against a Panthers team that has been the better five-on-five side, and Florida takes it.",
+  "claim": {
+   "type": "win",
+   "team": "FLA"
+  }
+ }
+}
