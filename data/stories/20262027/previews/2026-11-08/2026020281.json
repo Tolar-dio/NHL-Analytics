@@ -1,1 +1,19 @@
-{"text": "Philadelphia arrives in Calgary on game two of a five-game road trip, 0-1-0 so far, after a 3-2 loss at the Rangers. The Flyers are 1-3-1 in their last five and are without Rasmus Ristolainen. The Flames are 2-2-1 over the same stretch and came off a 5-3 home loss to Anaheim, blowing a two-goal lead on a goal with 1:34 left. Calgary is also missing Kevin Bahl, Connor Zary and Samuel Honzek. The Flames are better than their record: their goal difference is -18 against about -9 on chance quality, partly from finishing and goaltending running cold.\n\nOur numbers see a tight game, with Calgary at 2.91 expected goals to Philadelphia's 2.76. At five on five, CGY has 46% of the expected goals (the quality of chances) against 41% for PHI. Calgary's power play is the weaker unit, 0.39 expected goals a game to 0.66 for the Flyers, and the Flames take 4.2 penalties a game, which keeps handing out chances. In net, projected starters Dan Vladar (PHI) and Devin Cooley (CGY) are separated this season: Cooley is at +2.19 goals saved above expected, Vladar at -0.21. Last season they were closer, +17.23 over 31 games for Cooley and +12.74 over 52 for Vladar.\n\nFor the Flyers, Matvei Michkov has 11 points in his last ten and the extra chances back it up, with a 26% chance to score and 52% to record a point. Trevor Zegras (27% to score) leads our list. For Calgary, Joel Farabee, a former Flyers first-rounder, scored on the power play Friday and sits at 30% to score. Matvei Gridin, 20% to score, has eight points in ten games, though we see that as mostly bounces.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8478435, 8482445], "written": "2026-11-08T16:50:44+00:00"}
+{
+ "text": "The Flyers arrive in Calgary with one story drowning out everything else, and it belongs to a 21-year-old. Matvei Michkov has 11 points (8 goals) in his last ten games, he's their leading goal scorer, and the weekend headlines are about his ice time under Rick Tocchet: Broad Street Hockey wrote that he \"sends clear message to Flyers about limited ice time.\" PHLY Sports' Charlie O'Connor put it plainly: if there's tension in the room, \"The group has to figure this out.\" Our numbers say the hot streak is earned. He's getting 3.6 expected goals on his own shots over those ten games against a usual 2.8. The question in Calgary is simply how much he plays.\n\nThe Flyers need him to. They're 1-3-1 in their last five, game two of a five-game road trip, and our playoff odds give them about 2%. They're better than the record (43% of the expected goals, the quality of chances, with finishing 8.5 goals behind their chances), but that's cold comfort in November. Trevor Zegras, who The New York Times reported sat for 10 minutes after \"showing the ref up\" last week, has the best goal chance on the team at 27%.\n\nCalgary has its own bad news. Kevin Bahl will miss the rest of the season with a ruptured Achilles, per Daily Faceoff, and the Flames blew a two-goal lead in a 5-3 loss to Anaheim on Friday. Devin Cooley, back from injured reserve, starts in net (+2.2 goals saved above expected, which measures saves beyond what the shots deserved) against Dan Vladar (-0.2). Two former Flyers lead Calgary's chances: Joel Farabee (30% to score, best on either side) and Morgan Frost.\n\nOur numbers have it close, 2.91 to 2.76 expected goals for Calgary. Both teams take more than four penalties a game, and Calgary's power play produces only 0.39 expected goals a night, so the special teams may decide less than you'd think.",
+ "headline": "Michkov's minutes are the story in Calgary",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-08T22:58:12Z",
+ "goalies": [
+  8478435,
+  8482445
+ ],
+ "hunch": {
+  "text": "Michkov answers the ice-time questions the only way that settles them: he scores in Calgary, whatever his minutes look like.",
+  "claim": {
+   "type": "goal",
+   "player": 8484387
+  }
+ }
+}
