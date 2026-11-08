@@ -8,7 +8,7 @@ const ALLOW = [
   /^score\/\d{4}-\d{2}-\d{2}$/,
   /^gamecenter\/\d{10}\/(play-by-play|landing|boxscore)$/,
 ];
-const ORIGINS = [/^https:\/\/tolar-dio\.github\.io$/, /^https:\/\/(www\.)?readtheice\.hockey$/, /^http:\/\/localhost(:\d+)?$/];
+const ORIGINS = [/^https:\/\/tolar-dio\.github\.io$/, /^https:\/\/(www\.)?readtheice\.(app|hockey)$/, /^http:\/\/localhost(:\d+)?$/];
 const UA = "ReadTheIce/1.0 (+https://tolar-dio.github.io/NHL-Analytics)";
 
 function cors(origin) {

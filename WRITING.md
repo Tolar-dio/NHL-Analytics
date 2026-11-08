@@ -6,8 +6,8 @@ as the nightly pipeline makes them. The writing is yours.
 
 ## The job, each run
 
-1. Fetch the queue: `curl -s https://tolar-dio.github.io/NHL-Analytics/data/writer/queue.json -o /tmp/queue.json`
-   (if the custom domain is live, `https://readtheice.hockey/data/writer/queue.json`). Note `made`: if it is more
+1. Fetch the queue: `curl -sL https://readtheice.app/data/writer/queue.json -o /tmp/queue.json` (if that fails,
+   `curl -sL https://tolar-dio.github.io/NHL-Analytics/data/writer/queue.json`; keep `-L`, the old address redirects). Note `made`: if it is more
    than 20 hours old, the nightly build failed; write anyway, but say so in the commit message.
 2. Clone or pull `Tolar-dio/NHL-Analytics` (main).
 3. Work through the queue in this order: previews (only today's are useful), recaps (newest first), takes, teams,
