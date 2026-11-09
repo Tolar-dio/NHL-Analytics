@@ -3,7 +3,8 @@
 // Pulls tonight.json and team_profiles.json from readtheice.app, then writes:
 //   profile.png (1080x1080), brand.png (1080x1350), scorers.png, luck.png (1080x1350, 4:5 feed), plus feature.png and
 //   stat.png when social/today.json has a `feature` or `stat` entry (the day's one-off cards),
-//   story-sleepers.png (1080x1920). Team colors only (no logos, no player photos: both are licensed).
+//   sleepers.png, cover-players.png, and with today.json `games`: cover-games.png and a card per game (all 1080x1350).
+//   STORY=1 also writes story-sleepers.png (1080x1920). Team colors only (no logos, no player photos: both are licensed).
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
@@ -184,28 +185,27 @@ function gameCard(G, C) {
     .hunch p { font-size:28px; line-height:1.3; margin-top:4px; }`);
 }
 
-// the first slide of the nightly carousel: the date, big enough to read in the profile grid, and the matchups
-function cover(T, GAMES) {
+// the first slide of a carousel: the date, big enough to read in the profile grid, and what's inside
+// rows: [{ colors: [..], title, sub, right }]
+function cover(T, { kicker, line, rows }) {
   const d = new Date(T.date + "T12:00:00Z");
   const mon = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }), day = d.getUTCDate();
   const wk = d.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
-  const n = T.games.length, word = ["", "One game", "Two games", "Three games", "Four games", "Five games", "Six games", "Seven games", "Eight games"][n] || `${n} games`;
-  const titles = Object.fromEntries(GAMES.map(([G, C]) => [G.id, C.title]));
-  const dense = n > 5;
-  const rows = T.games.map((g) => `
+  const dense = rows.length > 5;
+  const html = rows.map((r) => `
     <div class="g">
-      <div class="chips"><i style="background:${tc(g.away)}"></i><i style="background:${tc(g.home) === tc(g.away) ? B.ice : tc(g.home)}"></i></div>
-      <div><b>${NAMES[g.away]} at ${NAMES[g.home]}</b>${titles[g.id] && !dense ? `<span>${esc(titles[g.id])}</span>` : ""}</div>
-      <em>${etTime(g.start)}</em>
+      <div class="chips">${r.colors.map((c) => `<i style="background:${c}"></i>`).join("")}</div>
+      <div><b>${esc(r.title)}</b>${r.sub && !dense ? `<span>${esc(r.sub)}</span>` : ""}</div>
+      <em>${esc(r.right || "")}</em>
     </div>`).join("");
   return page(1080, 1350, `
     ${rinkBg(880, 330, 300)}
     <div style="padding:72px 72px 0">
       ${wordmark(36)}
-      <div class="kicker" style="margin-top:${dense ? 40 : 90}px">${wk} · Game night</div>
+      <div class="kicker" style="margin-top:${dense ? 40 : 90}px">${wk} · ${esc(kicker)}</div>
       <h1 style="font-size:${dense ? 240 : 330}px;line-height:.84;margin-top:6px">${mon} <span style="color:${B.blue}">${day}</span></h1>
-      <p style="font-size:40px;font-weight:600;margin-top:${dense ? 16 : 30}px">${word} tonight. The story, our numbers and a hunch for each.</p>
-      <div class="gs" style="margin-top:${dense ? 22 : 44}px;gap:${dense ? 8 : 16}px">${rows}</div>
+      <p style="font-size:40px;font-weight:600;margin-top:${dense ? 16 : 30}px">${esc(line)}</p>
+      <div class="gs" style="margin-top:${dense ? 22 : 44}px;gap:${dense ? 8 : 16}px">${html}</div>
     </div>
     <div class="foot"><span>For information and entertainment. 21+. 1-800-GAMBLER</span><span style="color:${B.ice};font-weight:700;font-size:26px">Swipe &#8594;</span></div>`, `
     .gs { display:grid; }
@@ -213,6 +213,23 @@ function cover(T, GAMES) {
     .chips { display:flex; gap:6px; } .chips i { width:12px; height:${dense ? 40 : 64}px; border-radius:6px; display:block; }
     .g b { display:block; font-size:${dense ? 30 : 38}px; font-weight:700; line-height:1.15; } .g span { display:block; font-size:25px; color:${B.muted}; margin-top:2px; }
     .g em { font-style:normal; font-family:"Big Shoulders Display"; font-weight:800; font-size:${dense ? 30 : 36}px; color:${B.ice}; white-space:nowrap; }`);
+}
+const COUNT = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+function gamesCover(T, GAMES) {
+  const titles = Object.fromEntries(GAMES.map(([G, C]) => [G.id, C.title]));
+  const n = T.games.length;
+  return cover(T, { kicker: "Game night", line: `${COUNT[n] || n} game${n === 1 ? "" : "s"} tonight. The story, our numbers and a hunch for each.`,
+    rows: T.games.map((g) => ({ colors: [tc(g.away), tc(g.home) === tc(g.away) ? B.ice : tc(g.home)], title: `${NAMES[g.away]} at ${NAMES[g.home]}`, sub: titles[g.id], right: etTime(g.start) })) });
+}
+// the players carousel: likeliest scorers, sleepers, and the day's stat card if there is one
+function playersCover(T, TODAY) {
+  const top = [...T.props].filter((p) => p.lineup !== "returning").sort((a, b) => b.p_goal - a.p_goal)[0];
+  const S = T.games.flatMap((g) => g.sleepers || []).slice(0, 4);
+  const rows = [{ colors: [tc(top.team)], title: "Likeliest goal scorers", sub: `${top.name} leads the night`, right: pct(top.p_goal) }];
+  if (S.length) rows.push({ colors: S.map((x) => tc(x.team)).filter((c, i, a) => a.indexOf(c) === i).slice(0, 3), title: "Sleepers", sub: `${COUNT[S.length]} under-the-radar name${S.length === 1 ? "" : "s"}, each with a reason`, right: `${S.length}` });
+  if (TODAY.stat) rows.push({ colors: [tc(TODAY.stat.team)], title: TODAY.stat.cover || TODAY.stat.title, sub: TODAY.stat.cover_sub || "", right: TODAY.stat.big });
+  const parts = ["who scores", S.length ? "who surprises" : "", TODAY.stat ? "and one number worth knowing" : ""].filter(Boolean);
+  return cover(T, { kicker: "Players to watch", line: `Tonight by our numbers: ${parts.join(", ").replace(", and", " and")}.`, rows });
 }
 
 // one big number and the sentence that explains it (a streak, a milestone, a record)
@@ -230,7 +247,7 @@ function stat({ kicker, big, unit, title, lines, team, note }) {
     ${footer(note)}`);
 }
 
-function storySleepers(T, notes = {}) {
+function sleepers(T, notes = {}, story = false) {
   const S = T.games.flatMap((g) => g.sleepers || []).slice(0, 4);
   const cards = S.map((s) => `
     <div class="sl">
@@ -238,22 +255,22 @@ function storySleepers(T, notes = {}) {
       <div><span class="tag">${s.kind === "depth" ? "Depth goal" : "Point"}</span><b>${esc(s.name)}</b><span class="muted">${s.team} vs ${s.opp}</span>${notes[s.id] ? `<em>${esc(notes[s.id])}</em>` : ""}</div>
       <div class="p"><b>${pct(s.kind === "depth" ? s.p_goal : s.p_1pt)}</b><span>${s.kind === "depth" ? "to score" : "for a point"}</span></div>
     </div>`).join("");
-  return page(1080, 1920, `
-    ${rinkBg(540, 1760, 330, false)}
-    <div style="padding:160px 72px 0">
-      ${wordmark(40)}
-      <div class="kicker" style="margin-top:60px">${dayLabel(T.date)}</div>
-      <h1 style="font-size:124px;margin-top:10px">Sleepers</h1>
-      <p class="muted" style="font-size:34px;margin-top:20px;line-height:1.35">Under-the-radar players our numbers like tonight. Every one has a reason, and we grade them in public.</p>
-      <div style="display:grid;gap:20px;margin-top:44px">${cards}</div>
-      ${LINK ? `<p style="font-size:30px;margin-top:48px">The reasons for each are on <b>${LINK}</b></p>` : ""}
+  const k = story ? 1 : 0.8;   // the feed card is the same design, tightened to 4:5
+  return page(1080, story ? 1920 : 1350, `
+    ${story ? rinkBg(540, 1760, 330, false) : rinkBg(1000, 150, 230)}
+    <div style="padding:${story ? 160 : 72}px 72px 0">
+      ${wordmark(story ? 40 : 36)}
+      <div class="kicker" style="margin-top:${story ? 60 : 48}px">${dayLabel(T.date)}</div>
+      <h1 style="font-size:${story ? 124 : 96}px;margin-top:${story ? 10 : 8}px">Sleepers</h1>
+      <p class="muted" style="font-size:${story ? 34 : 26}px;margin-top:${story ? 20 : 12}px;line-height:1.35;max-width:${story ? 940 : 760}px">Under-the-radar players our numbers like tonight. Every one has a reason${story ? ", and we grade them in public" : ""}.</p>
+      <div style="display:grid;gap:${story ? 20 : 13}px;margin-top:${story ? 44 : 26}px">${cards}</div>
     </div>
-    <div class="foot" style="bottom:200px"><span>For information and entertainment. 21+. 1-800-GAMBLER</span></div>`, `
-    .sl { display:grid; grid-template-columns:16px 1fr auto; gap:28px; align-items:center; background:${B.panel}; border-radius:24px; padding:26px 36px; }
-    .chip { width:16px; height:110px; border-radius:8px; }
-    .sl b { display:block; font-size:48px; font-weight:700; } .sl .muted { font-size:28px; } .sl em { display:block; font-style:normal; font-size:28px; line-height:1.3; margin-top:10px; }
-    .tag { font-family:"Big Shoulders Display"; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:${B.red}; font-size:26px; }
-    .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:84px; color:${B.blue}; line-height:1; } .p span { font-size:24px; color:${B.muted}; }`);
+    <div class="foot" ${story ? 'style="bottom:200px"' : ""}><span>For information and entertainment. 21+. 1-800-GAMBLER</span></div>`, `
+    .sl { display:grid; grid-template-columns:16px 1fr auto; gap:28px; align-items:center; background:${B.panel}; border-radius:24px; padding:${story ? 26 : 15}px 36px; }
+    .chip { width:16px; height:${110 * k}px; border-radius:8px; }
+    .sl b { display:block; font-size:${story ? 48 : 40}px; font-weight:700; line-height:1.15; } .sl .muted { font-size:${story ? 28 : 23}px; } .sl em { display:block; font-style:normal; font-size:${story ? 28 : 25}px; line-height:1.28; margin-top:${story ? 10 : 5}px; }
+    .tag { font-family:"Big Shoulders Display"; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:${B.red}; font-size:${story ? 26 : 22}px; }
+    .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:${story ? 84 : 70}px; color:${B.blue}; line-height:1; } .p span { font-size:${story ? 24 : 21}px; color:${B.muted}; }`);
 }
 
 // ---------------------------------------------------------------- render
@@ -272,9 +289,11 @@ function storySleepers(T, notes = {}) {
     ["luck.png", 1080, 1350, luck(P)],
     ...(TODAY.feature ? [["feature.png", 1080, 1350, feature(TODAY.feature)]] : []),
     ...(TODAY.stat ? [["stat.png", 1080, 1350, stat(TODAY.stat)]] : []),
-    ...(GAMES.length ? [["cover.png", 1080, 1350, cover(T, GAMES)]] : []),
+    ...(GAMES.length ? [["cover-games.png", 1080, 1350, gamesCover(T, GAMES)]] : []),
     ...GAMES.map(([G, C]) => [`game-${G.away}-${G.home}.png`, 1080, 1350, gameCard(G, C)]),
-    ["story-sleepers.png", 1080, 1920, storySleepers(T, TODAY.sleeper_notes || {})],
+    ["cover-players.png", 1080, 1350, playersCover(T, TODAY)],
+    ["sleepers.png", 1080, 1350, sleepers(T, TODAY.sleeper_notes || {})],
+    ...(process.env.STORY === "1" ? [["story-sleepers.png", 1080, 1920, sleepers(T, TODAY.sleeper_notes || {}, true)]] : []),
   ];
   const b = await chromium.launch();
   const p = await b.newPage();
