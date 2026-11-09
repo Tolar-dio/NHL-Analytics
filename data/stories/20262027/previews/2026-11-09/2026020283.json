@@ -1,1 +1,19 @@
-{"text": "The Rangers arrive on a three-game winning streak, the latest a 4-3 win at SEA two days ago, but they are without Alberts Smits and Sean Durzi. With Durzi out, Braden Schneider has moved in beside Pettersson and is up to 20:22 a night from 18:11, while Adam Fox is up to 24:32 from 22:46. The Oilers beat VAN 4-2 on Saturday, when Filip Hronek reached 300 career points, and they are missing Colton Dach and Isaac Howard. NYR lost 4-1 to EDM on Nov 1, a game Edmonton deserved to win 58% of the time.\n\nOur numbers say this is closer than that result suggests. At five on five, NYR has taken 52% of the expected goals (the quality of chances) in its games and EDM 49%. Edmonton's results have run ahead of its chances, with finishing doing much of the lifting. The Oilers also take 4.1 penalties a game, which keeps handing opponents power plays. We have the Rangers at 48% to win, above DraftKings' 41%. In net, projected starter Dylan Garand is +2.2 goals saved above expected this season (saves beyond what the shot quality predicts), while projected Devon Levi is at -1.1.\n\nFor the Rangers, Alexis Lafreni\u00e8re (28% to score, 55% for a point) went first overall in 2020, and CBS Sports noted he slid two helpers in Saturday's win. Pavel Dorofeyev leads the team at 29% to score. For the Oilers, Leon Draisaitl is at 49% to score and has goals in three straight games, and Connor McDavid brings an 18-game point streak and a 93% chance of a point.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8482193, 8482221], "written": "2026-11-09T20:57:12+00:00"}
+{
+ "text": "The Rangers' crease has been the loudest thing about them all week. James Reimer went on unconditional waivers for a contract termination, Joonas Korpisalo won his season debut in Seattle on Saturday, and tonight the net goes back to Dylan Garand, whose name has been in more headlines over the last two weeks than any other Ranger. He has earned the attention the right way: a .906 save rate and +2.2 goals saved above expected (saves beyond what the shot quality predicts) in 13 games. New York arrives on a three-game winning streak, and the chances back it, 60% of the expected goals across those three.\n\nEdmonton counters with Devon Levi, activated off injured reserve on Saturday and sitting at .888 and -1.1 this season. That's the matchup inside the matchup. The Oilers have 27 points and are running hot, a +21 goal difference built on +5.4 expected; finishing has done most of the lifting. Connor McDavid brings an 18-game point streak (10 goals, 37 assists), Leon Draisaitl has goals in three straight, and Ryan Nugent-Hopkins is good to go tonight, per CBS Sports.\n\nOur numbers don't buy the 4-1 Edmonton win in New York on Nov 1 as the whole story. At five on five the Rangers have taken 52% of the expected goals, Edmonton 49%, and the Oilers take 4.1 penalties a game. We have New York at 48% to win, well above DraftKings' 41%. The Rangers are missing Sean Durzi and Alberts Smits on the back end, which has pushed Adam Fox to 24:32 a night.\n\nThe question for the Rangers is simple: can Garand keep doing this against the two best forwards he will see all month? If he can, a team our playoff odds have at 55% banks the kind of road win that changes a week.",
+ "headline": "Garand gets the net, and McDavid's streak comes with it",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-09T22:52:21+00:00",
+ "goalies": [
+  8482193,
+  8482221
+ ],
+ "hunch": {
+  "text": "Our gut agrees with our numbers more than the market does: the Rangers' chances have been real for a week, Levi is just off injured reserve, and we think New York steals this one.",
+  "claim": {
+   "type": "win",
+   "team": "NYR"
+  }
+ }
+}
