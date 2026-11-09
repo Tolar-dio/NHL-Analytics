@@ -10,6 +10,9 @@ const path = require("path");
 
 const OUT = path.resolve(process.argv[2] || "social/out");
 const SITE = "https://readtheice.app/data/";
+// The site stays off the graphics until Tolar says otherwise (Nov 9, 2026: "not trying to show my hand just yet").
+// SHOW_SITE=1 puts readtheice.app back in the footers and calls to action.
+const LINK = process.env.SHOW_SITE === "1" ? "readtheice.app" : "";
 const B = { navy: "#0e1b2a", panel: "#15263a", line: "#22374d", ice: "#eef3f7", muted: "#8ea3b7", red: "#f0475e", blue: "#5b8deb" };
 const FONTS = `<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">`;
 const NAMES = { ANA: "Ducks", BOS: "Bruins", BUF: "Sabres", CAR: "Hurricanes", CBJ: "Blue Jackets", CGY: "Flames", CHI: "Blackhawks", COL: "Avalanche", DAL: "Stars", DET: "Red Wings", EDM: "Oilers", FLA: "Panthers", LAK: "Kings", MIN: "Wild", MTL: "Canadiens", NJD: "Devils", NSH: "Predators", NYI: "Islanders", NYR: "Rangers", OTT: "Senators", PHI: "Flyers", PIT: "Penguins", SEA: "Kraken", SJS: "Sharks", STL: "Blues", TBL: "Lightning", TOR: "Maple Leafs", UTA: "Mammoth", VAN: "Canucks", VGK: "Golden Knights", WSH: "Capitals", WPG: "Jets" };
@@ -42,7 +45,7 @@ const BASE = `
   .foot { z-index: 2; }
 `;
 const page = (w, h, body, css = "") => `<!doctype html><html><head><meta charset="utf-8">${FONTS}<style>${BASE}${css} .card{width:${w}px;height:${h}px}</style></head><body><div class="card">${body}</div></body></html>`;
-const footer = (left = "For information and entertainment. 21+. Gambling problem? 1-800-GAMBLER") => `<div class="foot"><span>${left}</span><span style="color:${B.ice};font-weight:600">readtheice.app</span></div>`;
+const footer = (left = "For information and entertainment. 21+. Gambling problem? 1-800-GAMBLER") => `<div class="foot"><span>${left}</span><span style="color:${B.ice};font-weight:600">${LINK}</span></div>`;
 // faint center-ice circle in the background, the brand's one decorative element
 const rinkBg = (x, y, r, line = true) => `<div class="rink" style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px"></div>` + (!line ? "" : `<div style="position:absolute;left:${x - 3}px;top:${y - r - 60}px;height:${2 * r + 120}px;width:6px;background:${B.red};opacity:.18"></div>`);
 
@@ -64,7 +67,7 @@ function brand() {
         <div><span class="muted">Display</span><h1 style="font-size:72px">Big Shoulders</h1></div>
         <div><span class="muted">Body</span><p style="font-size:40px;font-weight:600">Barlow, for everything you read</p></div>
       </div>
-      <p class="muted" style="font-size:26px;margin-top:40px;line-height:1.4">Team colors, never logos. No player photos. Red means goal. Every post names its sample and ends with readtheice.app.</p>
+      <p class="muted" style="font-size:26px;margin-top:40px;line-height:1.4">Team colors, never logos. No player photos. Red means goal. Every post names its sample.</p>
     </div>`, `
     .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; margin-top:56px; }
     .sw div { height:150px; border-radius:18px; margin-bottom:14px; }
@@ -140,7 +143,7 @@ function feature({ kicker, title, dek, team }) {
       <div class="kicker" style="margin-top:300px">${esc(kicker)}</div>
       <h1 style="font-size:132px;margin-top:14px">${esc(title)}</h1>
       <p style="font-size:38px;line-height:1.3;margin-top:36px;max-width:820px">${esc(dek)}</p>
-      <p class="muted" style="font-size:28px;margin-top:40px">Read it on readtheice.app</p>
+      ${LINK ? `<p class="muted" style="font-size:28px;margin-top:40px">Read it on ${LINK}</p>` : ""}
     </div>
     ${footer("Written with AI from our data")}`);
 }
@@ -176,7 +179,7 @@ function storySleepers(T) {
       <h1 style="font-size:150px;margin-top:10px">Sleepers</h1>
       <p class="muted" style="font-size:34px;margin-top:20px;line-height:1.35">Under-the-radar players our numbers like tonight. Every one has a reason, and we grade them in public.</p>
       <div style="display:grid;gap:22px;margin-top:64px">${cards}</div>
-      <p style="font-size:30px;margin-top:48px">The reasons for each are on <b>readtheice.app</b></p>
+      ${LINK ? `<p style="font-size:30px;margin-top:48px">The reasons for each are on <b>${LINK}</b></p>` : ""}
     </div>
     <div class="foot" style="bottom:240px"><span>For information and entertainment. 21+. 1-800-GAMBLER</span></div>`, `
     .sl { display:grid; grid-template-columns:16px 1fr auto; gap:28px; align-items:center; background:${B.panel}; border-radius:24px; padding:34px 36px; }
