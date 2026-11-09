@@ -1,1 +1,19 @@
-{"text": "The Islanders and Sharks meet in San Jose with both teams looking for a way out of a skid. NYI is winless in three (0-2-1) after Saturday's 5-4 overtime loss to New Jersey, a game the Devils won after trailing by two goals. San Jose is winless in five (0-5-0), outscored 22-8 over that stretch, and it is leaning on Macklin Celebrini. As Max Miller of Sharks Hockey Digest posted, the Sharks \"can't play Macklin Celebrini 28 minutes every night, but they have to right now.\"\n\nOur numbers say neither team has been getting the better of the chances, but San Jose has had it worse. Over the last five games the Sharks have taken 40% of the expected goals (a measure of chance quality) and the Islanders 46%. NYI's power play and penalty kill both rate better, though it takes 4.7 penalties a game. In net, projected starters Ilya Sorokin (+6.1 goals saved above expected this season, +22.3 last year) and Yaroslav Askarov (+4.4 this season, -19.4 last year) give New York the clearer edge. We have the model at 3.35 expected goals for NYI and 3.08 for SJS.\n\nCelebrini is our top pick at 44% to score and 84% for a point, one short of 200 career points. Will Smith is one goal from 50. Bo Horvat leads NYI at 41% to score. Without Matias Maccelli and Calum Ritchie, Simon Holmstrom has moved onto the first power-play unit and is up to 20:44 a night from 15:43. We like him as an under-the-radar pick at 52% for a point, as the Sharks give up the most expected goals per 60. We'd also watch Sharks third-liner Ivar Stenberg, whose shots have been dangerous lately. He's at 22% to score.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8478009, 8482137], "written": "2026-11-09T11:23:50+00:00"}
+{
+ "text": "The Sharks have lost seven of eight, and Macklin Celebrini is being asked to carry all of it. He played a career-high 28:05 in Dallas on Saturday, the second night of a back-to-back, with nobody else on the team above 23:44 (Max Miller of Sharks Hockey Digest). Alexander Wennberg and Igor Chernyshov are on injured reserve, Michael Misa has moved up to Celebrini's wing, and the five-game skid is not bad luck: 40% of the expected goals, outscored 22-8. Celebrini is one point from 200 for his career. Will Smith is one goal from 50 and Mason Marchment one from 100.\n\nWhat has hurt San Jose most is the penalty kill. It allows 1.06 expected goals a game, the most of any team playing tonight, and gave up five goals in the last two. That matters, because the Islanders take 4.7 penalties a game, also the most of anyone on tonight's slate.\n\nNew York flies west winless in three and banged up. Ryan Pulock, Matias Maccelli and Calum Ritchie are out, and the lineup keeps reshuffling around it: Simon Holmstrom has jumped to 20:44 a night and onto the first power-play unit. He is our Sleeper for a point at 52%, well above his season pace. The last game was the kind that lingers. The Islanders led the Devils 4-2, lost 5-4 in overtime on a Jack Hughes winner, and Matthew Schaefer, the 2025 first overall pick, ended up trading punches with Luke Hughes. Ilya Sorokin (+6.1 goals saved above expected) is the reason they are still at 17 points and a 21% playoff chance.\n\nYaroslav Askarov has been good too, +4.4 this season after a rough year. Our numbers favour the Islanders, 3.35 expected goals to 3.08, with Ivar Stenberg, a third-liner getting to dangerous ice, as the Sharks' Sleeper.",
+ "headline": "Celebrini's minutes, San Jose's penalty kill",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-09T12:47:35Z",
+ "goalies": [
+  8478009,
+  8482137
+ ],
+ "hunch": {
+  "text": "The slate's most penalized team visits the leakiest penalty kill on the slate. Even with Sorokin and Askarov in net, our gut says this one goes over.",
+  "claim": {
+   "type": "over",
+   "goals": 6.5
+  }
+ }
+}

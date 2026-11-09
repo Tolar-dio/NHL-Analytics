@@ -1,1 +1,19 @@
-{"text": "Two teams in a rough patch meet in Vancouver. The Flyers are on the second night of a back-to-back after losing 4-3 in overtime at Calgary, where Matt Coronato got the winner, and they're winless in three without Rasmus Ristolainen. The Canucks are 0-5-0 in their last five, outscored 22-12, and they're missing Filip Chytil. Elias Pettersson has taken his spot beside Jonathan Lekkeri\u043c\u00e4ki and Brock Boeser.\n\nThe numbers don't separate them. Both teams have taken 41% of the expected goals (a measure of chance quality) at five on five. Vancouver allows more per 60, 3.77 to Philadelphia's 3.48, and its penalty kill is the leakier one. Our model has PHI at 3.11 expected goals tonight and VAN at 2.94. In net, projected starter Joseph Woll is 3.86 goals saved above expected this season, while Leevi Meril\u00e4inen is at -2.33 and has struggled over his last five starts (.848).\n\nBoeser is on a four-game point streak and is two points from 500 for his career. For Philadelphia, Matvei Michkov is at 56% for a point, though he spoke out publicly about his ice time this week. Our under-the-radar picks are both Flyers. Cole Knuble, a fourth-liner, has 2.3 expected goals in his last nine games, and Vancouver gives up the second-most expected goals per 60. Porter Martone, newly in the top six beside Michkov, sits at 46% for a point, above his season pace.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8479361, 8482447], "written": "2026-11-09T11:23:44+00:00"}
+{
+ "text": "Both of these teams have taken 41% of the expected goals at five on five, both are on skids, and one skid ends tonight. The Flyers get there the hard way: last night in Calgary they lost a lead and then the game, Matt Coronato finishing a 3-on-1 in overtime. \"Right now, this is simply a bad hockey team that finds ways to lose,\" Charlie O'Connor of PHLY Sports posted afterward. Philadelphia has 13 points, and our race simulations give it a 2% chance at the playoffs.\n\nThe Flyers' story this week is Matvei Michkov's ice time. He has 10 points in his last 10, and the headlines have him pushing back on his minutes under Rick Tocchet (\"Matvei Michkov Has Had Enough, Sounds Off On Ice Time Controversy,\" per Yahoo Sports). Tocchet split him from Porter Martone for a couple of games, then put them back together with Noah Cates. Martone is one of our Sleepers tonight at 46% for a point, and Cole Knuble, a fourth-liner whose shots have been dangerous lately, is the other. Joseph Woll has been the one steady thing: 3.9 goals saved above expected after a rough season last year.\n\nVancouver is worse. Seven points in 19 games, winless in five, outscored 22-12, and the chances say it's real (44% of the expected goals). Manny Malhotra called out the team's \"lack of effort\" after the Winnipeg loss, as Daniel Wagner noted, and Jake DeBrusk's stance on a rebuild (\"still refuses to be part of\" one, per Markerzone) hangs over the room. Elias Pettersson has taken Filip Chytil's spot beside Jonathan Lekkerimäki and Brock Boeser, and Boeser, on a four-game point streak, is two points from 500. Leevi Meriläinen is .848 over his last five starts.\n\nOur numbers lean Philadelphia, 3.11 expected goals to 2.94, even on the back-to-back.",
+ "headline": "Michkov's minutes meet a free-falling Vancouver",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-09T12:47:35Z",
+ "goalies": [
+  8479361,
+  8482447
+ ],
+ "hunch": {
+  "text": "Tired legs, a lost lead last night and a goalie on the other end who can only get better. Our gut says the Canucks finally win one.",
+  "claim": {
+   "type": "win",
+   "team": "VAN"
+  }
+ }
+}
