@@ -184,6 +184,37 @@ function gameCard(G, C) {
     .hunch p { font-size:28px; line-height:1.3; margin-top:4px; }`);
 }
 
+// the first slide of the nightly carousel: the date, big enough to read in the profile grid, and the matchups
+function cover(T, GAMES) {
+  const d = new Date(T.date + "T12:00:00Z");
+  const mon = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }), day = d.getUTCDate();
+  const wk = d.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
+  const n = T.games.length, word = ["", "One game", "Two games", "Three games", "Four games", "Five games", "Six games", "Seven games", "Eight games"][n] || `${n} games`;
+  const titles = Object.fromEntries(GAMES.map(([G, C]) => [G.id, C.title]));
+  const dense = n > 5;
+  const rows = T.games.map((g) => `
+    <div class="g">
+      <div class="chips"><i style="background:${tc(g.away)}"></i><i style="background:${tc(g.home) === tc(g.away) ? B.ice : tc(g.home)}"></i></div>
+      <div><b>${NAMES[g.away]} at ${NAMES[g.home]}</b>${titles[g.id] && !dense ? `<span>${esc(titles[g.id])}</span>` : ""}</div>
+      <em>${etTime(g.start)}</em>
+    </div>`).join("");
+  return page(1080, 1350, `
+    ${rinkBg(880, 330, 300)}
+    <div style="padding:72px 72px 0">
+      ${wordmark(36)}
+      <div class="kicker" style="margin-top:${dense ? 40 : 90}px">${wk} · Game night</div>
+      <h1 style="font-size:${dense ? 240 : 330}px;line-height:.84;margin-top:6px">${mon} <span style="color:${B.blue}">${day}</span></h1>
+      <p style="font-size:40px;font-weight:600;margin-top:${dense ? 16 : 30}px">${word} tonight. The story, our numbers and a hunch for each.</p>
+      <div class="gs" style="margin-top:${dense ? 22 : 44}px;gap:${dense ? 8 : 16}px">${rows}</div>
+    </div>
+    <div class="foot"><span>For information and entertainment. 21+. 1-800-GAMBLER</span><span style="color:${B.ice};font-weight:700;font-size:26px">Swipe &#8594;</span></div>`, `
+    .gs { display:grid; }
+    .g { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:24px; background:${B.panel}; border-radius:20px; padding:${dense ? "10px 28px" : "20px 30px"}; }
+    .chips { display:flex; gap:6px; } .chips i { width:12px; height:${dense ? 40 : 64}px; border-radius:6px; display:block; }
+    .g b { display:block; font-size:${dense ? 30 : 38}px; font-weight:700; line-height:1.15; } .g span { display:block; font-size:25px; color:${B.muted}; margin-top:2px; }
+    .g em { font-style:normal; font-family:"Big Shoulders Display"; font-weight:800; font-size:${dense ? 30 : 36}px; color:${B.ice}; white-space:nowrap; }`);
+}
+
 // one big number and the sentence that explains it (a streak, a milestone, a record)
 function stat({ kicker, big, unit, title, lines, team, note }) {
   return page(1080, 1350, `
@@ -241,6 +272,7 @@ function storySleepers(T, notes = {}) {
     ["luck.png", 1080, 1350, luck(P)],
     ...(TODAY.feature ? [["feature.png", 1080, 1350, feature(TODAY.feature)]] : []),
     ...(TODAY.stat ? [["stat.png", 1080, 1350, stat(TODAY.stat)]] : []),
+    ...(GAMES.length ? [["cover.png", 1080, 1350, cover(T, GAMES)]] : []),
     ...GAMES.map(([G, C]) => [`game-${G.away}-${G.home}.png`, 1080, 1350, gameCard(G, C)]),
     ["story-sleepers.png", 1080, 1920, storySleepers(T, TODAY.sleeper_notes || {})],
   ];
