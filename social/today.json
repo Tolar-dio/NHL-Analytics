@@ -1,6 +1,6 @@
 {
  "stat": {
-  "kicker": "Monday, Nov 9 \u00b7 Rangers at Oilers",
+  "kicker": "Monday, Nov 9 · Rangers at Oilers",
   "big": "18",
   "unit": "straight games<br>with a point",
   "title": "McDavid hasn't missed",
@@ -9,6 +9,51 @@
    "Connor McDavid has a point in every game this season: 10 goals and 37 assists.",
    "Our numbers give him a <b style='color:#5b8deb'>93%</b> chance to make it 19 tonight."
   ],
-  "note": "Through 18 games \u00b7 For information and entertainment"
+  "note": "Through 18 games · For information and entertainment"
+ },
+ "scorer_notes": {
+  "8477934": "Goals in three straight games",
+  "8484801": "Played a career-high 28:05 on Saturday",
+  "8478402": "A point in all 18 games this season",
+  "8477500": "On the ice for 87% of the Islanders' power-play time",
+  "8484227": "One goal from 50 for his career"
+ },
+ "sleeper_notes": {
+  "8483787": "Fourth-line minutes, first-line looks: five shots from prime ice in nine games.",
+  "8485406": "Just moved up beside Michkov and Cates.",
+  "8486103": "Seven shots from prime ice in his last ten games.",
+  "8481601": "Up to the top power play, against the leakiest defense in the league."
+ },
+ "games": {
+  "2026020283": {
+   "title": "The streak meets the hot hand",
+   "dek": "Connor McDavid has a point in all 18 games. Dylan Garand has been the best thing about the Rangers. Something gives in Edmonton.",
+   "threads": [
+    "Edmonton is living large: <b>+21</b> in goals on chances worth about +5. Finishing like that rarely lasts.",
+    "New York has won three straight and earned them, with <b>60%</b> of the expected goals.",
+    "Devon Levi, just off injured reserve, gets the Oilers' net."
+   ],
+   "hunch": "The books give the Rangers 41%. Our numbers say 48%, and our gut is with the numbers: New York steals one."
+  },
+  "2026020284": {
+   "title": "Somebody has to win this",
+   "dek": "Two teams in free fall, each getting 41% of the chances at five on five. One skid ends tonight in Vancouver.",
+   "threads": [
+    "The Canucks are winless in five, outscored <b>22-12</b>, with seven points in 19 games.",
+    "The Flyers blew a lead and lost in overtime in Calgary last night. Now they play again.",
+    "Matvei Michkov has <b>10 points in his last 10</b>. Brock Boeser is two points from 500."
+   ],
+   "hunch": "Our numbers lean Flyers. Our gut sees tired legs and a team that is overdue: the Canucks finally get one."
+  },
+  "2026020285": {
+   "title": "Celebrini can't do it alone",
+   "dek": "He played a career-high 28:05 on Saturday. The Sharks lost anyway, their fifth in a row.",
+   "threads": [
+    "San Jose has been outscored <b>22-8</b> in the skid on 40% of the chances. This is not bad luck.",
+    "The Islanders take 4.7 penalties a game. The Sharks' penalty kill has given up <b>five goals in two games</b>.",
+    "Ilya Sorokin and Yaroslav Askarov have both been excellent. That may be all that keeps this close."
+   ],
+   "hunch": "The most penalized team on tonight's slate visits the leakiest penalty kill. Even with two hot goalies, our gut says goals."
+  }
  }
 }

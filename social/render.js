@@ -76,14 +76,14 @@ function brand() {
     .type span { font-size:22px; text-transform:uppercase; letter-spacing:.1em; }`);
 }
 
-function scorers(T) {
+function scorers(T, notes = {}) {
   const started = new Set(); // keep every game: the post goes up before puck drop
   const top = [...T.props].filter((p) => p.lineup !== "returning").sort((a, b) => b.p_goal - a.p_goal).slice(0, 5);
   const rows = top.map((p, i) => `
     <div class="row">
       <div class="n">${i + 1}</div>
       <div class="chip" style="background:${tc(p.team)}"></div>
-      <div class="who"><b>${esc(p.name)}</b><span>${p.team} vs ${p.opp} · ${Math.round(p.proj_toi)} min · ${p.g | 0} G in ${p.gp} GP</span></div>
+      <div class="who"><b>${esc(p.name)}</b><span>${p.team} vs ${p.opp} · ${Math.round(p.proj_toi)} min · ${p.g | 0} G in ${p.gp} GP</span>${notes[p.id] ? `<em>${esc(notes[p.id])}</em>` : ""}</div>
       <div class="p"><b>${pct(p.p_goal)}</b><span>fair ${fair(p.p_goal)}</span></div>
     </div>`).join("");
   return page(1080, 1350, `
@@ -91,16 +91,16 @@ function scorers(T) {
     <div style="padding:72px 72px 0">
       ${wordmark(36)}
       <div class="kicker" style="margin-top:48px">${dayLabel(T.date)}</div>
-      <h1 style="font-size:96px;margin-top:8px">Tonight's likeliest<br>goal scorers</h1>
-      <p class="muted" style="font-size:28px;margin-top:22px">Our chance each player scores, from his chances, ice time, linemates and tonight's goalie.</p>
+      <h1 style="font-size:84px;margin-top:6px">Tonight's likeliest<br>goal scorers</h1>
+      <p class="muted" style="font-size:26px;margin-top:16px">Our chance each player scores, from his chances, ice time, linemates and tonight's goalie.</p>
       <div class="rows">${rows}</div>
     </div>
     ${footer()}`, `
-    .rows { margin-top:36px; display:grid; gap:14px; }
-    .row { display:grid; grid-template-columns:56px 14px 1fr auto; align-items:center; gap:24px; background:${B.panel}; border-radius:20px; padding:18px 32px; }
+    .rows { margin-top:24px; display:grid; gap:11px; }
+    .row { display:grid; grid-template-columns:56px 14px 1fr auto; align-items:center; gap:24px; background:${B.panel}; border-radius:20px; padding:13px 32px; }
     .n { font-family:"Big Shoulders Display"; font-weight:900; font-size:56px; color:${B.muted}; }
     .chip { width:14px; height:76px; border-radius:7px; }
-    .who b { display:block; font-size:42px; font-weight:700; line-height:1.1; } .who span { font-size:24px; color:${B.muted}; }
+    .who b { display:block; font-size:42px; font-weight:700; line-height:1.1; } .who span { font-size:24px; color:${B.muted}; } .who em { display:block; font-style:normal; font-size:25px; color:${B.ice}; margin-top:4px; }
     .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:72px; color:${B.blue}; line-height:1; } .p span { font-size:22px; color:${B.muted}; }`);
 }
 
@@ -148,6 +148,42 @@ function feature({ kicker, title, dek, team }) {
     ${footer("Written with AI from our data")}`);
 }
 
+// one card per game: a headline and the story (written by hand in today.json), with our numbers under it
+const etTime = (iso) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET";
+const sgn = (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v).toFixed(1);
+function gameCard(G, C) {
+  const a = G.away, h = G.home, ph = G.market?.model_p_home ?? 0.5, pa = 1 - ph;
+  const ca = tc(a), ch = tc(h) === tc(a) ? B.ice : tc(h);
+  const ga = G.goalies?.[a], gh = G.goalies?.[h];
+  const goalie = (g, c, right) => !g ? "" : `<div class="gl" style="${right ? "text-align:right" : ""}"><span>In net</span><b>${esc(g.name)}</b><i style="color:${g.gsax >= 0 ? B.blue : B.red}">${sgn(g.gsax)}</i></div>`;
+  return page(1080, 1350, `
+    <div style="position:absolute;left:0;top:0;height:20px;width:50%;background:${ca}"></div><div style="position:absolute;right:0;top:0;height:20px;width:50%;background:${ch}"></div>
+    <div style="padding:76px 72px 0">
+      ${wordmark(34)}
+      <div class="kicker" style="margin-top:44px;font-size:28px">${NAMES[a]} at ${NAMES[h]} · ${etTime(G.start)}${G.away_b2b || G.home_b2b ? ` · ${G.away_b2b ? a : h} on a back-to-back` : ""}</div>
+      <h1 style="font-size:${C.size || 96}px;margin-top:10px">${esc(C.title)}</h1>
+      <p style="font-size:33px;line-height:1.32;margin-top:22px">${esc(C.dek)}</p>
+      <div class="threads">${C.threads.map((t) => `<p>${t}</p>`).join("")}</div>
+      <div class="wp"><div class="wl"><b style="color:${ca}">${a} ${pct(pa)}</b><span>Our win chance</span><b style="color:${ch}">${pct(ph)} ${h}</b></div>
+        <div class="bar"><div style="width:${pa * 100}%;background:${ca}"></div><div style="flex:1;background:${ch}"></div></div></div>
+      <div class="gls">${goalie(ga, ca)}<div class="mid">goals saved<br>above expected</div>${goalie(gh, ch, true)}</div>
+      <div class="hunch"><span>Our hunch</span><p>${esc(C.hunch)}</p></div>
+    </div>
+    ${footer("For information and entertainment. 21+. 1-800-GAMBLER")}`, `
+    .threads { margin-top:34px; display:grid; gap:18px; }
+    .threads p { font-size:30px; line-height:1.3; color:${B.ice}; padding-left:26px; border-left:5px solid ${B.red}; }
+    .threads p b { color:${B.blue}; }
+    .wp { margin-top:44px; } .wl { display:flex; justify-content:space-between; align-items:baseline; font-family:"Big Shoulders Display"; }
+    .wl b { font-weight:900; font-size:46px; } .wl span { font-family:Barlow; font-size:22px; color:${B.muted}; text-transform:uppercase; letter-spacing:.1em; }
+    .bar { display:flex; gap:6px; height:22px; margin-top:8px; } .bar div { border-radius:11px; }
+    .gls { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:20px; margin-top:30px; background:${B.panel}; border-radius:18px; padding:20px 28px; }
+    .gl span { display:block; font-size:20px; color:${B.muted}; text-transform:uppercase; letter-spacing:.1em; } .gl b { font-size:30px; font-weight:700; margin-right:12px; } .gl i { font-style:normal; font-family:"Big Shoulders Display"; font-weight:900; font-size:38px; }
+    .mid { font-size:19px; color:${B.muted}; text-align:center; line-height:1.25; }
+    .hunch { margin-top:30px; border:3px solid ${B.line}; border-radius:18px; padding:16px 28px 18px; }
+    .hunch span { font-family:"Big Shoulders Display"; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:${B.red}; font-size:24px; }
+    .hunch p { font-size:28px; line-height:1.3; margin-top:4px; }`);
+}
+
 // one big number and the sentence that explains it (a streak, a milestone, a record)
 function stat({ kicker, big, unit, title, lines, team, note }) {
   return page(1080, 1350, `
@@ -163,28 +199,28 @@ function stat({ kicker, big, unit, title, lines, team, note }) {
     ${footer(note)}`);
 }
 
-function storySleepers(T) {
+function storySleepers(T, notes = {}) {
   const S = T.games.flatMap((g) => g.sleepers || []).slice(0, 4);
   const cards = S.map((s) => `
     <div class="sl">
       <div class="chip" style="background:${tc(s.team)}"></div>
-      <div><span class="tag">${s.kind === "depth" ? "Depth goal" : "Point"}</span><b>${esc(s.name)}</b><span class="muted">${s.team} vs ${s.opp}</span></div>
+      <div><span class="tag">${s.kind === "depth" ? "Depth goal" : "Point"}</span><b>${esc(s.name)}</b><span class="muted">${s.team} vs ${s.opp}</span>${notes[s.id] ? `<em>${esc(notes[s.id])}</em>` : ""}</div>
       <div class="p"><b>${pct(s.kind === "depth" ? s.p_goal : s.p_1pt)}</b><span>${s.kind === "depth" ? "to score" : "for a point"}</span></div>
     </div>`).join("");
   return page(1080, 1920, `
     ${rinkBg(540, 1760, 330, false)}
-    <div style="padding:200px 72px 0">
+    <div style="padding:160px 72px 0">
       ${wordmark(40)}
-      <div class="kicker" style="margin-top:90px">${dayLabel(T.date)}</div>
-      <h1 style="font-size:150px;margin-top:10px">Sleepers</h1>
+      <div class="kicker" style="margin-top:60px">${dayLabel(T.date)}</div>
+      <h1 style="font-size:124px;margin-top:10px">Sleepers</h1>
       <p class="muted" style="font-size:34px;margin-top:20px;line-height:1.35">Under-the-radar players our numbers like tonight. Every one has a reason, and we grade them in public.</p>
-      <div style="display:grid;gap:22px;margin-top:64px">${cards}</div>
+      <div style="display:grid;gap:20px;margin-top:44px">${cards}</div>
       ${LINK ? `<p style="font-size:30px;margin-top:48px">The reasons for each are on <b>${LINK}</b></p>` : ""}
     </div>
-    <div class="foot" style="bottom:240px"><span>For information and entertainment. 21+. 1-800-GAMBLER</span></div>`, `
-    .sl { display:grid; grid-template-columns:16px 1fr auto; gap:28px; align-items:center; background:${B.panel}; border-radius:24px; padding:34px 36px; }
+    <div class="foot" style="bottom:200px"><span>For information and entertainment. 21+. 1-800-GAMBLER</span></div>`, `
+    .sl { display:grid; grid-template-columns:16px 1fr auto; gap:28px; align-items:center; background:${B.panel}; border-radius:24px; padding:26px 36px; }
     .chip { width:16px; height:110px; border-radius:8px; }
-    .sl b { display:block; font-size:48px; font-weight:700; } .sl .muted { font-size:28px; }
+    .sl b { display:block; font-size:48px; font-weight:700; } .sl .muted { font-size:28px; } .sl em { display:block; font-style:normal; font-size:28px; line-height:1.3; margin-top:10px; }
     .tag { font-family:"Big Shoulders Display"; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:${B.red}; font-size:26px; }
     .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:84px; color:${B.blue}; line-height:1; } .p span { font-size:24px; color:${B.muted}; }`);
 }
@@ -196,14 +232,17 @@ function storySleepers(T) {
   const [T, P] = await Promise.all([get("tonight.json"), get("team_profiles.json")]);
   const tf = path.join(__dirname, "today.json");
   const TODAY = fs.existsSync(tf) ? JSON.parse(fs.readFileSync(tf, "utf8")) : {};
+  const GAMES = [];
+  for (const [id, C] of Object.entries(TODAY.games || {})) GAMES.push([await get(`previews/${id}.json`), C]);
   const jobs = [
     ["profile.png", 1080, 1080, profile()],
     ["brand.png", 1080, 1350, brand()],
-    ["scorers.png", 1080, 1350, scorers(T)],
+    ["scorers.png", 1080, 1350, scorers(T, TODAY.scorer_notes || {})],
     ["luck.png", 1080, 1350, luck(P)],
     ...(TODAY.feature ? [["feature.png", 1080, 1350, feature(TODAY.feature)]] : []),
     ...(TODAY.stat ? [["stat.png", 1080, 1350, stat(TODAY.stat)]] : []),
-    ["story-sleepers.png", 1080, 1920, storySleepers(T)],
+    ...GAMES.map(([G, C]) => [`game-${G.away}-${G.home}.png`, 1080, 1350, gameCard(G, C)]),
+    ["story-sleepers.png", 1080, 1920, storySleepers(T, TODAY.sleeper_notes || {})],
   ];
   const b = await chromium.launch();
   const p = await b.newPage();
