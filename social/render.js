@@ -1,7 +1,8 @@
 // Read the Ice: Instagram graphics, rendered from the live site's data.
 //   node social/render.js [outdir]
 // Pulls tonight.json and team_profiles.json from readtheice.app, then writes:
-//   profile.png (1080x1080), brand.png (1080x1350), scorers.png, luck.png, feature.png (1080x1350, 4:5 feed),
+//   profile.png (1080x1080), brand.png (1080x1350), scorers.png, luck.png (1080x1350, 4:5 feed), plus feature.png and
+//   stat.png when social/today.json has a `feature` or `stat` entry (the day's one-off cards),
 //   story-sleepers.png (1080x1920). Team colors only (no logos, no player photos: both are licensed).
 const { chromium } = require("playwright");
 const fs = require("fs");
@@ -43,7 +44,7 @@ const BASE = `
 const page = (w, h, body, css = "") => `<!doctype html><html><head><meta charset="utf-8">${FONTS}<style>${BASE}${css} .card{width:${w}px;height:${h}px}</style></head><body><div class="card">${body}</div></body></html>`;
 const footer = (left = "For information and entertainment. 21+. Gambling problem? 1-800-GAMBLER") => `<div class="foot"><span>${left}</span><span style="color:${B.ice};font-weight:600">readtheice.app</span></div>`;
 // faint center-ice circle in the background, the brand's one decorative element
-const rinkBg = (x, y, r) => `<div class="rink" style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px"></div><div style="position:absolute;left:${x - 3}px;top:${y - r - 60}px;height:${2 * r + 120}px;width:6px;background:${B.red};opacity:.18"></div>`;
+const rinkBg = (x, y, r, line = true) => `<div class="rink" style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px"></div>` + (!line ? "" : `<div style="position:absolute;left:${x - 3}px;top:${y - r - 60}px;height:${2 * r + 120}px;width:6px;background:${B.red};opacity:.18"></div>`);
 
 // ---------------------------------------------------------------- cards
 function profile() {
@@ -144,6 +145,21 @@ function feature({ kicker, title, dek, team }) {
     ${footer("Written with AI from our data")}`);
 }
 
+// one big number and the sentence that explains it (a streak, a milestone, a record)
+function stat({ kicker, big, unit, title, lines, team, note }) {
+  return page(1080, 1350, `
+    <div style="position:absolute;left:0;top:0;bottom:0;width:28px;background:${tc(team)}"></div>
+    ${rinkBg(1010, 1230, 360)}
+    <div style="padding:72px 72px 0 104px">
+      ${wordmark(36)}
+      <div class="kicker" style="margin-top:120px">${esc(kicker)}</div>
+      <div style="display:flex;align-items:baseline;gap:24px;margin-top:4px"><h1 style="font-size:420px;color:${B.blue};line-height:.86">${esc(big)}</h1><span style="font-family:'Big Shoulders Display';font-weight:800;font-size:64px;text-transform:uppercase;line-height:1">${unit}</span></div>
+      <h1 style="font-size:84px;margin-top:28px">${esc(title)}</h1>
+      <div style="margin-top:32px;display:grid;gap:14px;max-width:840px">${lines.map((l) => `<p style="font-size:36px;line-height:1.3">${l}</p>`).join("")}</div>
+    </div>
+    ${footer(note)}`);
+}
+
 function storySleepers(T) {
   const S = T.games.flatMap((g) => g.sleepers || []).slice(0, 4);
   const cards = S.map((s) => `
@@ -153,7 +169,7 @@ function storySleepers(T) {
       <div class="p"><b>${pct(s.kind === "depth" ? s.p_goal : s.p_1pt)}</b><span>${s.kind === "depth" ? "to score" : "for a point"}</span></div>
     </div>`).join("");
   return page(1080, 1920, `
-    ${rinkBg(540, 1720, 360)}
+    ${rinkBg(540, 1760, 330, false)}
     <div style="padding:200px 72px 0">
       ${wordmark(40)}
       <div class="kicker" style="margin-top:90px">${dayLabel(T.date)}</div>
@@ -175,12 +191,15 @@ function storySleepers(T) {
   fs.mkdirSync(OUT, { recursive: true });
   const get = async (f) => (await fetch(SITE + f)).json();
   const [T, P] = await Promise.all([get("tonight.json"), get("team_profiles.json")]);
+  const tf = path.join(__dirname, "today.json");
+  const TODAY = fs.existsSync(tf) ? JSON.parse(fs.readFileSync(tf, "utf8")) : {};
   const jobs = [
     ["profile.png", 1080, 1080, profile()],
     ["brand.png", 1080, 1350, brand()],
     ["scorers.png", 1080, 1350, scorers(T)],
     ["luck.png", 1080, 1350, luck(P)],
-    ["feature.png", 1080, 1350, feature({ kicker: "Team deep dive", team: "DET", title: "The Larkin standoff", dek: "Detroit's captain won't play until he's traded. The team he left behind is better than its record says." })],
+    ...(TODAY.feature ? [["feature.png", 1080, 1350, feature(TODAY.feature)]] : []),
+    ...(TODAY.stat ? [["stat.png", 1080, 1350, stat(TODAY.stat)]] : []),
     ["story-sleepers.png", 1080, 1920, storySleepers(T)],
   ];
   const b = await chromium.launch();
