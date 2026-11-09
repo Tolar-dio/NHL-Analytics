@@ -258,8 +258,14 @@ def watch_notes(c, ctx):
         good.append((P("denial_pct"), f"He's hard to beat at his own blue line: he stops {pc(V('denial_pct'))} of the entries aimed at him "
                                         f"(typical {pc(R['denial_pct']['lg'])}). Watch how often opponents dump it in on his side instead."))
     if (P("rush_share") or 0) >= 0.8:
-        good.append((P("rush_share") - 0.15, f"His offense lives in transition: {pc(V('rush_share'))} of his shots come off the rush. The first "
-                                               f"few seconds after his team wins the puck back are when he's most dangerous."))
+        if V("rush_share") >= 0.4:
+            good.append((P("rush_share") - 0.15, f"His offense lives in transition: {pc(V('rush_share'))} of his shots come off the rush. The first "
+                                                   f"few seconds after his team wins the puck back are when he's most dangerous."))
+        else:   # high for his position (defensemen mostly shoot from the point) but not where his offense "lives"
+            typical = R["rush_share"].get("lg")
+            good.append((P("rush_share") - 0.15, f"More of his shots come off the rush than most {pos} manage: {pc(V('rush_share'))}"
+                                                   f"{f' (typical {pc(typical)})' if typical is not None else ''}. Watch for him joining the play "
+                                                   f"in the first few seconds after his team wins the puck back."))
     ast = (c.get("mix") or {}).get("ast")
     avg_ast = ((c.get("avg") or {}).get("ast")) or {}
     if ast and ast["n"] >= 12:

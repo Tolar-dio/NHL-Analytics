@@ -638,7 +638,9 @@ def main():
         for key, rows, val in (("skater", clutch["skaters"], "goals"), ("goalie", clutch["goalies"], "saves_added")):
             for i, r in enumerate(rows):
                 if r["id"] == pid:
-                    return dict(r, kind=key, rank=i + 1, of=len([x for x in rows if x.get(val, 0) > 0]) if val == "goals" else len(rows))
+                    if val == "goals":   # ranked among skaters who have scored; one without a goal has no rank (it read "707 of 504")
+                        return dict(r, kind=key, rank=i + 1 if r.get(val, 0) > 0 else None, of=len([x for x in rows if x.get(val, 0) > 0]))
+                    return dict(r, kind=key, rank=i + 1, of=len(rows))
         return None
     # deserved standings and playoff odds (analysis/race.py)
     try:

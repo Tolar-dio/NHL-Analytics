@@ -8,7 +8,10 @@ as the nightly pipeline makes them. The writing is yours.
 
 1. Fetch the queue: `curl -sL https://readtheice.app/data/writer/queue.json -o /tmp/queue.json` (if that fails,
    `curl -sL https://tolar-dio.github.io/NHL-Analytics/data/writer/queue.json`; keep `-L`, the old address redirects). Note `made`: if it is more
-   than 20 hours old, the nightly build failed; write anyway, but say so in the commit message.
+   than 20 hours old, the nightly build failed; write anyway, but say so in the commit message. If the queue
+   has `errors`, those fact sheets failed to build and were left out: list them in your summary. If both
+   addresses answer 404, the queue step crashed in the last build (the run still shows green): say so first in
+   your summary, with the traceback from the nightly run's "Build the writer's queue" step.
 2. Clone or pull `Tolar-dio/NHL-Analytics` (main).
 3. Work through the queue in this order: previews (only today's are useful), recaps (newest first), takes, teams,
    players. Write until the queue is done or you have written about 120 pieces; leave the rest for the next run.

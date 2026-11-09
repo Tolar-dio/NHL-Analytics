@@ -54,15 +54,34 @@ def age_days(iso):
 def player_facts(row, f, goalie=False):
     """One skater or goalie: season numbers, form, ranges, wins added, comps, path to the NHL, what's being said."""
     st = (f or {}).get("story") or {}
-    log = (f or {}).get("log") or []
+    # skater logs run oldest first and goalie logs newest first: sort, so the last ten are the latest ten in order
+    log = sorted((f or {}).get("log") or [], key=lambda g: g.get("date") or "")
     eh, a3 = (f or {}).get("eh") or {}, (f or {}).get("a3z") or {}
+    if isinstance(eh, list):   # goalies: one Evolving-Hockey row per season, not a card (Nov 9, 2026: this crashed the queue)
+        seasons = [{k: r.get(k) for k in ("season", "gp", "gsax", "gar") if r.get(k) is not None} for r in eh if isinstance(r, dict)]
+        value = dict(note="Evolving-Hockey's own goals saved above expected and goals above replacement by season; their scale differs from "
+                          "ours, and this season's row is as of their last export, so its games may trail",
+                     goalie_seasons=[r for r in seasons if len(r) > 1][-4:]) if any(len(r) > 1 for r in seasons) else None
+    else:
+        value = dict(season=eh.get("season"), war=eh.get("war"), notes=eh.get("notes")) if eh else None
+    if not isinstance(a3, dict):
+        a3 = {}
+    season = dict(row)
+    if goalie and season.get("sa"):   # tidy() rounds to two places, which turns .906 into .91: pass it preformatted
+        season["sv_pct"] = f"{1 - season.get('ga', 0) / season['sa']:.3f}".lstrip("0")
+    sv3 = lambda v: None if v is None else f"{v:.3f}".lstrip("0")
+    net = dict(   # the goalie page's own reads; goalie files carry no story block, so without these the sheet was thin
+        our_notes=(f or {}).get("notes"), last_season=(f or {}).get("prev"),
+        by_shot_danger=[dict(band=x.get("label"), shots=x.get("shots"), goals=x.get("goals"), save_pct=sv3(x.get("sv")),
+                             league_save_pct=sv3(x.get("lg_sv")), goals_saved_above_expected=x.get("gsax"))
+                        for x in (f or {}).get("bands") or []] or None) if goalie else {}
     return tidy(dict(
-        name=row["name"], team=row["team"], position="G" if goalie else row.get("pos"),
-        season=row, bio=st.get("bio"), form=st.get("form"), flags=st.get("flags"), story_lines=st.get("lines"),
+        name=row["name"], team=row["team"], position="G" if goalie else row.get("pos"), **net,
+        season=season, bio=st.get("bio"), form=st.get("form"), flags=st.get("flags"), story_lines=st.get("lines"),
         talent_range=(f or {}).get("range"), wins_added=(f or {}).get("wins"),
         plays_like=[dict(name=c["name"], team=c["team"], match=c["match"], shared=c["shared"]) for c in ((f or {}).get("like") or {}).get("comps", [])] or None,
         last_ten_games=[{k: g.get(k) for k in ("date", "opp", "home", "res", "gf", "ga", "toi", "g", "a", "sog", "ixg", "sv", "ga_g", "gsax")} for g in log[-10:]] or None,
-        value_by_evolving_hockey=dict(season=eh.get("season"), war=eh.get("war"), notes=eh.get("notes")) if eh else None,
+        value_by_evolving_hockey=value,
         hand_tracking_by_all_three_zones=dict(season=a3.get("season"), notes=a3.get("notes")) if a3 else None,
         **wpath((f or {}).get("dossier"), notes=4, seasons=3, wiki_chars=600), **said(coverage(row["id"]), news=5, posts=3, videos=2, days=10),
     ))
@@ -86,7 +105,17 @@ def team_news(team, roster, days=14, players=4, per=4):
 
 def main():
     now = dt.datetime.now(dt.timezone.utc)
-    items = []
+    items, errors = [], []
+
+    def safe(kind, ident, build):
+        """One item's fact sheet. A sheet that fails is skipped and reported; it doesn't take the whole queue with it
+        (Nov 9, 2026: one goalie's card crashed the script and the site published no queue at all)."""
+        try:
+            return build()
+        except Exception as e:
+            errors.append(dict(kind=kind, id=ident, error=repr(e)))
+            print(f"::warning::writer queue: {kind} {ident} skipped: {e!r}")
+            return None
     idx = jl(os.path.join(SITE, "games", "index.json"), [])
     cutoff = (now - dt.timedelta(days=3)).date().isoformat()
     for row in idx:
@@ -98,11 +127,16 @@ def main():
         g = jl(os.path.join(SITE, "games", f"{row['id']}.json"))
         if not g:
             continue
-        facts = recap_facts(g)
-        facts["win_probability"] = tidy(dict(goals_that_swung_it=[dict(team=x["team"], scorer=x.get("name"), period=x["period"],
-                                                                       win_chance_before_pct=round(100 * x["before"]), after_pct=round(100 * x["after"]))
-                                                                  for x in sorted((g.get("wp") or {}).get("goals", []), key=lambda x: -abs(x["swing"]))[:3]],
-                                             biggest_save=(g.get("wp") or {}).get("save"), most_wins_added=(g.get("wp") or {}).get("top")))
+        def recap_sheet(g=g):
+            facts = recap_facts(g)
+            facts["win_probability"] = tidy(dict(goals_that_swung_it=[dict(team=x["team"], scorer=x.get("name"), period=x["period"],
+                                                                           win_chance_before_pct=round(100 * x["before"]), after_pct=round(100 * x["after"]))
+                                                                      for x in sorted((g.get("wp") or {}).get("goals", []), key=lambda x: -abs(x["swing"]))[:3]],
+                                                 biggest_save=(g.get("wp") or {}).get("save"), most_wins_added=(g.get("wp") or {}).get("top")))
+            return facts
+        facts = safe("recap", row["id"], recap_sheet)
+        if facts is None:
+            continue
         items.append(dict(kind="recap", id=row["id"], date=row["date"], out=f"data/stories/{SEASON}/recaps/{row['id']}.json",
                           current=(jl(out) or {}).get("text"), facts=facts))
 
@@ -118,7 +152,7 @@ def main():
     tn = lambda t: news_cache.setdefault(t, team_news(t, roster.get(t, [])))
     for it in items:   # recaps: what each team's season is about, so a game is told inside its story
         if it["kind"] == "recap":
-            it["facts"]["biggest_stories_around_each_team"] = {t: tn(t) for t in (it["facts"].get("away"), it["facts"].get("home")) if t}
+            it["facts"]["biggest_stories_around_each_team"] = safe("recap stories", it["id"], lambda: {t: tn(t) for t in (it["facts"].get("away"), it["facts"].get("home")) if t})
     race = {r["team"]: r for r in (jl(os.path.join(SITE, "race.json"), {}) or {}).get("rows", [])}
     for p_path in sorted(glob.glob(os.path.join(SITE, "previews", "*.json"))):
         p = jl(p_path)
@@ -128,9 +162,11 @@ def main():
         out = os.path.join(STORIES, "previews", tonight.get("date", ""), f"{p['id']}.json")
         if by_session(out, goalies):
             continue
-        facts = preview_facts(p)
+        facts = safe("preview", p["id"], lambda: preview_facts(p))
+        if facts is None:
+            continue
         facts["playoff_race"] = {t: {k: race[t].get(k) for k in ("pts", "xpts", "proj", "playoffs", "division")} for t in (p["away"], p["home"]) if t in race} or None
-        facts["biggest_stories_around_each_team"] = {t: tn(t) for t in (p["away"], p["home"])}
+        facts["biggest_stories_around_each_team"] = safe("preview stories", p["id"], lambda: {t: tn(t) for t in (p["away"], p["home"])})
         items.append(dict(kind="preview", id=p["id"], date=tonight.get("date"), goalies=goalies,
                           out=f"data/stories/{SEASON}/previews/{tonight.get('date')}/{p['id']}.json",
                           current=(jl(out) or {}).get("text"), facts=facts))
@@ -158,8 +194,11 @@ def main():
         if old.get("by") == "session" and age_days(old.get("written")) < 2:
             continue
         f = jl(os.path.join(SITE, "goalies" if goalie else "players", f"{pid}.json"))
+        facts = safe("player", pid, lambda: player_facts(row, f, goalie))
+        if facts is None:
+            continue
         items.append(dict(kind="player", id=pid, gp=row.get("gp"), out=f"data/stories/{SEASON}/writeups/players/{pid}.json",
-                          current=old.get("text"), facts=player_facts(row, f, goalie)))
+                          current=old.get("text"), facts=facts))
         n += 1
 
     teams = {t["team"]: t for t in jl(os.path.join(SITE, "teams.json"), [])}
@@ -170,10 +209,12 @@ def main():
         if old.get("by") == "session" and age_days(old.get("written")) < TEAM_STALE_DAYS and old.get("gp") == row.get("gp"):
             continue
         tp = jl(os.path.join(SITE, "tactics", f"{t}.json"), {}) or {}
-        items.append(dict(kind="team", id=t, gp=row.get("gp"), out=f"data/stories/{SEASON}/writeups/teams/{t}.json", current=old.get("text"),
-                          facts=tidy(dict(team=t, standings=row, profile=prof.get(t), playoff_race=race.get(t), biggest_stories=tn(t),
-                                          top_lines=(tp.get("lines") or [])[:3], top_pairs=(tp.get("pairs") or [])[:2], style=tp.get("style"),
-                                          **said(team_coverage(t), news=6, posts=4, videos=3, days=10)))))
+        facts = safe("team", t, lambda: tidy(dict(team=t, standings=row, profile=prof.get(t), playoff_race=race.get(t), biggest_stories=tn(t),
+                                                  top_lines=(tp.get("lines") or [])[:3], top_pairs=(tp.get("pairs") or [])[:2], style=tp.get("style"),
+                                                  **said(team_coverage(t), news=6, posts=4, videos=3, days=10))))
+        if facts is None:
+            continue
+        items.append(dict(kind="team", id=t, gp=row.get("gp"), out=f"data/stories/{SEASON}/writeups/teams/{t}.json", current=old.get("text"), facts=facts))
 
     news = jl(os.path.join(ROOT, "data", "news", "index.json"), {}) or {}
     for st in (news.get("stories") or [])[:40]:
@@ -184,16 +225,19 @@ def main():
         if not cache or (jl(os.path.join(ROOT, cache)) or {}).get("by") == "session":
             continue
         players = [sk.get(p["id"]) or gk.get(p["id"]) for p in st.get("players", []) if (sk.get(p["id"]) or gk.get(p["id"]))]
-        items.append(dict(kind="take", id=st.get("id"), out=cache, current=st["take"],
-                          facts=tidy(dict(reports=[dict(outlet=i.get("source"), headline=i.get("title"), summary=i.get("desc"), published=i.get("published"))
-                                                   for i in (st.get("items") or [])[:5]],
-                                          players=players[:4] or None, teams=[teams[t] for t in st.get("teams", []) if t in teams] or None))))
+        facts = safe("take", st.get("id"), lambda: tidy(dict(
+            reports=[dict(outlet=i.get("source"), headline=i.get("title"), summary=i.get("desc"), published=i.get("published")) for i in (st.get("items") or [])[:5]],
+            players=players[:4] or None, teams=[teams[t] for t in st.get("teams", []) if t in teams] or None)))
+        if facts is None:
+            continue
+        items.append(dict(kind="take", id=st.get("id"), out=cache, current=st["take"], facts=facts))
 
     os.makedirs(os.path.join(SITE, "writer"), exist_ok=True)
     q = dict(made=now.isoformat(timespec="seconds"), season=SEASON, story_version=STORY_VERSION, slate_date=tonight.get("date"),
-             counts={k: sum(1 for i in items if i["kind"] == k) for k in ("recap", "preview", "player", "team", "take")}, items=items)
+             counts={k: sum(1 for i in items if i["kind"] == k) for k in ("recap", "preview", "player", "team", "take")},
+             errors=errors or None, items=items)
     json.dump(q, open(os.path.join(SITE, "writer", "queue.json"), "w"), separators=(",", ":"), default=str)
-    print("writer queue:", q["counts"], f"{os.path.getsize(os.path.join(SITE, 'writer', 'queue.json')) // 1024} KB")
+    print("writer queue:", q["counts"], f"{os.path.getsize(os.path.join(SITE, 'writer', 'queue.json')) // 1024} KB", f"({len(errors)} skipped)" if errors else "")
 
 
 if __name__ == "__main__":

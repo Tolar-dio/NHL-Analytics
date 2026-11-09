@@ -395,7 +395,7 @@ def season_pulse(season, prev_season, cur, prev, names, fp, pri_players, sk, sta
                                 career=dict(gp=car.get("gamesPlayed", 0) + season_tot["gp"], g=car.get("goals", 0) + season_tot["g"],
                                             a=car.get("assists", 0) + season_tot["a"], pts=car.get("points", 0) + season_tot["pts"])
                                 if car else None,
-                                bio=_bio_card(bio, today, season) if bio else None,
+                                bio=_bio_card(bio, today, season, grp.team.tolist()) if bio else None,
                                 role=dict(toi=r(rate["toi_pg"], 2), pp=r(rate.get("pp_share"), 2)),
                                 rate=dict(ppg=float(rate["oxgf60"] / 60 * rate.get("proj_toi", rate["toi_pg"]) * rate["ipp"] *
                                                     rate["ofin"] * M.PTS_CAL),
@@ -435,7 +435,8 @@ def season_pulse(season, prev_season, cur, prev, names, fp, pri_players, sk, sta
                 prod = (f"{int(x.pts)} points in {int(x.gp)} games ({num(x.pts / x.gp, 2)} a game, {num(x.p_pts / p_gp, 2)} last season)")
                 if dix >= 0.15:
                     prod += f", and his own chances are up to {num(x.ixg60, 2)} xG per 60 from {num(x.p_ixg60, 2)}"
-                text = f"Age {age}. {role} {prod}.".replace("  ", " ")
+                # eligibility uses his age on Oct 1; the sentence gives his age today (an October birthday read a year low)
+                text = f"Age {age_on(bio.get('birth_date'), today) or age}. {role} {prod}.".replace("  ", " ")
                 if x.gp < 20:
                     text += f" {cap(nw(int(x.gp)))} games is a small sample; ice time settles faster than scoring does."
                 S["flags"].append(dict(k="breakout", label="Breakout", text=text, score=r(score, 2)))
@@ -522,7 +523,8 @@ def season_pulse(season, prev_season, cur, prev, names, fp, pri_players, sk, sta
     return P
 
 
-def _bio_card(bio, today, season):
+def _bio_card(bio, today, season, games_now=None):
+    """games_now: the team he played for in each of this season's games, oldest first."""
     d = bio.get("draft") or {}
     hh = bio.get("height_in")
     out = dict(age=age_on(bio.get("birth_date"), today), born=born_in(bio), shoots=bio.get("shoots"),
@@ -530,12 +532,21 @@ def _bio_card(bio, today, season):
                draft=(f"{d['year']} {ordinal(d['round'])} round, {ordinal(d['overall'])} overall by {d['team']}"
                       if d and d.get("year") and d.get("overall") else "Undrafted" if bio.get("career_prev") is not None else None),
                hometown=hometown_team(bio))
+    # games by team: earlier seasons from the bio, this season from our own game tables. Bios refresh every
+    # 45 days, so the bio's count for this season was always stale (Nov 9, 2026: 7 games for a player with 14)
     teams = []
     for s, t, gp in bio.get("nhl_teams") or []:
+        if games_now is not None and str(s) >= str(season):
+            continue
         if teams and teams[-1][0] == t:
             teams[-1][1] += gp
         else:
             teams.append([t, gp])
+    for t in games_now or []:
+        if teams and teams[-1][0] == t:
+            teams[-1][1] += 1
+        else:
+            teams.append([t, 1])
     out["teams"] = teams
     car = bio.get("career_prev") or {}
     if car.get("gamesPlayed") is not None:
@@ -620,7 +631,7 @@ def _goalies(P, season, cur, names, bios, goalie_rows, today):
         car = bio.get("career_prev") or {}
         G = dict(id=pid, name=names.get(pid), team=team, starts=int(len(st)), team_starts=int(starts_by_team.get(team, 0)),
                  rec=f"{w}-{l}-{o}", w=w, gsax5=r(gsax5, 1), sv5=r(sv5, 3), rec5=rec5, n5=int(len(last5)),
-                 gsax=rows.get(pid, {}).get("gsax"), sv=rows.get(pid, {}).get("sv_pct"), bio=_bio_card(bio, today, season) if bio else None,
+                 gsax=rows.get(pid, {}).get("gsax"), sv=rows.get(pid, {}).get("sv_pct"), bio=_bio_card(bio, today, season, g[g.toi > 0].team.tolist()) if bio else None,
                  state=None)
         if len(last5) >= 4 and sv5 is not None:
             span = f"over his last {nw(len(last5))} starts ({rec5})"
