@@ -225,7 +225,7 @@ function gamesCover(T, GAMES) {
 // the players carousel: likeliest scorers, sleepers, and the day's stat card if there is one
 function playersCover(T, TODAY) {
   const top = [...T.props].filter((p) => p.lineup !== "returning").sort((a, b) => b.p_goal - a.p_goal)[0];
-  const S = T.games.flatMap((g) => g.sleepers || []).slice(0, 4);
+  const S = pickSleepers(T, TODAY.sleeper_notes || {});
   const rows = [{ colors: [tc(top.team)], title: "Likeliest goal scorers", sub: `${top.name} leads the night`, right: pct(top.p_goal) }];
   if (S.length) rows.push({ colors: S.map((x) => tc(x.team)).filter((c, i, a) => a.indexOf(c) === i).slice(0, 3), title: "Sleepers", sub: `${COUNT[S.length]} under-the-radar name${S.length === 1 ? "" : "s"}, each with a reason`, right: `${S.length}` });
   if (TODAY.stat) rows.push({ colors: [tc(TODAY.stat.team)], title: TODAY.stat.cover || TODAY.stat.title, sub: TODAY.stat.cover_sub || "", right: TODAY.stat.big });
@@ -234,22 +234,24 @@ function playersCover(T, TODAY) {
 }
 
 // one big number and the sentence that explains it (a streak, a milestone, a record)
-function stat({ kicker, big, unit, title, lines, team, note }) {
+function stat({ kicker, big, bigSize, unit, title, lines, team, note }) {
   return page(1080, 1350, `
     <div style="position:absolute;left:0;top:0;bottom:0;width:28px;background:${tc(team)}"></div>
     ${rinkBg(1010, 1230, 360)}
     <div style="padding:72px 72px 0 104px">
       ${wordmark(36)}
       <div class="kicker" style="margin-top:120px">${esc(kicker)}</div>
-      <div style="display:flex;align-items:baseline;gap:24px;margin-top:4px"><h1 style="font-size:420px;color:${B.blue};line-height:.86">${esc(big)}</h1><span style="font-family:'Big Shoulders Display';font-weight:800;font-size:64px;text-transform:uppercase;line-height:1">${unit}</span></div>
+      <div style="display:flex;align-items:baseline;gap:24px;margin-top:4px"><h1 style="font-size:${bigSize || 420}px;color:${B.blue};line-height:.86">${esc(big)}</h1><span style="font-family:'Big Shoulders Display';font-weight:800;font-size:64px;text-transform:uppercase;line-height:1">${unit}</span></div>
       <h1 style="font-size:84px;margin-top:28px">${esc(title)}</h1>
       <div style="margin-top:32px;display:grid;gap:14px;max-width:840px">${lines.map((l) => `<p style="font-size:36px;line-height:1.3">${l}</p>`).join("")}</div>
     </div>
     ${footer(note)}`);
 }
 
+// on a big slate there are more sleepers than fit: today.json's sleeper_notes picks which four (in slate order)
+const pickSleepers = (T, notes) => { const all = T.games.flatMap((g) => g.sleepers || []); const keep = all.filter((x) => notes[x.id]); return (keep.length ? keep : all).slice(0, 4); };
 function sleepers(T, notes = {}, story = false) {
-  const S = T.games.flatMap((g) => g.sleepers || []).slice(0, 4);
+  const S = pickSleepers(T, notes);
   const cards = S.map((s) => `
     <div class="sl">
       <div class="chip" style="background:${tc(s.team)}"></div>
