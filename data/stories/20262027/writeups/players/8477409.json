@@ -1,9 +1,1 @@
-{
- "text": "Carter Verhaeghe has three Stanley Cups, one in Tampa and two in Florida, and he's playing like a man used to scoring in big games. He has nine goals and 15 points in 17 games, seven of them on the power play.\n\nHere's the catch, and it's a big one. Nine goals on 6.4 expected (the quality of his chances) means he's shooting 26%, double last season's 13%, and Florida has scored 8.4 more goals than its chances deserve with him on the ice, the kind of luck that rarely lasts a season. The process underneath is solid rather than spectacular: at 5v5 the Panthers get about 54% of the expected goals with him on. Corey Sznajder's All Three Zones tracking had him leaving his own zone with the puck 72% of the time last season, and Evolving-Hockey had him facing the other team's best. Our projection has 25 to 40 more goals. He's still a good top-six winger. Just not quite this good.",
- "headline": "Verhaeghe is hot; the luck is hotter",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 17
-}
+{"text": "Carter Verhaeghe opened with a hat trick against Seattle on Oct. 17 and hasn't really stopped: 10 goals and 16 points in 18 games, 8 of those points on the power play. For a three-time Cup winner who was shooting 13% last season, this is a different gear.\n\nIt's mostly a gear the puck chose. He's at 27% shooting, with 10 goals on 6.9 expected, and Florida has scored 7.2 more goals than its chances deserve with him on the ice. Both of those tend to come back to earth. The chances themselves are good, though: 1.24 expected goals per 60, up from 0.94 last season.\n\nCorey Sznajder's All Three Zones tracking adds the part of his game that doesn't need luck. Last season 72% of his exits left the zone with possession and he was 93rd percentile among forwards in primary shot assists. Our season-end range of 26 to 41 goals says he keeps scoring, just not at this pace. Florida has lost two straight, so the timing of the cool-off matters.", "headline": "Verhaeghe's shot is falling, for now", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-10T12:50:00Z", "gp": 18}

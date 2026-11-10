@@ -1,1 +1,19 @@
-{"text": "NJD arrive on a five-game winning streak, the latest a 4-0 win at TOR on Nov. 8 in which Nico Hischier reached 500 career points. They're without Anthony Mantha (neck), with Connor Brown moving in beside Rodrigues and Boqvist. WPG have won three straight, most recently 4-3 over TBL, where Brayden Yager scored his first NHL goal. They're missing Josh Morrissey, whose minutes are going to Mario Ferraro and Neal Pionk. It's also Dawson Mercer's first game against the Devils since leaving them.\n\nOur numbers favor New Jersey. At five on five, NJD have taken 58% of the expected goals (the quality of chances) in their games, against 47% for WPG, and our model projects 3.51 goals for the Devils to 2.80 for the Jets. The power play is the one even spot: both create 0.82 expected goals a game, though WPG's penalty kill allows 0.86 to NJD's 0.44.\n\nNeither projected goalie has been sharp. Jake Allen (NJD) is at -4.74 goals saved above expected, which measures saves against the quality of shots faced, and Nico Daws (WPG) is at -1.28. Allen was at +5.39 last season over 37 games.\n\nFor NJD, Jack Hughes has a 42% chance to score and 80% to record a point, on a five-game point streak. Jesper Bratt, who won it in overtime against STL, is at 25% to score. For WPG, Kyle Connor is at 44% to score, with seven points in his last five games per RotoWire.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8474596, 8482076], "written": "2026-11-10T11:38:03+00:00"}
+{
+ "text": "Connor Hellebuyck's first game back in Winnipeg was supposed to be the story of the night. Instead the story is that he isn't starting it. The Devils chose to start Jake Allen, a decision that has drawn criticism: The Hockey News' Mike Fink called it Mehta's first mistake as general manager, and Daily Faceoff reported that Kyle Connor \"didn't even think it was a possibility\" that Hellebuyck wouldn't play. Jets coach Scott Arniel also shared his thoughts on it with TSN. However you see it, an emotional return has turned into a goaltending choice to argue about.\n\nOn the ice, New Jersey is the best version of itself. Five straight wins, 23 goals for and 13 against, and 61% of the expected goals (the quality of chances) in that stretch. The Devils take the fewest penalties in this matchup, 2.6 a game, and allow just 0.44 expected goals a game on the penalty kill. Jack Hughes has five goals and 11 points in a five-game point streak; we have him at 42% to score. Anthony Mantha is out with a neck injury and Riley Tufte has been recalled.\n\nWinnipeg has won three straight, and Dawson Mercer faces the Devils for the first time after 420 games in New Jersey. The Jets are missing Josh Morrissey, and at five on five they have taken 47% of the expected goals this season. Nico Daws, with six games this season, is projected to start for them.\n\nOur numbers favor New Jersey clearly, 3.51 expected goals to 2.80. Allen has been the weak spot, 4.7 goals worse than expected. Connor (44% to score) and Mark Scheifele are the Jets' best bets for a goal, and Nino Niederreiter is one point from 500.",
+ "headline": "Hellebuyck goes home to Winnipeg, and sits",
+ "goalies": [
+  8474596,
+  8482076
+ ],
+ "hunch": {
+  "text": "Our numbers say Devils. Our gut says a building with a point to make, against a backup goalie, is worth more than the model knows. Winnipeg wins it.",
+  "claim": {
+   "type": "win",
+   "team": "WPG"
+  }
+ },
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-10T12:53:10Z"
+}

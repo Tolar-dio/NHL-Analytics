@@ -1,1 +1,19 @@
-{"text": "Both teams arrive on skids. DET is 1-4-0 in its last five and winless in three, coming off a 4-0 loss at COL where Mackenzie Blackwood stopped all 27 shots. They're without Dylan Larkin (suspended), Albert Johansson and Marco Kasper. Emmitt Finnie has taken Larkin's spot beside Lucas Raymond and Viktor Arvidsson, and Andrew Copp is up to 19:25 a night. STL is also winless in three (0-2-1) after a 3-1 loss at NSH, missing Dillon Dube. DET won't forget the Oct 31 meeting, a 5-4 STL win. Justin Faulk also plays in St. Louis for the first time since leaving the Blues.\n\nThe chances are close. DET has 53% of the expected goals (the quality of shots taken and allowed) at five on five, STL 48%, and our model has it 2.99 to 2.96 tonight. DET's trouble is finishing: 11.1 fewer goals than its chances usually produce. It also takes 4.1 penalties a game against an STL power play creating 0.54 expected goals a game. In net, projected starters John Gibson (DET) is at -6.3 goals saved above expected this season, while Joel Hofer (STL) is at +5.9. Last season, both were positive.\n\nAlex DeBrincat (35% to score) leads DET, a 39th overall pick in 2016 who put up 127 points in 63 OHL games. Jimmy Snuggerud (29%) and Mason McTavish (28%) top STL. Our under-the-radar pick is Philip Broberg, 51% for a point tonight, up from 44% on his season pace because his projected ice time is 26:41 a night against 24:35.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8476434, 8480981], "written": "2026-11-10T11:37:59+00:00"}
+{
+ "text": "The biggest story in Detroit is the player who isn't here. Dylan Larkin has refused to play until he is traded, and the Red Wings have suspended him. The reporting around it has turned to how far the two sides are apart; one widely circulated headline says Larkin believes his 10-team trade list is \"enough.\" Until it resolves, Emmitt Finnie has his spot beside Lucas Raymond and Viktor Arvidsson, and Andrew Copp is playing more than 19 minutes a night.\n\nThe hockey itself has been strange. Detroit is winless in three and 1-4-0 in its last five, but our numbers have the Red Wings better than their record: 52% of the expected goals on the season and a -7 goal difference that should be about +3. Finishing has cost them roughly 11 goals. The other cost has been in net. John Gibson is at .860 and 6.3 goals worse than expected.\n\nSt. Louis is winless in three too, outscored 11-6, and the chances say that slide is real: 38% of the expected goals in those games. Joel Hofer has kept them close at .919 with 5.9 goals saved above expected. The Blues won the first meeting 5-4 on Oct. 31. Justin Faulk returns to St. Louis for the first time since leaving, after 482 games as a Blue, and Pius Suter is one goal from 100.\n\nOur numbers call it a coin flip, 2.99 to 2.96. DeBrincat (35%), Arvidsson (34%) and Raymond (31%) are Detroit's likeliest scorers, all on the top power play. Our sleeper is St. Louis defenseman Philip Broberg, projected for nearly 27 minutes and 51% for a point.",
+ "headline": "Red Wings without Larkin, still waiting on the finish",
+ "goalies": [
+  8476434,
+  8480981
+ ],
+ "hunch": {
+  "text": "Eleven goals of bad finishing is a debt that gets paid somewhere. Our hunch is Detroit collects a little of it tonight against a team losing the chance battle.",
+  "claim": {
+   "type": "win",
+   "team": "DET"
+  }
+ },
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-10T12:53:10Z"
+}

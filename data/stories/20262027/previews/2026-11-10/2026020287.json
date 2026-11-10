@@ -1,1 +1,19 @@
-{"text": "Minnesota and Montreal arrive hot. The Wild have points in eight straight (6-0-2) but just saw a three-game winning streak end when Tampa Bay came back from two goals down to win 4-3 in overtime. They're without Jared Spurgeon. The Canadiens have points in ten straight (8-0-2), most recently a 4-2 win in Toronto, and they're missing Ivan Demidov and Mike Matheson, with ESPN's estimated return for both on Nov 14. Cole Caufield has moved onto Juraj Slafkovsk\u00fd's line, and Kaiden Guhle is up to 24:46 a night.\n\nOur numbers see little between them. At five on five, MIN has 53% of the expected goals (the quality of chances) and MTL 52%, and we have the Wild 3.32 to 2.90 tonight. The matchup to watch is Minnesota's power play, at 0.95 expected goals a game, against Montreal's penalty kill, which allows 0.90. The Canadiens take 5.2 penalties a game. In net, projected starters Jesper Wallstedt (+13.3 goals saved above expected, how many goals a goalie has stopped beyond what the shots predicted) and Jacob Fowler (+11.2) are both on heaters, though Wallstedt's 5.76 last season trails Fowler's 5.98 in a bigger sample.\n\nKirill Kaprizov, on an eight-game point streak, is our top scoring pick at 48%, with Matt Boldy at 40%. For Montreal, Caufield leads at 37% and Slafkovsk\u00fd plays his 300th game. Our under-the-radar pick is Minnesota's Bobby Brink, a third-liner at 14:30 a night with 2.2 expected goals over his last 10 games. We have him at 16% to score, a player to watch, not a lock.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8482661, 8484170], "written": "2026-11-10T11:37:40+00:00"}
+{
+ "text": "Something has to give in Montreal. The Canadiens have points in ten straight (8-0-2) and the Wild in eight straight (6-0-2), and both have the goalie to thank. Jesper Wallstedt leads with 13.3 goals saved above expected this season (goals he has prevented beyond what the shots warranted). Jacob Fowler is right behind at 11.2, and is .935 over his last five starts. That's a lot of saves meeting a lot of saves.\n\nFowler's week has had a strange subplot. A fan threw an apple at him in Toronto on Saturday, and he has since explained what he told the referee, per the headlines. Meanwhile, as Carey Price enters the Hall of Fame, the comparisons between the two keep arriving.\n\nThe difference between these streaks is in the chances. Minnesota has had 57% of the expected goals during its run; Montreal has had 50%, and has been living on Fowler and finishing. The Canadiens are also short two important pieces, Ivan Demidov and Mike Matheson, with Kaiden Guhle up to nearly 25 minutes a night in Matheson's absence. Montreal takes 5.2 penalties a game, the habit we'd worry about most against a Wild power play that creates 0.95 expected goals a game. Our numbers lean Minnesota, 3.32 to 2.90.\n\nKirill Kaprizov has an eight-game point streak (five goals, nine assists), and we have him at 48% to score. Joel Eriksson Ek is on an eight-game run too. For Montreal, Cole Caufield is 37% to score, Juraj Slafkovský plays his 300th game, and Nick Suzuki is at 70% for a point. Our sleeper is Bobby Brink, a third-liner with dangerous shots against a defense that allows the sixth-most expected goals per 60.",
+ "headline": "Two point streaks, two hot goalies, one gets snapped",
+ "goalies": [
+  8482661,
+  8484170
+ ],
+ "hunch": {
+  "text": "Our numbers expect a bit over six goals. Our gut says both goalies are in that zone where nothing gets by, and this ends 3-2 or tighter.",
+  "claim": {
+   "type": "under",
+   "goals": 5.5
+  }
+ },
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-10T12:53:10Z"
+}

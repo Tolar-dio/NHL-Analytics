@@ -1,1 +1,19 @@
-{"text": "Nashville comes to Los Angeles on a four-game winning streak, the latest a 3-1 win over St. Louis, and has outscored opponents 15-8 in that run. The Kings are coming off a 5-2 home loss to Pittsburgh that ended the Penguins' four-game winless run, and they're 2-3-0 in their last five without Mats Zuccarello (upper body). Artemi Panarin has taken his spot beside Erik Haula and Alex Laferriere, and Erik Gustafsson has moved onto the first power-play unit. Haula also faces his old team for the first time after 132 games with the Predators.\n\nThe teams are close on chance quality. Our model projects 2.98 expected goals (the quality of shots a team generates) for Nashville and 3.08 for Los Angeles. In net, projected starter Juuse Saros is +6.3 in goals saved above expected (how many goals a goalie has stopped beyond what the shots should have produced) this season, while Darcy Kuemper is at -5.0 and would play his 500th NHL game. Los Angeles also takes 4.1 penalties a game, which keeps handing opponents power plays. Jonathan Marchessault is day-to-day and could return for Nashville.\n\nAmong the players to watch, Panarin is 74% for a point and Adrian Kempe 38% to score. Steven Stamkos is 37% to score for the Predators, and Roman Josi, who the Predators drafted 38th overall in 2008, is one point from 800 for his career. Our under-the-radar pick is Quinton Byfield, 50% for a point against a season pace of 43%, because his line creates 4.01 expected goals per 60 minutes with him on the ice.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8477424, 8475311], "written": "2026-11-10T11:38:08+00:00"}
+{
+ "text": "Nashville has won four straight, and the chances back it: 55% of the expected goals in those games, with Juuse Saros at .912 and 6.3 goals saved above expected after a rough 2025-26. Roman Josi is one point from 800 for his career, and the Predators just reshaped their young core, sending Matthew Wood to Seattle for Shane Wright, who fit in right away beside Filip Forsberg according to the headlines. Steven Stamkos, now in the all-time top five for power-play goals, is 37% to score.\n\nLos Angeles is the opposite story: a team playing better than its 12 points. Our playoff model has the Kings at 16.6 expected points, more than four above what they have, and they took 58% of the expected goals during a 2-3-0 week. The problem has been in net. Darcy Kuemper, who would play his 500th NHL game, is at .878 and five goals worse than expected. Mats Zuccarello is out, so Artemi Panarin has taken his spot beside Erik Haula and Alex Laferriere, and Corey Perry is up to 16 and a half minutes a night. Haula faces Nashville for the first time since leaving.\n\nOur numbers call it close, 3.08 to 2.98 for Los Angeles. Nashville gets a lot of its offense from Josi, Forsberg and Ryan O'Reilly, all 27% or better for two points. For the Kings, Adrian Kempe (38% to score) is coming off a hat trick against San Jose, and Panarin is 74% for a point. Our sleeper is Quinton Byfield, 50% for a point, above his season pace. Jonathan Marchessault is day-to-day and could return for Nashville.",
+ "headline": "Predators keep rolling; Kings keep waiting",
+ "goalies": [
+  8477424,
+  8475311
+ ],
+ "hunch": {
+  "text": "One team's record is ahead of its play, the other's is behind. Our hunch is the Kings' process finally shows up on the scoreboard, and Nashville's streak stops at four.",
+  "claim": {
+   "type": "win",
+   "team": "LAK"
+  }
+ },
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-10T12:53:10Z"
+}

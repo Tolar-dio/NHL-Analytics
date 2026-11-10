@@ -1,1 +1,19 @@
-{"text": "Colorado arrives rested and rolling after a 4-0 win over Detroit, where projected starter Mackenzie Blackwood stopped all 27 shots. The Avalanche are 3-1-1 in their last five, without Josh Manson and Zachary L'Heureux. Toronto is 1-4-0 in that span and winless in three, shut out 4-0 by New Jersey two days ago, with Kirill Marchenko on injured reserve. Easton Cowan has taken his spot beside Paul and Nylander, and Jack Roslovic has moved onto the first power-play unit. Nicolas Roy also returns to Toronto for the first time since leaving the Maple Leafs.\n\nOur numbers favor Colorado, 3.41 expected goals (the quality of chances) to 2.81. At five on five, the Avalanche have taken 53% of the expected goals in their games and the Maple Leafs 46%. The special teams matchup to watch is Colorado's power play, which creates 0.80 expected goals a game, against a Toronto penalty kill that allows 0.80. Toronto also takes 4.4 penalties a game. In net, projected starters Blackwood (+1.6 goals saved above expected, meaning goals prevented beyond what the shots warranted) and Sergei Bobrovsky (+0.6) are close this season. Bobrovsky was 13.5 below expected last year and is .862 over his last five starts.\n\nNathan MacKinnon is 42% to score and 87% for a point. For Toronto, Auston Matthews is 38% to score and William Nylander 36%. Our under-the-radar picks are both Avalanche: Gabriel Landeskog, a third-liner with 2.4 expected goals over his last 10 games and a 20% chance to score, and T.J. Hughes, 43% for a point, above his season pace.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8478406, 8475683], "written": "2026-11-10T11:37:35+00:00"}
+{
+ "text": "Toronto has lost four of five, and the last one stung: shut out 4-0 at home by New Jersey on Sunday. The headlines around the Maple Leafs this week are not about systems. Auston Matthews says the team needs to look in the mirror, per Daily Faceoff Toronto. Gavin McKenna admitted a \"mistake\" after being benched in the loss to Montreal, per the headlines. Our numbers say the slide is real: Toronto has had 43% of the expected goals (the quality of chances) during three straight losses, and our playoff simulations give the Leafs about an 11% chance.\n\nColorado arrives rested after a 4-0 win over Detroit in which Mackenzie Blackwood stopped all 27 shots. The question hanging over the Avalanche is Cale Makar. Evan Rawal of the Denver Gazette posted that Makar left practice Sunday with the trainer, pointing to a lower-body issue, and the team recalled defenseman Alex Gagne a day later. Colorado is already without Josh Manson. Nicolas Roy also plays in Toronto for the first time since leaving the Leafs.\n\nOur numbers like Colorado, 3.41 expected goals to 2.81, and the five-on-five gap is wide: the Avalanche have taken 53% of the expected goals in their games, the Leafs 46%. Toronto takes 4.4 penalties a game, which is a lot of time to hand to Nathan MacKinnon, who we have at 42% to score and 87% for a point. Sergei Bobrovsky is .862 over his last five starts. Toronto's lineup has shuffled around injuries: Easton Cowan has taken Kirill Marchenko's spot beside Paul and Nylander, and Jack Roslovic, who left a game after a high stick, is listed day-to-day.\n\nThe Leafs did win the first meeting 6-3 on Oct. 10, a game our replays gave them only 18% of the time. Our sleepers are both Avalanche: Gabriel Landeskog (20% to score) from the third line, and T.J. Hughes at 43% for a point.",
+ "headline": "Leafs come home to Colorado, and to questions",
+ "goalies": [
+  8478406,
+  8475683
+ ],
+ "hunch": {
+  "text": "Two leaky goaltending pictures and a team that keeps taking penalties: our hunch is this one gets loud, seven goals or more.",
+  "claim": {
+   "type": "over",
+   "goals": 6.5
+  }
+ },
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-10T12:53:10Z"
+}

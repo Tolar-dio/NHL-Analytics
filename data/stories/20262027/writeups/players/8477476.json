@@ -1,9 +1,1 @@
-{
- "text": "Artturi Lehkonen scored the goal that won Colorado the 2022 Stanley Cup, and he's never been a player who needed the spotlight. He has it now: 12 goals in 17 games, eight of them in his last ten.\n\nThat run is partly earned. He's put up 5.3 expected goals on his own shots over those ten games (the quality of his chances), against 3.7 usual, and Corey Sznajder's All Three Zones tracking had him 90th percentile among forwards in chances from the home plate in front of the net last season. But he's shooting 33%, after 14% last season, and Colorado has scored 7.7 more goals than its chances deserve with him on the ice. Evolving-Hockey also notes he plays with some of the strongest teammates in the league, which helps. The honest read: a smart net-front winger on a great team, in a hot patch that will cool. Our projection has 27 to 42 more goals.",
- "headline": "Lehkonen's hot start, and how hot it really is",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 17
-}
+{"text": "Artturi Lehkonen has 12 goals in 18 games, and nearly all of them came early. He scored his 12th on Oct. 31 against Calgary and has gone four games without a point since, with the chances thinning out too.\n\nHe has 7.3 expected goals (the quality of his chances) and is shooting 32%, against 14% last season. Colorado has also scored 9.0 more goals than expected with him on the ice. Our numbers flag him as due to cool, and the last four games may be that starting.\n\nNone of that makes him a bad player. Corey Sznajder's All Three Zones tracking had him at 7.0 scoring chances per 60 from the slot last season, 90th percentile, and 27% of his setups came from behind the net. He gets to the right ice.\n\nThe headlines have already moved to money: NHLRumors.com asked whether he is pricing himself out of Colorado. Our range has him at 26 to 41 goals.", "headline": "Lehkonen's 12 goals came fast. The next ones won't", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-10T12:49:09Z", "gp": 18}

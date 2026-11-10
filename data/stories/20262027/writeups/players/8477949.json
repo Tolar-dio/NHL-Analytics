@@ -1,9 +1,1 @@
-{
- "text": "Alex Tuch's first season in Washington comes with noise from his last stop: Yahoo Sports reports the Sabres' general manager has pushed back on Tuch's account of how he left Buffalo. On the ice there's nothing messy about it. Tuch scored again Saturday in a 4-3 win over Florida that the Capitals finished without Tom Wilson, ejected for boarding Sandis Vilmanis, and Tuch played 24 minutes, his most in ten games.\n\nThat's 11 goals in 15 games, none on the power play, and by our win model his goals have added more wins than all but seven skaters in the league. Part of it is real: he's getting 1.62 expected goals per 60 on his own shots (the quality of his looks), up from 0.91 last season. Part of it isn't: 26% shooting won't hold. The twist is that his teammates have scored 4.8 fewer goals than their chances with him on the ice, so his assists should pick up as his goals slow. Our projection for the rest of the season starts at 31 more goals.",
- "headline": "Tuch keeps scoring while Buffalo argues",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 15
-}
+{"text": "Alex Tuch has 11 goals in 15 games in his first season in Washington, and two of them came against Buffalo on Oct. 24. The Sabres part isn't over off the ice either. Yahoo Sports ran \"Alex Tuch's Buffalo Exit Gets Messy as Sabres GM Pushes Back on His Claims\" on Nov. 5.\n\nOn the ice he has been one of the league's most valuable goal scorers so far: our wins-added measure ranks him 11th of 506 skaters, because his goals have come when games were in the balance. The chances are real, 1.63 expected goals per 60, well up from last season.\n\nBut 26% shooting, against 17% last season, won't hold, and he has 11 goals on 7.8 expected. The odd part is that his teammates have been unlucky with him on the ice: they've scored 4.9 fewer goals than their chances deserve, which is why he has only 2 assists. Expect fewer goals and more helpers, and roughly the same player.", "headline": "Tuch's fresh start comes with a messy exit", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-10T12:50:00Z", "gp": 15}

@@ -1,1 +1,19 @@
-{"text": "Washington and Ottawa both arrive off wins three days ago. The Capitals beat Florida 4-3, with Jack St. Ivany scoring his first NHL goal, and are 3-2-0 in their last five while missing Vincent Desharnais. The Senators beat Utah 4-2 and are 3-1-1 in their last five, but they are without William Eklund (ankle) until early January at the earliest. Tim St\u00fctzle has moved onto the line beside Cozens and Zetterlund, and Ridly Greig, cleared by ESPN, could return.\n\nOur numbers see little between them. At five on five, WSH has 54% of the expected goals (the quality of chances) and OTT 52%, and we project 3.22 goals for the Senators against 3.08 for the Capitals. The matchup to watch is Ottawa's power play, which creates 0.76 expected goals a game, against a Washington penalty kill that allows 0.87. The Senators also take 4.7 penalties a game, which keeps handing out power plays.\n\nIn net, projected starters Logan Thompson and Linus Ullmark have gone opposite ways. Ullmark has saved 8.2 goals above expected this season but was at -13.3 last year, while Thompson is at +1.9 after a +28.2 season.\n\nSt\u00fctzle is the best bet to produce, with a 77% chance at a point and 36% to score. Alex Tuch, who scored in Washington's last game, is at 38% to score. Ryan Leonard plays his 100th NHL game.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8480313, 8476999], "written": "2026-11-10T11:37:45+00:00"}
+{
+ "text": "Alex Ovechkin's visit to Ottawa comes with a protest attached. Ukrainian Canadians plan to demonstrate outside the game over his ties to Vladimir Putin, as several outlets have reported. Inside the rink, Ovechkin's own story is a drought: no goals in ten games on 3.6 expected goals, and no points in seven straight. The chances are there. The puck isn't going in.\n\nWashington has its own off-ice noise. Tom Wilson avoided a suspension for the boarding hit that injured Florida's Sandis Vilmanis and got him ejected. Alex Tuch, now a Capital, has had his exit from Buffalo turn messy, with the Sabres' general manager pushing back on his claims. Tuch has been the one finishing, and we have him at 38% to score.\n\nOttawa gets Linus Ullmark back. Julian McKenzie of The Athletic reported that Jonas Johansson was sent to the AHL to clear the way, and Ullmark has been brilliant in his eight games: .945 and 8.2 goals saved above expected, a sharp turn from 13.3 below expected last season. The Senators are without William Eklund until January and without Andre Burakovsky and Warren Foegele for three to four weeks, so Tim Stützle has slid over beside Dylan Cozens and Ridly Greig is playing 18 and a half minutes a night. Greig was at practice and is off ESPN's injury report.\n\nThere isn't much between these teams. The Capitals take 54% of the five-on-five expected goals, the Senators 52%, and our projection is 3.22 to 3.08 for Ottawa. Both teams take a lot of penalties. Ryan Leonard plays his 100th NHL game, and Philip Tomasino is one point from 100.",
+ "headline": "Ovechkin in Ottawa, with protesters waiting",
+ "goalies": [
+  8480313,
+  8476999
+ ],
+ "hunch": {
+  "text": "Ten games of good chances and no goals tends to end somewhere. Our hunch is it ends in Ottawa, of all places, tonight.",
+  "claim": {
+   "type": "goal",
+   "player": 8471214
+  }
+ },
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-10T12:53:10Z"
+}

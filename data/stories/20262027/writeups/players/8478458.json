@@ -1,9 +1,1 @@
-{
- "text": "Jack Roslovic is on his sixth NHL team, and right now he looks like a top-line player. He has points in seven straight games, a career-high streak per Toronto Hockey Daily, and 18 points in 17 games, already half of the 36 he had in Edmonton all last season. Much of it has come beside Auston Matthews, and the speed is no illusion: his 23.7 mph top skate leads the Leafs and sits in the 99th percentile league-wide.\n\nHow much lasts? Some of it. At 5v5 Toronto's share of expected goals (the quality of chances) is almost ten points better with him on the ice than without, and that's the part we'd trust. The finishing is the part we wouldn't: eight goals on 4.5 expected, shooting 18%, is a rate that rarely holds. Our projection has him at 52 to 76 more points, which would still be a big step up from last season. One thing to watch: TSN reported he's dealing with an undisclosed injury issue, so keep an eye on his minutes.",
- "headline": "Roslovic is flying, and only partly on luck",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 17
-}
+{"text": "Jack Roslovic is on his sixth NHL team, and in Toronto he has found a spot that suits him. Eight goals and 18 points in 18 games, a career-high 7-game point streak that ended against Montreal, and, as Toronto Hockey Daily put it, he is \"quietly flying beside Auston Matthews.\"\n\nThe flying part is literal. His top speed ranks in the 99th percentile and his bursts over 20 mph in the 98th. Corey Sznajder's All Three Zones tracking had 54% of his shots coming off the rush last season.\n\nThe scoring is the part to doubt. Eight goals on 4.8 expected goals, shooting 17% against 15% last season: the chances are real, the finishing rate rarely lasts. His points per 60 sit well above what our range expects from him. Toronto Hockey Daily also reported he left the Canadiens game after a high stick, so watch his status. Our range has him at 50 to 73 points.", "headline": "Roslovic is flying beside Matthews. Can it last?", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-10T12:49:09Z", "gp": 18}

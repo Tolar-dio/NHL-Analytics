@@ -1,9 +1,1 @@
-{
- "text": "Hockey Wilderness made the case this week that it's time to respect Joel Eriksson Ek as a No. 1 center, and the Wild's top line is doing the arguing. After a win over San Jose, Quinn Hughes said of the Kirill Kaprizov, Matt Boldy and Eriksson Ek line, \"I just feel like we can tilt the ice when they're out there,\" per NHL.com's Heather Rule.\n\nThe numbers agree. At 5v5 Minnesota gets 61% of the expected goals (the quality of chances) with Eriksson Ek on, almost ten points better than without him, and he's on a seven-game point streak with 16 points in 18 games. The remarkable part is that he's been unlucky: six goals on 10.6 expected, which is the kind of gap that usually closes in the shooter's favour. That's a reversal from last season, when Evolving-Hockey had his results running ahead of his chances. Our projection has him at 21 to 36 more goals. If the finishing catches up with the chances, the No. 1 center argument gets a lot easier to make.",
- "headline": "Eriksson Ek is tilting the ice",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 18
-}
+{"text": "Hockey Wilderness made the case in a headline on Nov. 4: \"It's Time To Respect Joel Eriksson Ek As A No. 1 Center.\" The numbers agree. Eriksson Ek centers Minnesota's top line between Kirill Kaprizov and Matt Boldy, and Quinn Hughes said \"we can tilt the ice when they're out there\" in Heather Rule's NHL.com recap.\n\nAt five on five the Wild take 60% of the expected goals (the quality of chances) with him on the ice, nearly 11 points better than without him. He has 17 points in 19 games and an eight-game point streak.\n\nThe finishing has not caught up. He has 6 goals on 10.75 expected, shooting 10%. Our numbers say he is due: when a player keeps getting these looks, goals tend to follow. The one caveat is last season, when Evolving-Hockey had his results well ahead of his chances. This year it runs the other way. Watch the goal column over the next month.", "headline": "Eriksson Ek is a top center short on luck", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-10T12:50:07Z", "gp": 19}
