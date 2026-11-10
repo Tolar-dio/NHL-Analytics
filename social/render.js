@@ -274,31 +274,41 @@ function sleepers(T, notes = {}, story = false) {
     .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:${story ? 84 : 70}px; color:${B.blue}; line-height:1; } .p span { font-size:${story ? 24 : 21}px; color:${B.muted}; }`);
 }
 
-// the pinned "how it works" carousel (social/pinned.json): one idea per slide
+// the pinned "how it works" carousel (social/pinned.json): one idea per slide, set like a monograph
+// (serif body, numbered sections, hairline rules; Tolar, Nov 9, 2026: sober and academic, not playful)
+const SERIF = `<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">`;
 function pitch(S, i, n) {
-  const big = S.big ? `<div style="margin-top:${S.kicker ? 20 : 0}px"><h1 style="font-size:${S.bigSize || 230}px;color:${B.blue};line-height:.86">${esc(S.big)}</h1>${S.unit ? `<p style="font-family:'Big Shoulders Display';font-weight:800;font-size:58px;text-transform:uppercase;line-height:1;margin-top:44px">${esc(S.unit)}</p>` : ""}</div>` : "";
-  const list = S.list ? `<div class="pl">${S.list.map((x) => `<div><i></i><span>${esc(x)}</span></div>`).join("")}</div>` : "";
-  const rows = S.rows ? `<div class="pr">${S.rows.map((r) => `<div><span>We said</span><b>${r[0]}</b><em>&#8594;</em><span>It happened</span><b style="color:${B.blue}">${r[1]}</b></div>`).join("")}</div>` : "";
+  const big = S.big ? `<h1 class="big">${esc(S.big)}</h1>${S.unit ? `<p class="unit">${esc(S.unit)}</p>` : ""}` : "";
+  const list = S.list ? `<div class="pl">${S.list.map((x, k) => `<div><i>${k + 1}</i><span>${esc(x)}</span></div>`).join("")}</div>` : "";
+  const rows = S.rows ? `<div class="pr"><div class="hd"><span>Stated probability</span><span>Observed frequency</span><span>Player-games</span></div>${S.rows.map((r) => `<div><b>${r[0]}</b><b style="color:${B.blue}">${r[1]}</b><em>${r[2]}</em></div>`).join("")}</div>` : "";
   return page(1080, 1350, `
-    ${S.cover ? rinkBg(880, 1010, 420) : rinkBg(1010, 1230, 360)}
-    <div style="padding:72px 72px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center">${wordmark(36)}<span style="font-family:'Big Shoulders Display';font-weight:800;font-size:30px;color:${B.muted};letter-spacing:.08em">${i} / ${n}</span></div>
-      <div style="margin-top:${S.top ?? 130}px">
-        ${S.kicker ? `<div class="kicker">${esc(S.kicker)}</div>` : ""}
+    <div style="padding:72px 84px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center">${wordmark(32)}<span class="num">${i} / ${n}</span></div>
+      <div class="rule" style="margin-top:36px"></div>
+      <div style="margin-top:${S.top ?? 150}px">
+        ${S.kicker ? `<div class="sec">${esc(S.kicker)}</div>` : ""}
         ${big}
-        ${S.title ? `<h1 style="font-size:${S.size || 118}px;margin-top:${S.big ? 40 : 12}px">${S.title}</h1>` : ""}
+        ${S.title ? `<h1 class="ti" style="font-size:${S.size || 84}px;margin-top:${S.big ? 44 : 22}px">${S.title}</h1>` : ""}
         <div class="pb">${(S.body || []).map((t) => `<p>${t}</p>`).join("")}</div>
         ${list}${rows}
         ${S.after ? `<p class="pa">${S.after}</p>` : ""}
       </div>
     </div>
-    <div class="foot"><span>${esc(S.note || "For information and entertainment. 21+. 1-800-GAMBLER")}</span>${i < n ? `<span style="color:${B.ice};font-weight:700;font-size:26px">Swipe &#8594;</span>` : ""}</div>`, `
-    .pb { margin-top:34px; display:grid; gap:22px; max-width:900px; } .pb p { font-size:40px; line-height:1.3; } .pb b, .pa b { color:${B.blue}; font-weight:700; }
-    .pa { font-size:36px; line-height:1.3; margin-top:36px; color:${B.muted}; max-width:900px; }
-    .pl { margin-top:34px; display:grid; gap:12px; } .pl div { display:flex; align-items:center; gap:22px; background:${B.panel}; border-radius:16px; padding:16px 26px; }
-    .pl i { width:12px; height:36px; border-radius:6px; background:${B.red}; flex:none; } .pl span { font-size:34px; font-weight:600; }
-    .pr { margin-top:36px; display:grid; gap:14px; } .pr div { display:grid; grid-template-columns:auto auto 1fr auto auto; align-items:baseline; gap:18px; background:${B.panel}; border-radius:18px; padding:18px 30px; }
-    .pr span { font-size:26px; color:${B.muted}; } .pr b { font-family:"Big Shoulders Display"; font-weight:900; font-size:76px; line-height:1; } .pr em { font-style:normal; text-align:center; font-size:44px; color:${B.muted}; }`);
+    <div class="foot" style="left:84px;right:84px"><span>${esc(S.note || "For information and entertainment. 21+. 1-800-GAMBLER")}</span></div>`, `
+    .num { font-family:"Source Serif 4",serif; font-size:26px; color:${B.muted}; letter-spacing:.06em; }
+    .rule { height:2px; background:${B.line}; }
+    .sec { font-family:"Big Shoulders Display"; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:${B.muted}; font-size:26px; }
+    .ti { font-weight:800; letter-spacing:.015em; line-height:1.0; }
+    .big { font-size:${S.bigSize || 210}px; color:${B.ice}; line-height:.9; margin-top:26px; font-weight:800; }
+    .unit { font-family:"Big Shoulders Display"; font-weight:700; font-size:40px; letter-spacing:.14em; text-transform:uppercase; color:${B.blue}; margin-top:30px; }
+    .pb { margin-top:40px; display:grid; gap:26px; max-width:880px; } .pb p { font-family:"Source Serif 4",serif; font-size:38px; line-height:1.42; color:${B.ice}; }
+    .pb i, .pa i { font-style:italic; } .pb b { font-weight:600; }
+    .pa { font-family:"Source Serif 4",serif; font-size:32px; line-height:1.42; margin-top:40px; color:${B.muted}; max-width:880px; }
+    .pl { margin-top:36px; border-top:2px solid ${B.line}; } .pl div { display:flex; align-items:baseline; gap:28px; padding:17px 4px; border-bottom:2px solid ${B.line}; }
+    .pl i { font-style:normal; font-family:"Source Serif 4",serif; font-size:26px; color:${B.muted}; width:28px; flex:none; } .pl span { font-family:"Source Serif 4",serif; font-size:35px; }
+    .pr { margin-top:40px; border-top:2px solid ${B.ice}; border-bottom:2px solid ${B.ice}; } .pr div { display:grid; grid-template-columns:1fr 1fr .8fr; align-items:baseline; padding:16px 4px; border-top:2px solid ${B.line}; }
+    .pr .hd { border-top:none; padding:14px 4px; } .pr .hd span { font-family:"Big Shoulders Display"; font-weight:700; letter-spacing:.14em; text-transform:uppercase; font-size:22px; color:${B.muted}; }
+    .pr b { font-family:"Source Serif 4",serif; font-weight:600; font-size:60px; line-height:1; } .pr em { font-style:normal; font-family:"Source Serif 4",serif; font-size:34px; color:${B.muted}; }`).replace("</head>", SERIF + "</head>");
 }
 
 // ---------------------------------------------------------------- render

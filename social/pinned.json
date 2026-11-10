@@ -1,102 +1,96 @@
 [
  {
-  "cover": true,
-  "top": 210,
-  "kicker": "How it works",
-  "title": "The scoreboard is the last to know.",
-  "size": 150,
-  "body": [
-   "Meet the model behind Read the Ice."
-  ]
- },
- {
-  "kicker": "The idea",
-  "title": "Goals lie.",
-  "size": 190,
-  "body": [
-   "A puck goes in off a skate, and a bad team looks good for a week. A perfect shot rings the post, and nobody remembers it.",
-   "<b>We remember it.</b> Our model watches what happens before the goal: who keeps getting the puck to the dangerous ice, and who is living on borrowed time."
-  ],
-  "top": 200
- },
- {
-  "kicker": "The raw material",
-  "top": 170,
-  "big": "142,965",
-  "unit": "shots, graded one by one",
-  "body": [
-   "Every unblocked shot of the last two seasons, each one scored on how often a shot like it becomes a goal.",
-   "Where it came from. What happened in the seconds before it. How fast the play developed."
-  ]
- },
- {
-  "kicker": "The player",
-  "top": 90,
-  "title": "Then it gets personal.",
-  "size": 104,
-  "list": [
-   "His ice time, as of last night",
-   "The linemates he's skating with",
-   "His seat on the power play",
-   "The team across from him",
-   "The goalie in the other net",
-   "Tired legs on a back-to-back",
-   "A history that follows him from team to team"
-  ],
-  "after": "How we weigh them stays in the building."
- },
- {
-  "kicker": "The clock",
-  "title": "Rebuilt twice a day. From scratch.",
+  "top": 250,
+  "kicker": "A statistical model of professional hockey",
+  "title": "The Read the Ice Model",
   "size": 120,
   "body": [
-   "Once before sunrise, after the last game in the West goes final.",
-   "Again in the afternoon, when the lineups firm up and the starting goalies are named.",
-   "<b>Yesterday's number is already old.</b>"
-  ],
-  "top": 200
+   "<i>On what it measures, how it is tested, and what it does not claim.</i>"
+  ]
  },
  {
-  "kicker": "The receipts",
+  "kicker": "I · Premise",
+  "title": "A goal is an outcome. It is not a measurement.",
+  "body": [
+   "Over short spans, the score of a hockey game is governed largely by variance.",
+   "The model therefore sets results aside and measures the process that produces them: the quantity and the quality of the scoring chances each player and each team creates and allows."
+  ]
+ },
+ {
+  "kicker": "II · Data",
   "top": 130,
-  "title": "We keep score on ourselves.",
-  "size": 100,
+  "big": "142,965",
+  "unit": "Unblocked shots, individually evaluated",
+  "body": [
+   "Two complete seasons of play. Each shot is assigned a probability of becoming a goal, estimated from its location, the sequence of events that preceded it, and the speed at which the play developed."
+  ]
+ },
+ {
+  "kicker": "III · Structure",
+  "top": 70,
+  "title": "From the shot to the player.",
+  "body": [
+   "Each player's nightly estimate is conditioned on:"
+  ],
+  "list": [
+   "Projected ice time",
+   "On-ice and teammate context",
+   "Power-play deployment",
+   "Opponent strength",
+   "The opposing goaltender",
+   "Rest and schedule",
+   "Prior seasons, carried with the player"
+  ],
+  "after": "<i>The estimation and weighting of these terms are proprietary.</i>"
+ },
+ {
+  "kicker": "IV · Method",
+  "title": "Recomputed in full, twice daily.",
+  "body": [
+   "The model is re-estimated from the complete record after each night's final game, and again once lineups and starting goaltenders are confirmed.",
+   "Every rate is shrunk toward prior evidence in proportion to its uncertainty, so that a small sample is never mistaken for a signal."
+  ]
+ },
+ {
+  "kicker": "V · Validation",
+  "top": 70,
+  "title": "Stated probability against observed frequency.",
+  "size": 72,
   "rows": [
    [
     "15%",
-    "15%"
+    "15%",
+    "2,117"
    ],
    [
     "24%",
-    "24%"
+    "24%",
+    "1,045"
    ],
    [
     "34%",
-    "36%"
+    "36%",
+    "477"
    ]
   ],
-  "after": "<b>894</b> goals predicted. <b>913</b> scored. That's 5,747 player-nights since mid-October, every one graded.",
-  "note": "Goal chances, Oct 16 to Nov 8, 2026 · For information and entertainment. 21+."
+  "after": "894 goals expected; 913 observed, across 5,747 player-games. Each estimate was archived before the opening faceoff and graded afterward. Before release, the model was tested out of sample on 1,241 games.",
+  "note": "Goal probabilities, Oct 16 to Nov 8, 2026 · For information and entertainment. 21+."
  },
  {
-  "kicker": "The fine print",
-  "title": "What we won't sell you.",
-  "size": 120,
+  "kicker": "VI · Limits",
+  "title": "What the model does not claim.",
   "body": [
-   "No locks. No guarantees. No five-star plays.",
-   "Hockey is a game of bounces, and anyone who tells you otherwise is selling something.",
-   "We hand you <b>a number and the reason behind it</b>. What you do with it is yours."
-  ],
-  "top": 200
+   "It does not predict the outcome of any single game. It does not offer certainty.",
+   "It reports a probability, the evidence behind it, and its own record. Nothing more is asserted."
+  ]
  },
  {
-  "cover": true,
-  "top": 250,
+  "top": 330,
   "kicker": "Read the Ice",
   "title": "Learn to read the ice.",
-  "size": 170,
+  "size": 120,
   "body": [
-   "New numbers every game night. Follow along."
+   "<i>Estimates published each game night.</i>"
   ]
  }
 ]
