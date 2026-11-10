@@ -1,0 +1,102 @@
+[
+ {
+  "cover": true,
+  "top": 210,
+  "kicker": "How it works",
+  "title": "The scoreboard is the last to know.",
+  "size": 150,
+  "body": [
+   "Meet the model behind Read the Ice."
+  ]
+ },
+ {
+  "kicker": "The idea",
+  "title": "Goals lie.",
+  "size": 190,
+  "body": [
+   "A puck goes in off a skate, and a bad team looks good for a week. A perfect shot rings the post, and nobody remembers it.",
+   "<b>We remember it.</b> Our model watches what happens before the goal: who keeps getting the puck to the dangerous ice, and who is living on borrowed time."
+  ],
+  "top": 200
+ },
+ {
+  "kicker": "The raw material",
+  "top": 170,
+  "big": "142,965",
+  "unit": "shots, graded one by one",
+  "body": [
+   "Every unblocked shot of the last two seasons, each one scored on how often a shot like it becomes a goal.",
+   "Where it came from. What happened in the seconds before it. How fast the play developed."
+  ]
+ },
+ {
+  "kicker": "The player",
+  "top": 90,
+  "title": "Then it gets personal.",
+  "size": 104,
+  "list": [
+   "His ice time, as of last night",
+   "The linemates he's skating with",
+   "His seat on the power play",
+   "The team across from him",
+   "The goalie in the other net",
+   "Tired legs on a back-to-back",
+   "A history that follows him from team to team"
+  ],
+  "after": "How we weigh them stays in the building."
+ },
+ {
+  "kicker": "The clock",
+  "title": "Rebuilt twice a day. From scratch.",
+  "size": 120,
+  "body": [
+   "Once before sunrise, after the last game in the West goes final.",
+   "Again in the afternoon, when the lineups firm up and the starting goalies are named.",
+   "<b>Yesterday's number is already old.</b>"
+  ],
+  "top": 200
+ },
+ {
+  "kicker": "The receipts",
+  "top": 130,
+  "title": "We keep score on ourselves.",
+  "size": 100,
+  "rows": [
+   [
+    "15%",
+    "15%"
+   ],
+   [
+    "24%",
+    "24%"
+   ],
+   [
+    "34%",
+    "36%"
+   ]
+  ],
+  "after": "<b>894</b> goals predicted. <b>913</b> scored. That's 5,747 player-nights since mid-October, every one graded.",
+  "note": "Goal chances, Oct 16 to Nov 8, 2026 · For information and entertainment. 21+."
+ },
+ {
+  "kicker": "The fine print",
+  "title": "What we won't sell you.",
+  "size": 120,
+  "body": [
+   "No locks. No guarantees. No five-star plays.",
+   "Hockey is a game of bounces, and anyone who tells you otherwise is selling something.",
+   "We hand you <b>a number and the reason behind it</b>. What you do with it is yours."
+  ],
+  "top": 200
+ },
+ {
+  "cover": true,
+  "top": 250,
+  "kicker": "Read the Ice",
+  "title": "Learn to read the ice.",
+  "size": 170,
+  "body": [
+   "New numbers every game night. Follow along."
+  ]
+ }
+]

@@ -4,7 +4,8 @@
 //   profile.png (1080x1080), brand.png (1080x1350), scorers.png, luck.png (1080x1350, 4:5 feed), plus feature.png and
 //   stat.png when social/today.json has a `feature` or `stat` entry (the day's one-off cards),
 //   sleepers.png, cover-players.png, and with today.json `games`: cover-games.png and a card per game (all 1080x1350).
-//   STORY=1 also writes story-sleepers.png (1080x1920). Team colors only (no logos, no player photos: both are licensed).
+//   STORY=1 also writes story-sleepers.png (1080x1920). PINNED=1 writes only the pinned how-it-works slides
+//   (pinned-N.png) from social/pinned.json; its numbers are typed in there, so refresh them from model.json. Team colors only (no logos, no player photos: both are licensed).
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
@@ -273,6 +274,33 @@ function sleepers(T, notes = {}, story = false) {
     .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:${story ? 84 : 70}px; color:${B.blue}; line-height:1; } .p span { font-size:${story ? 24 : 21}px; color:${B.muted}; }`);
 }
 
+// the pinned "how it works" carousel (social/pinned.json): one idea per slide
+function pitch(S, i, n) {
+  const big = S.big ? `<div style="margin-top:${S.kicker ? 20 : 0}px"><h1 style="font-size:${S.bigSize || 230}px;color:${B.blue};line-height:.86">${esc(S.big)}</h1>${S.unit ? `<p style="font-family:'Big Shoulders Display';font-weight:800;font-size:58px;text-transform:uppercase;line-height:1;margin-top:44px">${esc(S.unit)}</p>` : ""}</div>` : "";
+  const list = S.list ? `<div class="pl">${S.list.map((x) => `<div><i></i><span>${esc(x)}</span></div>`).join("")}</div>` : "";
+  const rows = S.rows ? `<div class="pr">${S.rows.map((r) => `<div><span>We said</span><b>${r[0]}</b><em>&#8594;</em><span>It happened</span><b style="color:${B.blue}">${r[1]}</b></div>`).join("")}</div>` : "";
+  return page(1080, 1350, `
+    ${S.cover ? rinkBg(880, 1010, 420) : rinkBg(1010, 1230, 360)}
+    <div style="padding:72px 72px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center">${wordmark(36)}<span style="font-family:'Big Shoulders Display';font-weight:800;font-size:30px;color:${B.muted};letter-spacing:.08em">${i} / ${n}</span></div>
+      <div style="margin-top:${S.top ?? 130}px">
+        ${S.kicker ? `<div class="kicker">${esc(S.kicker)}</div>` : ""}
+        ${big}
+        ${S.title ? `<h1 style="font-size:${S.size || 118}px;margin-top:${S.big ? 40 : 12}px">${S.title}</h1>` : ""}
+        <div class="pb">${(S.body || []).map((t) => `<p>${t}</p>`).join("")}</div>
+        ${list}${rows}
+        ${S.after ? `<p class="pa">${S.after}</p>` : ""}
+      </div>
+    </div>
+    <div class="foot"><span>${esc(S.note || "For information and entertainment. 21+. 1-800-GAMBLER")}</span>${i < n ? `<span style="color:${B.ice};font-weight:700;font-size:26px">Swipe &#8594;</span>` : ""}</div>`, `
+    .pb { margin-top:34px; display:grid; gap:22px; max-width:900px; } .pb p { font-size:40px; line-height:1.3; } .pb b, .pa b { color:${B.blue}; font-weight:700; }
+    .pa { font-size:36px; line-height:1.3; margin-top:36px; color:${B.muted}; max-width:900px; }
+    .pl { margin-top:34px; display:grid; gap:12px; } .pl div { display:flex; align-items:center; gap:22px; background:${B.panel}; border-radius:16px; padding:16px 26px; }
+    .pl i { width:12px; height:36px; border-radius:6px; background:${B.red}; flex:none; } .pl span { font-size:34px; font-weight:600; }
+    .pr { margin-top:36px; display:grid; gap:14px; } .pr div { display:grid; grid-template-columns:auto auto 1fr auto auto; align-items:baseline; gap:18px; background:${B.panel}; border-radius:18px; padding:18px 30px; }
+    .pr span { font-size:26px; color:${B.muted}; } .pr b { font-family:"Big Shoulders Display"; font-weight:900; font-size:76px; line-height:1; } .pr em { font-style:normal; text-align:center; font-size:44px; color:${B.muted}; }`);
+}
+
 // ---------------------------------------------------------------- render
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -282,7 +310,9 @@ function sleepers(T, notes = {}, story = false) {
   const TODAY = fs.existsSync(tf) ? JSON.parse(fs.readFileSync(tf, "utf8")) : {};
   const GAMES = [];
   for (const [id, C] of Object.entries(TODAY.games || {})) GAMES.push([await get(`previews/${id}.json`), C]);
-  const jobs = [
+  const pf = path.join(__dirname, "pinned.json");
+  const PIN = process.env.PINNED === "1" && fs.existsSync(pf) ? JSON.parse(fs.readFileSync(pf, "utf8")) : [];
+  const jobs = process.env.PINNED === "1" ? PIN.map((S, i) => [`pinned-${i + 1}.png`, 1080, 1350, pitch(S, i + 1, PIN.length)]) : [
     ["profile.png", 1080, 1080, profile()],
     ["brand.png", 1080, 1350, brand()],
     ["scorers.png", 1080, 1350, scorers(T, TODAY.scorer_notes || {})],
