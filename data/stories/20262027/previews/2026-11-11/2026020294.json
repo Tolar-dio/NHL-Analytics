@@ -1,1 +1,19 @@
-{"text": "The Rangers arrive in Calgary two days after a 3-1 loss at Edmonton that ended their three-game winning streak, even though they held 65% of the expected goals (the quality of chances) that night. They are 3-2-0 in their last five and are missing Alberts Smits and Sean Durzi. Braden Schneider has moved in beside Pettersson and is up to 20:23 a night from 18:11 since Durzi went out, and Adam Fox is up to 24:42 from 22:46. The Flames come off a 4-3 overtime win over Philadelphia, won by Matt Coronato, but they are 2-2-1 in their last five and are without Kevin Bahl, Connor Zary and Samuel Honzek.\n\nNew York has controlled more of the play at five on five (53% of the expected goals to Calgary's 47%), and Calgary takes 4.2 penalties a game against a Rangers power play that creates 0.72 expected goals a night. Our model has it 3.07 to 2.78 for the Rangers. In net, projected starter Joonas Korpisalo (one start this season, -0.15 goals saved above expected) is a question mark against Devin Cooley, projected for Calgary, who has 2.38 goals saved above expected this year after 17.23 last season and is 5-0-0 in his last five starts.\n\nFor the Rangers, we like Pavel Dorofeyev (31% to score) and Alexis Lafreni\u00e8re (30%), whom ESPN credited with the NHL-leading 7th goal on Nov. 8. For Calgary, Joel Farabee is our top pick at 31%, and Coronato is one goal from 50 career goals.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8476914, 8482445], "written": "2026-11-11T18:05:06+00:00"}
+{
+ "text": "The Rangers' goaltending has been the story of their week without anyone pulling a goalie. James Reimer went on unconditional waivers on Nov. 7 to have his contract terminated, Dylan Garand has taken 13 of 19 starts, and tonight in Calgary it's Joonas Korpisalo's turn, in his second start of the season after he won his debut in Seattle on Saturday. One start is nothing to judge, but a team that's trimmed its depth chart is going to find out quickly whether its backup can carry a few nights.\n\nNew York arrives annoyed, probably. Monday in Edmonton the Rangers took 65% of the expected goals (the quality of their chances) and lost 3-1, mostly because Devon Levi saved 2.6 goals more than the shots deserved. They've won the chance battle in four of their last five. J.T. Miller is part of the frustration: no goals in five games on 3.0 expected goals, the kind of drought that usually ends on its own. Alexis Lafrenière, whose alley-oop goal on Saturday was his seventh (ESPN had it as the league lead at the time), keeps driving the top line with Mika Zibanejad and Gabe Perreault.\n\nCalgary's crease has a story too. Devin Cooley has pushed his way to the front: .945 and 7.0 goals saved above expected over his last five starts, all wins, while Dustin Wolf had a rough night against the Ducks. That's carrying a team that has been outplayed more often than not, with 43% of the expected goals over its last five and a winning chance battle only once. Sunday's overtime win over Philadelphia, on Matt Coronato's goal, is the template: hang around, let Cooley steal time, find one.\n\nThere are side plots for the home crowd. Coronato is one goal from 50 for his career, Jake Middleton plays his 400th game, and Brennan Othmann and Ryan Strome both get a look at the team that moved them. Our numbers lean New York, 3.06 expected goals to 2.77, and give the Rangers a coin flip's worth of playoff odds (53%) against Calgary's 11%.",
+ "headline": "Korpisalo gets the call as the Rangers' crease gets crowded",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T22:49:05Z",
+ "goalies": [
+  8476914,
+  8482445
+ ],
+ "hunch": {
+  "text": "Our numbers like the Rangers, but our gut says a goalie on a heater beats a backup making his second start of the year. Calgary steals one again.",
+  "claim": {
+   "type": "win",
+   "team": "CGY"
+  }
+ }
+}
