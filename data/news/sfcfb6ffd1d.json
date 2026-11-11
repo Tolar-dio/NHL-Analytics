@@ -1,1 +1,8 @@
-{"id": "sfcfb6ffd1d", "headline": "Sharks\u2019 Marchment fined for roughing Islanders\u2019 Eklund", "take": "Daily Faceoff reports that Sharks forward Marchment was given a pair of minor penalties for roughing Islanders player Eklund on Monday night. The headline says he was fined for the play, but the summary gives no amount and nothing about further discipline.\n\nThe bigger question for SJS is what its numbers say about the team. San Jose sits at 8-11-1 and has taken only 43% of the expected goals (a measure of chance quality) so far this season, with a gap of minus 11.5 between the goals it has scored and the goals its chances suggest it should have. Its goalies have bailed it out, though, saving 10.3 goals more than expected. NYI looks steadier at 7-6-4, holding 46% of the expected goals, but it also leans on its goaltending, which has saved 11 goals above expected. Both teams are living on their goalies, and with the Sharks' penalty kill allowing 1.03 expected goals per game, giving opponents power plays is a habit they can least afford.", "model": "claude-sonnet-5-5", "written": "2026-11-10T21:47:28+00:00"}
+{
+ "id": "sfcfb6ffd1d",
+ "headline": "Sharks’ Marchment fined for roughing Islanders’ Eklund",
+ "take": "Daily Faceoff reports the NHL fined San Jose's Mason Marchment for roughing the Islanders' Victor Eklund, a play that drew two minor penalties on Monday. Sharks Hockey Digest put the fine at $5,000. It's a small footnote to a useful win: San Jose beat New York in a shootout to snap a five-game winless run. Both teams need any edge they can find. The Sharks have 43% of the expected goals (the quality of chances) on the season and the Islanders 46%, and both are well short of their chances in finishing. Marchment, one goal from 100 for his career, has been playing bigger minutes with Igor Chernyshov hurt; San Jose can't afford him in the box.",
+ "model": "claude-session",
+ "written": "2026-11-11T12:53:47Z",
+ "by": "session"
+}

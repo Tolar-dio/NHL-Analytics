@@ -1,9 +1,9 @@
 {
- "text": "Ten straight games with a point (8-0-2), a 4-2 win in Toronto on Saturday, and a rookie goalie Sportsnet's Eric Engels is already writing about next to Carey Price. The Canadiens are having the kind of November that makes a city loud.\n\nOur numbers are more careful. Montreal got 50 percent of the expected goals during the streak, and for the season it sits slightly under even at 49 percent. Our race model says the Habs have banked 7.2 more points than their play earned, a big cushion this early. Most of that is Jacob Fowler, who has saved 8.1 goals above expected over his last five starts, and Cole Caufield's overtime magic, which has headline writers comparing him favourably to Connor McDavid.\n\nThere's also a penalty problem: 5.24 minors taken a game against 4.24 drawn, and a penalty kill that allows 0.9 expected goals a night. Saturday's big kill on a Juraj Slafkovsky double minor is the version that works; most nights it won't. Nick Suzuki's return and Ivan Demidov's progress from injury help. We'd enjoy the streak and expect the record to drift toward the playoff line, where our simulations put them at 64 percent.",
- "headline": "Montreal is riding a rookie goalie and its luck",
+ "text": "The Canadiens have points in 11 straight games, 8-0-3, and sit 11-3-4. It's a heater, and it comes with a footnote we'd be wrong to skip: Montreal got exactly half of the expected goals (the quality of chances) in that run, and 49% on the season. Our numbers say they deserved about 19 points; they have 26. That is the biggest gap in this group in the good direction.\n\nSome of it is real skill. Cole Caufield is on pace for another 50-goal season, and the top line with Nick Suzuki and Juraj Slafkovsky gets 62% of the chances. Lane Hutson and Noah Dobson drive play from the back. Jacob Fowler has stopped .925 over his last five starts.\n\nThe rest is the kind of luck that runs out. The Kaiden Guhle and Alexandre Carrier pair gets only 42% of the chances, and the Chris Kreider, Josh Anderson and Alex Newhook line gets 39%. Montreal takes about a penalty a game more than it draws, which is a habit that costs points in March.\n\nThe room has had a lively week: a heated game with Toronto, Arber Xhekaj promising he'll remember what happened to Kirby Dach, and questions over when Ivan Demidov returns. The playoff odds are 68% in our simulations. What to watch: whether the chance share climbs once Demidov is back. If it doesn't, the streak will end the way most of them do.",
+ "headline": "Montreal keeps winning the close ones",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-08T12:47:23Z",
- "gp": 17
+ "written": "2026-11-11T12:48:01Z",
+ "gp": 18
 }

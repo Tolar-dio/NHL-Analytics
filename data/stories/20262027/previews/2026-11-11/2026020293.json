@@ -1,1 +1,19 @@
-{"text": "Tampa Bay arrives at Buffalo having lost 4-3 at Winnipeg on Sunday, ending a three-game winning streak, though they're 3-1-1 in their last five. They're missing Brayden Point (16 points in 17 games), and going by how the coach has used them, Brandon Hagel is next in line for his minutes, with Anthony Cirelli the likeliest to move up on the power play. Buffalo, 3-2-0 in its last five, lost 4-1 to Vegas at home and is without Konsta Helenius, Justin Danforth and Matt Grzelcyk.\n\nOur model leans slightly toward the Lightning, 3.29 expected goals to 2.98. Tampa Bay has taken 55% of the quality chances at five on five this season, Buffalo 51%, so there isn't much between them. The special-teams matchup to watch is the Lightning power play (0.78 expected goals a game) against a Sabres penalty kill that allows exactly that, and Buffalo takes 4.1 penalties a game.\n\nIn net, projected starters Andrei Vasilevskiy and Ukko-Pekka Luukkonen are both below break-even this season (goals saved above expected of -0.42 and -1.11), but last year they were at +23.15 and +9.12. Luukkonen has been sharper lately, with 3.7 goals saved above expected over his last five starts. Nikita Kucherov is 82% for a point, and Hagel and Tage Thompson are each 37% to 38% to score. Our under-the-radar pick is Jack Quinn, 60% for a point, above his season pace, because his line creates chances. Cirelli also plays his 600th NHL game.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8476883, 8480045], "written": "2026-11-11T11:23:45+00:00"}
+{
+ "text": "Every conversation about the Lightning starts in the same place. Nikita Kucherov told Tampa Bay he won't re-sign and wants a trade, the front office has said it isn't moving him, and he has spent the last two weeks playing like the best player on the ice while the rumor mill guesses at his next address. Andrei Vasilevskiy, his longtime teammate, told TSN he is holding out \"hope that something will change.\" The odd part is how little of it has shown up in the standings: Tampa is 3-1-1 in its last five and our playoff model puts them at 92%.\n\nThe harder problem tonight is the one on the injury report. Brayden Point is on injured reserve with 16 points in 17 games, and ESPN has him back around Dec. 2. Brandon Hagel, the Bolts' best player of October by the team's own vote, is the likeliest to soak up his minutes. Anthony Cirelli plays his 600th game and could slide onto the first power play.\n\nBuffalo arrives with a better record than its chances deserve, and that's not a compliment. The Sabres have won only two of their last five chance battles and lean on finishing. Tage Thompson, one assist from 200 for his career, is shooting hotter than his chances, and so are Zach Benson and Jack Quinn. Matthew Fairburn of The Athletic had the practice lines with Ryan McLeod back and Jiri Kulich as the extra. Ukko-Pekka Luukkonen's .878 save rate undersells him: he has saved 3.7 goals more than expected over his last five starts.\n\nOur numbers lean Tampa, 3.3 expected goals to 3.0. The spot to watch is Buffalo's penalty trouble: the Sabres take 4.1 penalties a game, and Tampa's power play creates 0.78 expected goals a night with Kucherov running it.",
+ "headline": "Kucherov wants out, and Tampa keeps winning anyway",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T12:49:34Z",
+ "goalies": [
+  8476883,
+  8480045
+ ],
+ "hunch": {
+  "text": "Our numbers like Tampa, but a Lightning team without Point, coming off a game where Winnipeg took 64% of the chances, looks beatable. Our gut says Luukkonen steals one.",
+  "claim": {
+   "type": "win",
+   "team": "BUF"
+  }
+ }
+}

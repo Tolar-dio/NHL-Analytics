@@ -1,9 +1,9 @@
 {
- "text": "Six years after going first overall, Alexis Lafrenière is having the season the Rangers drafted him for. Sports Illustrated called it everything they could have hoped for, and the usage backs that up: he's playing 18:39 a night, up from 17:36, and he's on the ice for 73% of New York's power-play time, up from 54%.\n\nThe production is built on chances, not just bounces. He has 16 points in 17 games, and his own chances have jumped to 1.27 expected goals per 60 (the quality of his shots) from 0.94. Nine goals on 6.7 expected is a bit hot, but his teammates have scored 4.4 fewer goals than their chances with him on, so his point pace has room to hold. By our win model his goals rank 30th in the league in wins added. Evolving-Hockey liked his defense last season, too (93rd percentile at taking chances away). Seventeen games is a small sample, but ice time settles faster than scoring, and his ice time says the Rangers now trust him with the big minutes.",
- "headline": "Lafrenière is finally getting the big minutes",
+ "text": "Alexis Lafreniere led the league in goals for a stretch of October, and his nine in 19 games are still a solid pace for the Rangers' first overall pick of 2020. The last ten games have been quieter, seven points and two goals, but the reason is mostly the ice around him: New York has scored 6.1 fewer goals than its chances deserve with him on, while taking 56.5% of the five-on-five expected goals.\n\nThe flip side is his own shooting, 22% against a normal range of about 12.5 to 17%. That will drift down, so the two forces roughly cancel. Evolving-Hockey had him 29th among all forwards in wins above replacement last season, with real defensive value against tough competition. Corey Sznajder's All Three Zones tracking says his offense lives on the rush (57% of his shots) and that he rarely carries the puck in himself.\n\nOur projection lands him around 29 goals and 68 points. For a player once written off as a bust, that is a quietly excellent season.",
+ "headline": "Lafreniere's goals came early, the quiet is luck",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 17
+ "written": "2026-11-11T12:47:43Z",
+ "gp": 19
 }

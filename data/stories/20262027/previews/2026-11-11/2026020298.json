@@ -1,1 +1,19 @@
-{"text": "Pittsburgh and San Jose arrive with the same 1-4-0 record over their last five, and both are looking for a way out. The Penguins lost 5-2 at Anaheim three days ago, where Cutter Gauthier scored three, and they're playing without Bryan Rust, with Tommy Novak now skating beside Crosby and Rakell. The Sharks snapped a five-game winless run with a shootout win over the Islanders on Monday, and they're without Igor Chernyshov, so Michael Misa has moved up beside Macklin Celebrini and Will Smith.\n\nThe chance numbers favor Pittsburgh. At five on five, the Penguins have taken 52% of the expected goals (the quality of shots each side gets) in their games, and San Jose 45%. The Sharks also take 4.5 penalties a game, which keeps feeding power plays. In net, projected starters Arturs Silovs (PIT) and Yaroslav Askarov (SJS) tell different stories: Silovs is at -2.6 goals saved above expected this season, Askarov at +5.7, though Askarov was at -19.4 last year and Silovs at -12.8.\n\nCrosby, who moved to sixth on the all-time scoring list this week, is at 36% to score and 66% for a point. Celebini is our best-looking Shark at 46% to score, one point from 200 for his career. Among our under-the-radar picks, Nick Robertson (PIT) has created 2.5 expected goals over his last 10 games from the third line, and Ben Kindel (PIT) sits at 50% for a point against a Sharks defense that allows the most chances.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8481668, 8482137], "written": "2026-11-11T11:24:10+00:00"}
+{
+ "text": "Pittsburgh's week has been about the past and the future at the same time. Sidney Crosby passed Marcel Dionne for sixth on the NHL's all-time scoring list, and in the same breath Daily Faceoff was asking what happens to Evgeni Malkin \"as struggling Penguins inch toward fire sale.\" The Penguins are 1-4 in their last five, 14 points from 18 games, and our playoff model gives them 18%. It's an awkward way to honor two of the best players of their generation, and every Malkin game now carries a little of that weight. For what it's worth, the Crosby, Malkin and Rakell line was the best thing about the win in Los Angeles on Friday.\n\nThe frustrating part for Pittsburgh is that the chances are fine. They have 52% of the five-on-five expected goals (the quality of chances) and deserved about five more points than they have. Goaltending is most of the gap: Arturs Silovs is at .855 over his last five starts and has allowed 3.6 goals more than expected in that stretch. Bryan Rust is out until December, with Tommy Novak in his spot beside Crosby. The power play, at 0.45 expected goals a game, is the weakest in this matchup.\n\nSan Jose snapped a five-game winless run with a shootout win over the Islanders. Macklin Celebrini is one point from 200 for his career and logging ice time the Sharks' own beat writers call unsustainable. Will Smith is one goal from 50. The goaltending has flipped from last season: Yaroslav Askarov, who allowed 19.4 goals more than expected a year ago, is 5.7 goals better than expected this season. The defense in front of him gives up the most chances per hour in the league.\n\nOur numbers like Pittsburgh, 3.6 expected goals to 3.2. Celebrini is 85% for a point.",
+ "headline": "The Penguins' fire sale talk follows them west",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T12:51:09Z",
+ "goalies": [
+  8481668,
+  8482137
+ ],
+ "hunch": {
+  "text": "If these are Malkin's last weeks in a Penguins sweater, he's going to make them loud, and the league's leakiest defense is a good place to start. Our gut says he scores.",
+  "claim": {
+   "type": "goal",
+   "player": 8471215
+  }
+ }
+}

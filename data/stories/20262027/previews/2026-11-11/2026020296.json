@@ -1,1 +1,19 @@
-{"text": "UTA arrives with the better process and the worse results. The Mammoth are 2-2-1 in their last five, outscored 20-16, and lost 4-2 at OTT four days ago while playing without John Marino and Kailer Yamamoto (both on injured reserve), and Nate Schmidt. Andrew Peeke has moved in beside Schmidt and is up to 20:20 a night from 14:46. VGK has won three straight, most recently 4-1 at BUF, though without Noah Hanifin and Parker Wotherspoon. This is also a rematch of last spring's first-round series, which the Golden Knights won in six. That history isn't in our numbers.\n\nAt five on five, UTA has taken 58% of the expected goals (the quality of chances) against 52% for VGK, and our model gives VGK only a slight edge tonight, 3.23 to 3.01. The UTA penalty kill allows 0.68 expected goals a game to VGK's 0.49, and UTA takes 4.3 penalties a game. In net, projected starter Karel Vejmelka is 7.2 goals saved above expected below par this season, though he was 5.4 above last year. Projected VGK starter Carter Hart is 2.1 above this season after being 4.4 below last year.\n\nOur model gives Logan Cooley (33% to score) a good look; he is hot, with 13 points in 10 games, though due to cool. Clayton Keller has a five-game point streak, and ESPN noted his goal against OTT. For VGK, Mark Stone is at 35% to score, and Jack Eichel is the likeliest to record two or more points (37%). As The Athletic's Matthew Fairburn posted, Eichel scored to make it 2-0 against BUF, then raised his arms to the crowd.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8478872, 8479394], "written": "2026-11-11T11:24:00+00:00"}
+{
+ "text": "Last spring the Golden Knights knocked Utah out of the first round in six games. Seven months later the Mammoth are the team pushing play, taking 58% of the five-on-five expected goals (the quality of chances), the best share in this matchup by a distance. They have 21 points to show for it, five fewer than Vegas, and the reason has a name. Karel Vejmelka has an .866 save rate and has allowed 7.2 more goals than his shots deserved; over his last five starts he is 1-4 at .847. He gets the start anyway. If you're a Mammoth fan, that's the number you watch all night.\n\nLogan Cooley is the reason to watch Utah regardless. He has 13 points in his last ten games, our numbers say he's earned them, and he already has five career hat tricks, a mark FOX 13 in Salt Lake called NHL history. Clayton Keller has slid onto Barrett Hayton's line with Kailer Yamamoto on injured reserve and has eight assists in a five-game point streak. John Marino is also out, and Mikhail Sergachev is playing 26 minutes a night to cover for it.\n\nVegas has won three straight, 9-4, on 49% of the chances, with the goaltending saving 6.2 goals more than expected. Adin Hill was the story in Buffalo; Carter Hart starts tonight at .900 with 2.1 goals saved above expected. Trevor Connelly, who won the Detroit game late, has been the find of the road trip. Mitch Marner scored shorthanded on Sunday, and Jack Eichel and Mark Stone are both scoring above their chances. Noah Hanifin and Parker Wotherspoon are out.\n\nOur numbers make it close: Vegas 3.2 expected goals, Utah 3.0. The gap between those two teams' process and results can't hold forever. The question is which side blinks first.",
+ "headline": "Utah has the chances. Vegas has the goalies.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T12:50:39Z",
+ "goalies": [
+  8478872,
+  8479394
+ ],
+ "hunch": {
+  "text": "Utah has been the better team on most nights and has little to show for it. Our gut says this is the night the chances finally go in, even with Vejmelka in net.",
+  "claim": {
+   "type": "win",
+   "team": "UTA"
+  }
+ }
+}

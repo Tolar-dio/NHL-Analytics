@@ -1,1 +1,19 @@
-{"text": "The Rangers arrive in Calgary after a 3-1 loss at Edmonton on Monday ended their three-game winning streak. They are 3-2-0 in their last five and playing without Alberts Smits and Sean Durzi; Braden Schneider has moved in beside Pettersson and is up to 20:23 a night from 18:11. The Flames beat Philadelphia 4-3 in overtime on Saturday, Matt Coronato's goal, and are 2-2-1 in their last five. Kevin Bahl, Connor Zary and Samuel Honzek are out, and Brennan Othmann faces the Rangers for the first time since leaving them.\n\nBoth teams are better than their records. New York has 54% of the expected goals (the quality of chances) this season but a +1 goal difference, because its finishing has run cold. Calgary sits at 46% and a -17 goal difference, with finishing and goaltending both costing it. Our model has NYR at 3.24 expected goals tonight and CGY at 2.73. The Flames' power play is the weak spot (0.38 expected goals a game, against 0.72 for New York), and they take 4.2 penalties a game.\n\nThe projected goalies are Dylan Garand, at 1.7 goals saved above expected (how many more goals he's stopped than the shots deserved), and Dustin Wolf, at -6.6. Alexis Lafreni\u00e8re, whom ESPN called the NHL's goal leader with seven, is at 60% for a point. Among our under-the-radar picks, Pavel Dorofeyev is 33% to score: his shots have been dangerous on the third line and Wolf has struggled. Tye Kartye is 48% for a point, with his ice time and power-play role both up.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8482193, 8481692], "written": "2026-11-11T11:23:50+00:00"}
+{
+ "text": "The Rangers' season changed on Oct. 10, when Igor Shesterkin went down with a right knee injury that will keep him out for the year. Since then the net has belonged to Dylan Garand, a goalie with three NHL games behind him last season, and he has held up better than anyone had a right to expect: a .906 save rate and 1.7 goals saved above expected over 14 games. The headlines this week were about the depth behind him. James Reimer was placed on unconditional waivers for a contract termination, and Joonas Korpisalo won his season debut in Seattle. It's Garand's job, and the season leans on him.\n\nThe skaters are doing their part. New York has won four of its last five chance battles and taken 58% of the expected goals (the quality of chances) in that stretch, yet went 3-2. Sunday in Edmonton was the whole season in one night: 65% of the chances, a 3-1 loss, Devon Levi stopping 2.6 goals more than the shots deserved. The Rangers have finished 8.3 goals below what their chances usually produce. That gap tends to close.\n\nCalgary's problem runs the other way. The Flames have 43% of the chances over their last five and the worst power play in this matchup, at 0.38 expected goals a game. Dustin Wolf has allowed 6.6 more goals than his shots deserved, a long way from the goalie Flames fans thought they had. Joel Farabee has been the bright spot, and Matt Coronato, who won Saturday's game in overtime, sits one goal shy of 50 for his career. Brennan Othmann sees the Rangers for the first time since leaving them.\n\nOur numbers make New York the clear side, 3.2 expected goals to 2.7. Pavel Dorofeyev is our depth sleeper: 4.8 expected goals in his last ten games from a third-line role.",
+ "headline": "Life after Shesterkin runs through Dylan Garand",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T12:50:03Z",
+ "goalies": [
+  8482193,
+  8481692
+ ],
+ "hunch": {
+  "text": "Everything points to the Rangers, which is exactly when a goalie with Wolf's track record has the night that turns his season. Our gut says Calgary steals it.",
+  "claim": {
+   "type": "win",
+   "team": "CGY"
+  }
+ }
+}

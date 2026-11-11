@@ -1,1 +1,19 @@
-{"text": "Two teams that haven't lost in two weeks meet in Anaheim, and both are on five-game win streaks. Nashville arrives on the second night of a back-to-back after Juuse Saros stopped all 30 shots in a 3-0 win at Los Angeles last night, and the Predators are still without Jonathan Marchessault, with Shane Wright now playing beside Kerfoot and Forsberg. Anaheim last played three days ago, a 5-2 win over Pittsburgh in which Cutter Gauthier scored three goals. The Ducks are missing A.J. Greer and Ryan Poehling, and Judd Caulfield has taken Poehling's spot beside Nesterenko and Killorn.\n\nNeither streak looks fully earned. At five on five, Nashville has taken 46% of the expected goals (a measure of chance quality) and Anaheim 45%. The Ducks' 26 goals in their last five came on 17.1 expected, and they give up 3.48 expected goals per 60. They also take 5.2 penalties a game. Nashville's power play creates 0.75 expected goals a game, and Anaheim's penalty kill allows 0.79. In net, projected starters Justus Annunen (NSH) and Laurent Brossoit (ANA) have each played four games. Annunen is at -0.93 goals saved above expected (how many goals he's stopped beyond what the shots predicted) and Brossoit at +0.70.\n\nGauthier is the headliner at 45% to score. Steven Stamkos (38%) and Filip Forsberg (36%) lead Nashville. Roman Josi is one point from 800 for his career. Our under-the-radar picks are both Predators: Ross Colton, a third-liner whose 3.6 expected goals over his last 10 games rank in the top 2% of depth forwards, and Mavrik Bourque, 41% for a point.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8481020, 8476316], "written": "2026-11-11T11:24:05+00:00"}
+{
+ "text": "Something has to give in Anaheim. Both teams have won five straight, and they've done it in opposite ways.\n\nThe Ducks' run belongs to Cutter Gauthier. He has goals in six straight games, 13 in all, and three hat tricks in his last five. Anaheim has scored 26 goals in those five wins on chances worth about 17, which is a heater by any definition, and the Ducks' 45% share of five-on-five expected goals (the quality of chances) on the season says the defense hasn't changed much. Mikael Granlund has 12 points in a six-game streak and Beckett Sennecke ten in four, so it isn't only Gauthier. But they take 5.2 penalties a game, the most in this matchup by a wide margin, and that bill comes due eventually. Laurent Brossoit starts, and Daily Faceoff reports coach Joel Quenneville expects Troy Terry to \"likely\" make his season debut.\n\nNashville's streak has more under it: 18-8 in goals and 55% of the chances. Juuse Saros stopped all 30 shots in Los Angeles last night, and the Predators are on the second night of a back-to-back with Justus Annunen (.873 in four games) in net, which our numbers count against them. The roster has turned over mid-run. Matthew Wood went to Seattle for Shane Wright, and Wright stepped straight onto Filip Forsberg's line with Jonathan Marchessault hurt. Steven Stamkos just passed into the all-time top five in power-play goals. Roman Josi is one point from 800 for his career, which is a strange week to also be reading your name in Edmonton trade rumors.\n\nOur numbers have it close, Anaheim 3.3 expected goals to Nashville's 3.1, with two backup goalies who have combined for eight starts. Ross Colton is our depth sleeper on a Ducks defense that gives up the fifth-most chances in the league.",
+ "headline": "Two five-game streaks, and only one is real",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T12:53:38Z",
+ "goalies": [
+  8481020,
+  8476316
+ ],
+ "hunch": {
+  "text": "Two hot teams, two goalies who haven't played much, a Ducks team that takes penalties and a Predators team on tired legs. Our gut says this one gets loud.",
+  "claim": {
+   "type": "over",
+   "goals": 6.5
+  }
+ }
+}
