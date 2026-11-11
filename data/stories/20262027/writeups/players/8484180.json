@@ -1,0 +1,8 @@
+{
+ "text": "Samuel Honzek hasn't played since Oct. 8. The Flames' 2023 first-rounder (16th overall) dressed for the first four games, all losses, playing over 15 minutes a night without a point, and the team was out-chanced badly with him on the ice (41% of the expected goals). Four games is far too few to judge anything, and we don't have a reason for the absence in our data, so we won't guess at one.\n\nWhat we can say is what he was last season, in a small sample: Evolving-Hockey had him at 0.6 wins above replacement in 222 minutes, mostly from defence, with opponents getting fewer chances when he was out there (92nd percentile). He's 6'4\" with a good shot (78th percentile by NHL Edge) and decent speed. History for his draft range is mixed: of forwards picked 11th to 21st since 2005, about three in four with four or more seasons reached 200 NHL games, and the median first full season is 0.32 points a game. He turns 22 tomorrow. On a Flames team playing for its future, his next chance matters.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T22:53:32Z",
+ "gp": 4
+}

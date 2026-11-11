@@ -1,9 +1,8 @@
 {
- "text": "Justin Brazeau scored against Boston on Nov. 5, the team where he became an NHL player, in only his second game of the season. He has one goal in three games and has played about 10 minutes a night.\n\nThree games tells us almost nothing, and our on-ice numbers for him are noise at this sample. What we know is from last season: 17 goals and 34 points in 64 games, and Corey Sznajder's All Three Zones tracking had him getting 8.5 scoring chances per 60 minutes from the home-plate area in front of the net, the 99th percentile. That's his entire game: get to the crease and stay there. He also makes 21% of his setups from behind the net.\n\nHe is not fast. His skating sits at the bottom of our percentile scales, which is fine for a player whose office is six feet from the goal line. He's 28, undrafted, and came up through Providence. Evolving-Hockey had him 144th among 401 forwards last year. We project about 13 goals from here, assuming he gets regular minutes. Watch the ice time; 10 minutes isn't enough for a player like this.",
- "headline": "Brazeau back, and back at the net",
+ "text": "Justin Brazeau is 6'7\", undrafted, and paid his way to the NHL in Providence, which tells you most of what you need to know about how he plays. Four games into his season, he has a goal (against Boston, the team that gave him his start) and is getting fourth-line minutes, about 10:43 a night.\n\nFour games is nothing, and his on-ice chance numbers so far (33% of the expected goals at five on five) are too small a sample to read. The longer track record is more useful. Evolving-Hockey had him at 1.1 wins above replacement last season, almost all from even-strength offense. Corey Sznajder's All Three Zones tracking shows exactly where it comes from: 8.5 scoring chances per 60 from the home-plate area in front of the net, 99th percentile among forwards, and an unusual habit of setting up plays from behind the net (21% of his setups, against 8% for a typical forward). He won't beat anyone with speed. He'll beat them by standing where it hurts.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-08T22:58:12Z",
- "gp": 3
+ "written": "2026-11-11T22:51:58Z",
+ "gp": 4
 }

@@ -1,9 +1,8 @@
 {
- "text": "Josh Doan's goal against Columbus on Friday came with a reporter's aside attached: Bleacher Report's Joe Yerdon wrote that \"all the haters\" were \"eating crow tonight.\" That tells you the mood. Doan has 4 points in 16 games, his ice time is down more than a minute from his usual, and he played 11:42 in that win.\n\nThe frustrating part is how good he was last season. Evolving-Hockey had him worth 2.2 wins above replacement, 42nd among 401 forwards, and his adjusted impact on chance creation ranked in the 97th percentile. This year Buffalo takes only 45% of the expected goals (the quality of chances) with him on the ice at five on five, more than six points worse than without him. That gap is the real concern, more than the points.\n\nHis own shooting is close to fine: 3 goals on 3.98 expected. His points rate is 0.98 per 60 against a talent range we put between 1.7 and 2.5, which is why our projection still says about 39 points. He's 24, fast (93rd percentile top speed), and still finding his place behind Buffalo's top six. We'd give him time.",
- "headline": "Josh Doan and the patience test",
+ "text": "Josh Doan's first season in Buffalo told you he was more than Shane Doan's son: Evolving-Hockey had him at 2.2 wins above replacement in 2025-26, 42nd among 401 forwards, with his team creating noticeably more with him on the ice (97th percentile) and a habit of drawing more penalties than he takes. This season has been quieter. Four points in 17 games, three goals on 4.31 expected (the quality of his chances), and the Sabres losing the chance battle with him out there at five on five (46.5%).\n\nSome of that is role. His ice time is down 1.6 minutes over his last ten games, to about 14.6 a night, and his points per 60 are well below the range our numbers think he's capable of. The tools are still loud: 92nd percentile top speed and 82nd percentile shot by NHL Edge. His last goal, against Columbus on Nov. 6, went in off him from a teammate's shot in tight, which is about how his luck has run. We'd expect the scoring to come back toward our projection of around 20 goals if Buffalo gives the minutes back.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-08T22:58:12Z",
- "gp": 16
+ "written": "2026-11-11T22:52:30Z",
+ "gp": 17
 }
