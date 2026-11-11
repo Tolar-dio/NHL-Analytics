@@ -1,102 +1,92 @@
 {
  "stat": {
-  "kicker": "Tuesday, Nov 10 · Predators at Kings",
-  "big": "799",
-  "bigSize": 400,
-  "unit": "career<br>points",
-  "title": "Roman Josi needs one more for 800",
-  "team": "NSH",
+  "kicker": "Wednesday, Nov 11 · Predators at Ducks",
+  "big": "13",
+  "unit": "goals in his<br>last six games",
+  "title": "Cutter Gauthier can't miss",
+  "team": "ANA",
   "lines": [
-   "He has 20 points in 17 games this season, and the Predators have won four straight.",
-   "Our numbers give him a <b style='color:#5b8deb'>65%</b> chance to get there tonight in Los Angeles."
+   "He has scored in six straight and has 15 goals in 17 games. The Ducks have won five in a row behind him.",
+   "Our numbers give him a <b style='color:#5b8deb'>45%</b> chance to make it seven straight tonight."
   ],
   "note": "For information and entertainment. 21+.",
-  "cover": "Josi at 799",
-  "cover_sub": "One point from 800 for his career"
+  "cover": "Gauthier's heater",
+  "cover_sub": "13 goals in his last six games"
  },
  "scorer_notes": {
-  "8478864": "Points in eight straight games",
-  "8478398": "On the ice for 92% of Winnipeg's power-play time",
-  "8481559": "Eleven points in his last five games",
-  "8477492": "Faces a goalie at .862 over his last five starts",
-  "8477933": "Seven points in four games against Columbus"
+  "8477934": "Goals in four straight games, six in all",
+  "8484801": "One point from 200 for his career",
+  "8483445": "Goals in six straight games, 13 in all",
+  "8478402": "A point in all 19 games this season",
+  "8477404": "Tampa's likeliest scorer with Brayden Point out"
  },
  "sleeper_notes": {
-  "8476455": "Third-line minutes, but his shots have come from dangerous ice.",
-  "8481553": "Dangerous shots from the third line, against a defense that gives up chances.",
-  "8484166": "His line has been creating chances at a first-line rate.",
-  "8481598": "Up to nearly 27 minutes a night on the Blues' blue line."
+  "8479525": "Fourth-line minutes, but six shots from dangerous ice in his last ten games.",
+  "8482145": "Faces a Ducks team that gives up the fifth-most chances in the league.",
+  "8481582": "Dangerous shots from the third line, against the league's leakiest defense.",
+  "8485414": "No team gives up more chances than the Sharks."
  },
  "games": {
-  "2026020286": {
-   "title": "Toronto looks in the mirror",
-   "dek": "Shut out at home on Sunday, winless in three, and now Nathan MacKinnon walks in.",
+  "2026020293": {
+   "title": "Kucherov wants out. Tampa keeps winning.",
+   "size": 88,
+   "dek": "The trade request is two weeks old. The Lightning are 3-1-1 in their last five, and we give them a 92% chance at the playoffs.",
    "threads": [
-    "The slide is earned: <b>43%</b> of the expected goals in three straight losses, outscored 11-4.",
-    "Sergei Bobrovsky has an .862 save rate over his last five starts.",
-    "Mackenzie Blackwood stopped all 27 shots in Colorado's last game. Nicolas Roy returns to Toronto for the first time."
+    "Brayden Point is on injured reserve. He had <b>16 points in 17 games</b>.",
+    "Anthony Cirelli plays his 600th game. Victor Hedman has four goals in his last ten.",
+    "Buffalo has been unlucky: poor finishing has cost the Sabres about <b>six goals</b>."
    ],
-   "hunch": "A struggling goalie and a team that keeps taking penalties. Our gut says this one gets loud: seven goals or more."
+   "hunch": "Our numbers like Tampa. Our gut says a Lightning team without Point looks beatable, and Ukko-Pekka Luukkonen steals one."
   },
-  "2026020287": {
-   "title": "Something has to give",
-   "dek": "Montreal has points in ten straight. Minnesota has points in eight. Both have a goalie to thank.",
+  "2026020294": {
+   "title": "Cooley hasn't lost in five",
+   "dek": "Devin Cooley is 5-0-0 with a .945 save rate over his last five starts. The Rangers answer with their backup.",
    "threads": [
-    "Jesper Wallstedt has saved <b>13.3</b> goals more than expected this season. Jacob Fowler is right behind at 11.2.",
-    "The streaks are not equal: the Wild earned theirs with <b>57%</b> of the chances. The Canadiens had 50%.",
-    "Kirill Kaprizov has points in eight straight. Montreal is missing Ivan Demidov and Mike Matheson."
+    "New York lost in Edmonton on Monday despite <b>65%</b> of the expected goals.",
+    "Joonas Korpisalo starts over Dylan Garand. He has one start this season.",
+    "Brennan Othmann faces the Rangers for the first time. Matt Coronato is one goal from 50."
    ],
-   "hunch": "Our numbers expect about six goals. Our gut says two goalies this hot keep it to 3-2 or tighter."
+   "hunch": "Our numbers lean Rangers. Our gut says the goalie matchup flips it: Calgary."
   },
-  "2026020288": {
-   "title": "Nothing between them",
-   "dek": "Two teams coming off wins, three days' rest apiece, and our numbers can barely split them.",
+  "2026020295": {
+   "title": "Nineteen and counting",
+   "dek": "Connor McDavid has a point in all 19 games. Leon Draisaitl has goals in four straight. The Flyers play their third game in four nights.",
    "threads": [
-    "At five on five the Capitals take <b>54%</b> of the chances. The Senators take 52%.",
-    "Alex Ovechkin has gone <b>seven games</b> without a point, on chances worth more than three goals.",
-    "Samuel Ersson has been quietly sharp for Ottawa over his last five starts. Ryan Leonard plays his 100th game."
+    "Draisaitl is <b>51%</b> to score tonight, the highest number on the slate.",
+    "The warning label: Edmonton has scored about <b>20 more goals</b> than its chances usually produce.",
+    "Philadelphia gets just 42% of the chances at five on five, and both goalies have been below par."
    ],
-   "hunch": "Seven games is a long time for Ovechkin to go without a point, and the chances have been there. Our gut says it ends tonight."
+   "hunch": "Our numbers say Oilers, comfortably. Our gut says McDavid makes it 20, and Edmonton needs every bit of it."
   },
-  "2026020291": {
-   "title": "The homecoming that isn't",
-   "dek": "Connor Hellebuyck is back in Winnipeg, in a Devils sweater. He isn't starting.",
+  "2026020296": {
+   "title": "The rematch",
+   "dek": "Vegas knocked Utah out in six games last spring. The Mammoth have been the better team since, everywhere but in net.",
    "threads": [
-    "New Jersey has won five straight with <b>61%</b> of the expected goals. This is the Devils at their best.",
-    "Jake Allen gets the net, and he has been 4.7 goals worse than expected this season.",
-    "Dawson Mercer faces the Devils for the first time after 420 games with them. Jack Hughes has 11 points in his last five."
+    "Utah takes <b>58%</b> of the chances at five on five. Its goaltending has given back about 12 goals.",
+    "Sebastian Cossa starts for the Mammoth over Karel Vejmelka.",
+    "Vegas has won three straight, with its goaltending doing much of the work."
    ],
-   "hunch": "Our numbers say Devils. Our gut says a building with a point to make, against a backup goalie, is worth more than the model knows: Winnipeg."
+   "hunch": "Utah wins the chances and loses the game. Until the Mammoth get a save, our gut stays with Carter Hart and Vegas."
   },
-  "2026020289": {
-   "title": "Florida is missing its heart",
-   "dek": "No Aleksander Barkov, no Brad Marchand, and a goalie on a heater waiting in Columbus.",
+  "2026020297": {
+   "title": "Two streaks, one of them real",
+   "dek": "Both teams have won five straight. Nashville earned its run. Anaheim has been riding Cutter Gauthier.",
    "threads": [
-    "The Panthers are better than their record: poor finishing has cost them about <b>six goals</b>.",
-    "Cam Talbot has a <b>.940</b> save rate over his last five starts.",
-    "Brady Tkachuk, now skating with his brother Matthew, has points in four straight. Kent Johnson has points in seven."
+    "Gauthier has goals in six straight games, <b>13 of them</b>.",
+    "The Ducks scored 26 goals in their five wins, on chances worth about 17.",
+    "Nashville played last night and starts backup Justus Annunen. Roman Josi is still one point from 800."
    ],
-   "hunch": "Florida's chances say it should win. Our gut says the rested team with the hotter goalie takes it: Columbus."
+   "hunch": "Two hot teams, two goalies who haven't played much, and tired legs on one side. Our gut says this one gets loud."
   },
-  "2026020290": {
-   "title": "Still waiting on Larkin",
-   "dek": "Dylan Larkin is suspended while he waits for a trade. The team he left can't buy a goal.",
+  "2026020298": {
+   "title": "Celebrini at 199",
+   "dek": "Macklin Celebrini is one point from 200 for his career, and the Sharks have finally won a game.",
    "threads": [
-    "The Red Wings have scored about <b>11 fewer goals</b> than their chances deserve.",
-    "Both teams are winless in three. The Blues' slide is the real one: <b>38%</b> of the expected goals.",
-    "Justin Faulk returns to St. Louis for the first time, after 482 games as a Blue."
+    "San Jose ended a five-game winless run on Monday, in a shootout.",
+    "No team allows more chances than the Sharks. Pittsburgh has lost four of five anyway.",
+    "Bryan Rust is out, and Sergei Murashov starts in goal for the Penguins over Arturs Silovs."
    ],
-   "hunch": "Eleven goals of bad finishing is a debt that gets paid somewhere. Our gut says Detroit collects a little of it tonight."
-  },
-  "2026020292": {
-   "title": "Josi at the door of 800",
-   "dek": "Roman Josi is one point from 800 for his career, and Nashville has won four straight.",
-   "threads": [
-    "The streak is earned: <b>55%</b> of the expected goals in those four wins.",
-    "Juuse Saros has saved 6.3 goals more than expected this season.",
-    "Erik Haula faces the Predators for the first time since leaving. Mats Zuccarello could return for the Kings."
-   ],
-   "hunch": "Our numbers lean Kings at home. Our gut says the hotter team with the better goalie: Nashville, and Josi gets his point."
+   "hunch": "The league's leakiest defense on one side, a backup goalie on the other. Our gut says Celebrini gets his 200th early and the goals keep coming."
   }
  }
 }
