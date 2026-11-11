@@ -1,1 +1,19 @@
-{"text": "Utah arrives in Las Vegas on a slide, having lost 4-2 at Ottawa four days ago and gone 2-2-1 in its last five while being outscored 20-16. The Mammoth are also thin on the back end and up front, without Kailer Yamamoto and John Marino, with Nate Schmidt also out. Vegas has won three straight, most recently 4-1 at Buffalo, though Noah Hanifin and Parker Wotherspoon are missing. It's also a rematch of last spring's first-round series, which the Golden Knights won in six. That storyline isn't in our numbers, so we wouldn't lean on it.\n\nIn expected goals (the quality of shots taken and allowed), Utah has the better season, with 58% of the five-on-five share against Vegas's 52%. But the Golden Knights' three straight wins are only half backed by the chances, 49% of the expected goals, with goaltending doing a lot of the work. Our model has it close: VGK 3.22 expected goals, UTA 3.01. Vegas's penalty kill allows 0.49 expected goals a game to Utah's 0.68, and Utah takes 4.3 penalties a game. In net, projected starter Sebastian Cossa is at -3.4 goals saved above expected (how many more or fewer goals a goalie stops than the shots deserved) over seven games. Carter Hart, also projected, is at +2.1 this season after -4.4 last year.\n\nFor Utah, Logan Cooley has 13 points in 10 games and scores in 33% of our simulations, though our numbers say he's due to cool. For Vegas, Jack Eichel has a 37% chance at two or more points, and Mark Stone leads the Golden Knights at 35% to score.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8482657, 8479394], "written": "2026-11-11T21:44:42+00:00"}
+{
+ "text": "The last time these two met with something on the line, Vegas ended Utah's season in six games in the first round last spring. Tonight is a November game in a long season, but you suspect the Mammoth haven't forgotten, and they arrive with the better underlying team. Utah has taken 58% of the expected goals at five on five (the quality of chances), the best share of either team tonight by a wide margin. The goals haven't followed: 3.5 for and 3.5 against a game, and a 4-2 loss in Ottawa four days ago.\n\nThe reason is mostly in net, and that's where tonight gets interesting. Sebastian Cossa starts over Karel Vejmelka, who has 13 of 18 starts, and Cossa is at .872 with 3.4 goals allowed above expected. He did win three straight earlier this month, so there's something there, but Utah is asking a young goalie to hold up against a team that's been finishing. The Mammoth are also thin on the blue line without John Marino and Nate Schmidt, which has pushed Mikhail Sergachev to 26:01 a night.\n\nUp front, Logan Cooley is the reason to watch Utah right now: 13 points in 10 games, and our numbers say he's earned it with real chances, not bounces. Clayton Keller has slid into Kailer Yamamoto's spot beside Barrett Hayton and has nine points in a five-game point streak.\n\nVegas has won three straight, outscoring teams 9-4, and the rookie Trevor Connelly keeps showing up in the headlines. But the chances only half back the run (49% of the expected goals), with goaltending saving 6.2 goals above expected, 2.9 of them by Adin Hill in Buffalo alone. Carter Hart starts tonight instead, at .900 and +2.1. Our numbers have it close: 3.22 expected goals for Vegas, 3.01 for Utah, with Noah Hanifin still out for the Golden Knights. Vincent Trocheck needs one assist for 400.",
+ "headline": "Utah gets another look at the team that ended its spring",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T22:50:20Z",
+ "goalies": [
+  8482657,
+  8479394
+ ],
+ "hunch": {
+  "text": "Our numbers lean Vegas by a hair. Our gut says the team that has been creating the better chances all season finally gets paid, even with the backup in net. Utah wins.",
+  "claim": {
+   "type": "win",
+   "team": "UTA"
+  }
+ }
+}

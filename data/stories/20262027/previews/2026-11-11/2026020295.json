@@ -1,1 +1,19 @@
-{"text": "Philadelphia arrives on the road trip's fourth night after snapping a three-game winless run with a 3-1 win at Vancouver, and Edmonton is closing a four-game home stand off its own 3-1 win over the Rangers. The Oilers are without Isaac Howard, though Colton Dach, who has cleared ESPN's injury report, could play his 100th NHL game.\n\nThe numbers favor Edmonton. Our model projects 3.14 goals for the Oilers and 2.64 for the Flyers. At five on five, the Flyers have taken 42% of the expected goals (the quality of chances) in their games, against 49% for Edmonton. One caution on the Oilers: their +23 goal difference sits well ahead of their chances, with finishing doing the lifting. Edmonton also takes 4.2 penalties a game, though its penalty kill allows just 0.60 expected goals a game, against 0.69 for Philadelphia.\n\nIn net, projected starters Dan Vladar (-0.77 goals saved above expected, meaning saves beyond what the shots deserved) and Tristan Jarry (-1.73) are both below par this season. Vladar was +12.74 last year; Jarry was -4.19.\n\nLeon Draisaitl, with goals in four straight, has a 51% chance to score by our numbers, and Connor McDavid, whose point streak ended at 19 games, sits at 43%. For Philadelphia, Matvei Michkov (24%) has been in the headlines, with Daily Faceoff writing that his \"ego\" is playing a bigger role in the drama than some might think. Trevor Zegras (24%) was part of a Martone-Zegras-Michkov trio PHLY Sports' Charlie O'Connor called \"really dangerous\" in a post-penalty-kill test.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8478435, 8477465], "written": "2026-11-11T21:44:37+00:00"}
+{
+ "text": "Nobody in Philadelphia is talking about the standings this week, and that's probably a mercy at 5-10-5. The conversation is Matvei Michkov. The Hockey Writers ran a rumour of a trade request, Kevin Kurz of The Athletic posted that Michkov has not requested a trade, per a team source, and general manager Danny Brière said the Flyers have \"no plan\" to move him (via Daily Faceoff). Wherever the truth lands, a young winger our numbers flag as a breakout is playing with a lot of noise around him, and he walks into the loudest building on the schedule.\n\nThe Flyers did stop a slide on Monday, beating Vancouver 3-1 to end an 0-2-1 run, with Travis Konecny scoring on the power play off a Michkov feed. But this is game four of a five-game trip, and the bigger picture is rough: 42% of the expected goals at five on five (the quality of chances), and a 3.7% playoff chance. Sean Couturier summed up the trip's first leg after Calgary in a line NBC Sports Philadelphia put in its headline: Flyers \"finding ways to lose\".\n\nEdmonton is the opposite problem. The Oilers are +23 in goal difference on +3.7 expected; they've scored about 20 more goals than their chances usually produce. Some of that is luck, and some of it is having the two best finishers on the planet. Connor McDavid has a point in all 19 games this season (11 goals, 37 assists). Leon Draisaitl has 18 goals in 19 games and has scored in four straight. Devon Levi has been the headline in net, but it's Tristan Jarry tonight, back from an illness and at -1.7 goals saved above expected so far.\n\nThat's the soft spot. Dan Vladar is at .880 for Philadelphia, Jarry at .899, and our numbers project 3.14 expected goals for Edmonton and 2.64 for the Flyers. Colton Dach, cleared from the injury report, plays his 100th game, and Jason Dickinson needs one assist for 100.",
+ "headline": "Michkov brings the noise to Edmonton, where the Oilers just keep scoring",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T22:49:53Z",
+ "goalies": [
+  8478435,
+  8477465
+ ],
+ "hunch": {
+  "text": "With Michkov's name in every headline this week, our hunch is he answers the only way that ends a news cycle: a goal in Edmonton.",
+  "claim": {
+   "type": "goal",
+   "player": 8484387
+  }
+ }
+}

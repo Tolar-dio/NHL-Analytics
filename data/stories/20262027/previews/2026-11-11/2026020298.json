@@ -1,1 +1,19 @@
-{"text": "Pittsburgh and San Jose arrive with the same 1-4-0 record over their last five. The Penguins lost 5-2 at Anaheim, where Cutter Gauthier scored three, and they're without Bryan Rust, with Tommy Novak now skating beside Crosby and Rakell. The Sharks snapped a five-game winless run by beating the Islanders in a shootout, and Michael Misa has stepped into Igor Chernyshov's spot next to Macklin Celebrini and Will Smith. Pittsburgh is also living with trade chatter around Crosby, Malkin and Rakell, per recent headlines.\n\nThe numbers favor the visitors. At five on five, PIT has taken 52% of the expected goals (a measure of chance quality), SJS 45%. San Jose allows 3.94 expected goals per 60 minutes, and it takes 4.5 penalties a game, though its power play (0.70 expected goals a game) is better than Pittsburgh's (0.45). In net, projected starter Sergei Murashov sits at -1.93 goals saved above expected this season, while Yaroslav Askarov is at +5.66, a reversal from his -19.4 last year. Our model has PIT at 3.56 expected goals and SJS at 3.16.\n\nCelebrini is our top scorer pick at 46%, and he's one point from 200 career points. Smith is at 37% and one goal from 50. For Pittsburgh, Crosby (36% to score) and Malkin (71% for a point) lead the way. Among our under-the-radar picks, we like Ben Kindel at 50% for a point, well above his season pace of 37%, and Nick Robertson, whose 2.5 expected goals over his last 10 games rate better than 85% of depth forwards.", "v": 2, "model": "claude-sonnet-5-5", "goalies": [8483703, 8482137], "written": "2026-11-11T21:44:47+00:00"}
+{
+ "text": "Pittsburgh's season has turned into a conversation about the ending. The New York Times wrote this week that with the Penguins sinking and his contract expiring, Sidney Crosby \"nears a crossroad\". Daily Faceoff asked what happens to Evgeni Malkin if the team heads for a fire sale, Erik Karlsson's name is in every list of landing spots, and Yahoo Sports passed on a rumour that Rickard Rakell turned down a trade to Chicago. Elliotte Friedman's reported view, via Sportskeeda, is that the Penguins won't move Malkin or Karlsson against their will. Nobody is going anywhere tonight, but this is what a 1-4-0 stretch sounds like when your two franchise centres are 39 and 40.\n\nHere's the frustrating part for Pittsburgh: the results are worse than the hockey. The Penguins have 14 points on play that our numbers value at about 19, and they won the chance battle in three of those last five games. What they haven't had is saves. Sergei Murashov starts over Arturs Silovs, who has 12 of 18 starts, and Murashov is at .880. With Bryan Rust out until December, Tommy Novak has the spot beside Crosby and Rakell.\n\nSan Jose is in its own rough patch, 1-4-0, and only ended a five-game skid on Sunday when Ivar Stenberg won an eight-round shootout against the Islanders. The difference in the Sharks' season is Yaroslav Askarov: 5.7 goals saved above expected this season after a brutal 2025-26, and San Jose Hockey Now has him setting a franchise record. He needs to be good, because the Sharks give up more expected goals per 60 minutes than anyone. Macklin Celebrini is one point from 200 for his career and Will Smith one goal from 50; Mason Marchment, fined $5,000 for roughing Victor Eklund, is one from 100.\n\nOur numbers project 3.56 expected goals for Pittsburgh and 3.16 for San Jose, and our Sleepers list has two Penguins: Nick Robertson, whose shots have been dangerous on the third line, and Ben Kindel for a point.",
+ "headline": "The Penguins play on while everyone talks about who leaves",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-11T22:50:46Z",
+ "goalies": [
+  8483703,
+  8482137
+ ],
+ "hunch": {
+  "text": "Every trade rumour this week has Malkin's name in it. Our hunch is the 40-year-old reminds everyone why, with a goal in San Jose.",
+  "claim": {
+   "type": "goal",
+   "player": 8471215
+  }
+ }
+}
