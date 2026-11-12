@@ -90,6 +90,13 @@ refusal to play until traded).
 - Everything stated as fact is either in the queue item's `facts`, or a well-established public fact you are sure
   of (a past Stanley Cup, a famous trade, a player's draft year, a long-known rivalry). If you aren't sure, leave it
   out or say it as a question.
+- Use common sense and common knowledge, not rigidity (Tolar, Nov 12, 2026). Our facts lag the world and your
+  training lags further. When the facts imply something you don't know (a coach named in a video title, a player on
+  a new team, an injury stint), search it before writing, and once confirmed, use it plainly, in the piece where it
+  matters. Don't flag established, easily checked facts as doubtful, and don't leave a team's obvious story out just
+  because the fact sheet didn't spell it out (Nov 12, 2026: a run called Mike Babcock coaching Edmonton a "possible
+  coach change" and wrote the Oilers' writeup without him; he was hired June 23 and had coached every game).
+  Leave something out only when a quick search still can't settle it.
 - You may use web search to check facts and recall known events. Don't paraphrase or summarise articles into our
   pieces, never use paywalled text, and credit any reporting you lean on by outlet.
 - Never invent quotes, injuries, line changes, locker-room scenes, attendance, or what someone said or felt.
