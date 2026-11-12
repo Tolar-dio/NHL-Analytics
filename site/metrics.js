@@ -257,7 +257,7 @@ function wpModel(P) {
 // to data/stories/; the site reads them live through our data relay (proxy/api/data.js) so they show without a rebuild. Until one exists,
 // the page keeps whatever the build put there (the API writer's version, or nothing).
 const STORIES_RAW = "https://readtheice-api.vercel.app/api/data?path=stories/";
-const WRITER_LABEL = `<p class="ai-label">Written by Claude, an AI, from our data and the season's story. Opinions and hunches are labeled as ours. <a href="#about/ai">How we use AI</a></p>`;
+const WRITER_LABEL = `<p class="ai-label">Written by Claude, an AI, from our data and the season's story. Opinions are labeled as ours. <a href="#about/ai">How we use AI</a></p>`;
 async function writerInto(el, path, opts = {}) {
   if (!el) return;
   const here = location.hash;
@@ -269,7 +269,7 @@ async function writerInto(el, path, opts = {}) {
   } catch (e) { return; }
   if (!d || d.by !== "session" || !d.text || location.hash !== here || !el.isConnected) return;
   const paras = d.text.trim().split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join("");
-  const h = d.hunch && d.hunch.text && opts.hunch ? `<aside class="hunch"><b>Our hunch</b> ${esc(d.hunch.text)}</aside>` : "";
+  const h = "";   // hunches retired Nov 11, 2026 (Tolar); old files may still carry one, and it is never shown
   el.innerHTML = `${opts.kicker ? `<h3 class="kicker">${esc(opts.kicker)}</h3>` : ""}${d.headline ? `<h2 class="story-head">${esc(d.headline)}</h2>` : ""}
     <div class="story">${paras}</div>${h}${WRITER_LABEL}`;
   el.classList.add("writer");

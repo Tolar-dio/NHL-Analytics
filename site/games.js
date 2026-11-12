@@ -387,7 +387,7 @@ async function renderPreview(view, id) {
       <details class="fold"${p.watch && Object.keys(p.watch).length ? "" : " open"}><summary>Likeliest scorers and two-point players</summary>
       <div class="grid-2"><div>${props(p.away)}</div><div>${props(p.home)}</div></div></details></section>
     ${series.length ? `<section class="zone"><h2>Earlier this season</h2><ul class="game-list">${series.map((x) => `<li><a class="game-row" href="#game/${x.id}"><span class="gr-date">${shortDate(x.date)}</span><span class="gr-score">${x.away} ${x.a} <span class="dim">at</span> ${x.home} ${x.h}${endTag(x.end)}</span><span class="dim">${x.h > x.a ? x.home : x.away} deserved ${pct(x.h > x.a ? x.dtw_home : 1 - x.dtw_home)}</span></a></li>`).join("")}</ul></section>` : ""}`;
-  writerInto($("#pvStory"), `previews/${p.date}/${p.id}.json`, { hunch: true });
+  writerInto($("#pvStory"), `previews/${p.date}/${p.id}.json`);
 }
 
 // team season log (appended to the Teams page)

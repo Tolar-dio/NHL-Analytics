@@ -32,7 +32,7 @@ Every file is one JSON object:
  "by": "session", "model": "claude-session", "v": <queue.story_version>, "written": "<UTC ISO time>"}
 ```
 
-- previews also carry `"goalies"` copied from the queue item, and may carry `"hunch"` (below).
+- previews also carry `"goalies"` copied from the queue item. No `hunch` field (retired Nov 11, 2026).
 - player and team writeups also carry `"gp"` copied from the queue item.
 - takes (files under `data/news/`) keep every field already in the file and replace only `take` (the text) plus
   `by`, `model` and `written`.
@@ -51,9 +51,8 @@ replace it.
 - You may talk about momentum, energy, body language you can infer from what happened (a team that blew a
   three-goal lead, a goalie pulled twice in a week), and intangibles. Frame opinion as opinion ("it felt like",
   "you'd be worried if you were", "this is the kind of win that"), not as reported fact.
-- Gut feelings and hypotheticals are welcome, labelled: "Our hunch", "If we're wrong about anything here, it's".
-  When your gut disagrees with our numbers, say both: "Our numbers make Colorado a coin flip; our gut says the
-  back-to-back finally catches up with them."
+- No hunches and no predictions of your own (Tolar, Nov 11, 2026). Don't say who you think wins, who scores or
+  whether a game goes over. Our numbers give the chances; you tell the story around them.
 - Use analytics terms in plain words the first time (expected goals is the quality of chances; deserved to win is
   the share of replays of every shot a team wins). One or two numbers per paragraph, each doing a job.
 - Vary sentences. Cut throat-clearing. No cliches you'd be embarrassed to read aloud ("statement win",
@@ -81,7 +80,7 @@ refusal to play until traded).
 | Piece | Words | Notes |
 |---|---|---|
 | recap | 250 to 400 | 3 to 5 paragraphs. A headline. |
-| preview | 220 to 350 | 3 to 4 paragraphs, plus an optional hunch. A headline. |
+| preview | 220 to 350 | 3 to 4 paragraphs. A headline. |
 | player | 110 to 200 | Who he is right now: role, form, what's real and what's luck, what to watch. Season-level, not one game. |
 | team | 150 to 250 | Where the season stands, what's driving it, what's worrying, what to watch next. |
 | take | 80 to 160 | What the news means, with our numbers. Headlines and teasers are other people's reporting: credit them. |
@@ -102,17 +101,12 @@ refusal to play until traded).
 - Paid data (All Three Zones, Evolving-Hockey) appears only as the derived numbers and notes in the facts; credit
   them by name when you use them ("Corey Sznajder's All Three Zones tracking", "Evolving-Hockey").
 
-## Betting and hunches
+## Betting
 
 The site shows odds for information and entertainment. Our picks are the Sleepers, chosen by rules and graded.
 
 - Never write a pick, a lock, a "best bet", odds advice or anything that tells someone to wager.
-- A preview may end with one hunch: save it in the `hunch` field, not in `text`:
-  `"hunch": {"text": "One or two sentences.", "claim": {"type": "win", "team": "COL"}}`.
-  `claim` is optional and must be checkable from the box score: `{"type": "win", "team": X}`,
-  `{"type": "goal", "player": id}`, `{"type": "point", "player": id}`, `{"type": "over", "goals": 6.5}` or
-  `{"type": "under", "goals": 6.5}`. Hunches are shown labelled and graded in public. Make them interesting,
-  not safe: a hunch that just repeats our favourite adds nothing.
+- No hunches, in a `hunch` field or in the text.
 
 ## Item kinds in the queue
 

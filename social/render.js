@@ -169,7 +169,6 @@ function gameCard(G, C) {
       <div class="wp"><div class="wl"><b style="color:${ca}">${a} ${pct(pa)}</b><span>Our win chance</span><b style="color:${ch}">${pct(ph)} ${h}</b></div>
         <div class="bar"><div style="width:${pa * 100}%;background:${ca}"></div><div style="flex:1;background:${ch}"></div></div></div>
       <div class="gls">${goalie(ga, ca)}<div class="mid">goals saved<br>above expected</div>${goalie(gh, ch, true)}</div>
-      <div class="hunch"><span>Our hunch</span><p>${esc(C.hunch)}</p></div>
     </div>
     ${footer("For information and entertainment. 21+. 1-800-GAMBLER")}`, `
     .threads { margin-top:34px; display:grid; gap:18px; }
@@ -181,9 +180,7 @@ function gameCard(G, C) {
     .gls { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:20px; margin-top:30px; background:${B.panel}; border-radius:18px; padding:20px 28px; }
     .gl span { display:block; font-size:20px; color:${B.muted}; text-transform:uppercase; letter-spacing:.1em; } .gl b { font-size:30px; font-weight:700; margin-right:12px; } .gl i { font-style:normal; font-family:"Big Shoulders Display"; font-weight:900; font-size:38px; }
     .mid { font-size:19px; color:${B.muted}; text-align:center; line-height:1.25; }
-    .hunch { margin-top:30px; border:3px solid ${B.line}; border-radius:18px; padding:16px 28px 18px; }
-    .hunch span { font-family:"Big Shoulders Display"; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:${B.red}; font-size:24px; }
-    .hunch p { font-size:28px; line-height:1.3; margin-top:4px; }`);
+`);
 }
 
 // the first slide of a carousel: the date, big enough to read in the profile grid, and what's inside
@@ -219,7 +216,7 @@ const COUNT = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight
 function gamesCover(T, GAMES) {
   const titles = Object.fromEntries(GAMES.map(([G, C]) => [G.id, C.title]));
   const n = T.games.length;
-  return cover(T, { kicker: "Game night", line: `${COUNT[n] || n} game${n === 1 ? "" : "s"} tonight. The story, our numbers and a hunch for each.`,
+  return cover(T, { kicker: "Game night", line: `${COUNT[n] || n} game${n === 1 ? "" : "s"} tonight. The story and our numbers for each.`,
     rows: T.games.map((g) => ({ colors: [tc(g.away), tc(g.home) === tc(g.away) ? B.ice : tc(g.home)], title: `${NAMES[g.away]} at ${NAMES[g.home]}`, sub: titles[g.id], right: etTime(g.start) })) });
 }
 // the players carousel: likeliest scorers, sleepers, and the day's stat card if there is one
