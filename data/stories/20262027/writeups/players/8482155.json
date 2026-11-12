@@ -1,1 +1,8 @@
-{"text": "Alex Laferriere has a bigger job in Los Angeles this season. He's playing 19:27 a night, up from 18:19, and he's been on the ice for 69% of the Kings' power-play chances after 30% last season. In his last ten games he's up to 20.5 minutes.\n\nHe's using it. His own chances are up to 1.44 expected goals per 60 from 0.96, and the Kings take 56.9% of the 5v5 expected goals with him on the ice, 11 points better than without him. He also has 42 hits.\n\nWhat's missing is the finish. He has 3 goals on 7.0 expected, shooting 6.8%. He put seven shots on goal twice in his last four games, and the second time, against Pittsburgh on Nov. 7, one went in on the power play. Goals tend to follow chances like these. Fifteen games is a small sample and ice time settles faster than scoring does, but the role is the thing we'd watch, and so far it's sticking.", "headline": "Laferriere's bigger job is real, the goals are due", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-10T12:50:00Z", "gp": 15}
+{
+ "text": "Alex Laferriere is getting a bigger job in Los Angeles: more than 20 minutes a night over his last ten games, and the ice for 70% of the Kings' power-play time, up from 30% last season. His own chances have jumped too, to 1.42 expected goals per 60 from 0.96.\n\nThat's a breakout in role. The goals haven't followed: three on 7.3 expected, one of the bigger shortfalls in the league, and one goal in his last ten on 5.7. Goals tend to follow chances like that. Recently he's been scoring on the power play, which is the role change paying off.\n\nThe Kings take 57% of the expected goals at five on five with him on, 11 points better than without him, on a team stuck at 5-9-2. A third-round pick out of Harvard, he scored 21 goals last season. Our range has him at 18 to 32 goals.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-12T22:56:31Z",
+ "gp": 16
+}
