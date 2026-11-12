@@ -94,7 +94,7 @@ function scorers(T, notes = {}) {
       ${wordmark(36)}
       <div class="kicker" style="margin-top:48px">${dayLabel(T.date)}</div>
       <h1 style="font-size:84px;margin-top:6px">Tonight's likeliest<br>goal scorers</h1>
-      <p class="muted" style="font-size:26px;margin-top:16px">Our chance each player scores, from his chances, ice time, linemates and tonight's goalie.</p>
+      <p class="muted" style="font-size:26px;margin-top:16px">Our chance each player scores, from his chances, ice time, on-ice context and tonight's goalie.</p>
       <div class="rows">${rows}</div>
     </div>
     ${footer()}`, `
@@ -104,6 +104,68 @@ function scorers(T, notes = {}) {
     .chip { width:14px; height:76px; border-radius:7px; }
     .who b { display:block; font-size:42px; font-weight:700; line-height:1.1; } .who span { font-size:24px; color:${B.muted}; } .who em { display:block; font-style:normal; font-size:25px; color:${B.ice}; margin-top:4px; }
     .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:72px; color:${B.blue}; line-height:1; } .p span { font-size:22px; color:${B.muted}; }`);
+}
+
+// shots on goal: the five likeliest to put 3+ on net (same look as the scorers card)
+function shots(T, notes = {}) {
+  const now = Date.now(), live = new Set(T.games.filter((g) => new Date(g.start) > now - 600000).map((g) => [g.away, g.home]).flat());
+  const top = [...T.props].filter((p) => p.lineup !== "returning" && live.has(p.team)).sort((a, b) => b.p_sog3 - a.p_sog3).slice(0, 5);
+  const rows = top.map((p, i) => `
+    <div class="row">
+      <div class="n">${i + 1}</div>
+      <div class="chip" style="background:${tc(p.team)}"></div>
+      <div class="who"><b>${esc(p.name)}</b><span>${p.team} vs ${p.opp} · ${Math.round(p.proj_toi)} min · we expect ${p.exp_sog.toFixed(1)} shots</span>${notes[p.id] ? `<em>${esc(notes[p.id])}</em>` : ""}</div>
+      <div class="p"><b>${pct(p.p_sog3)}</b><span>3+ · fair ${fair(p.p_sog3)}</span><span>4+ ${pct(p.p_sog4)}</span></div>
+    </div>`).join("");
+  return page(1080, 1350, `
+    ${rinkBg(1000, 150, 230)}
+    <div style="padding:72px 72px 0">
+      ${wordmark(36)}
+      <div class="kicker" style="margin-top:48px">${dayLabel(T.date)}</div>
+      <h1 style="font-size:84px;margin-top:6px">Tonight's busiest<br>shooters</h1>
+      <p class="muted" style="font-size:26px;margin-top:16px">Our chance each player puts three or more shots on goal, from his shot rate, ice time and the defense in front of him.</p>
+      <div class="rows">${rows}</div>
+    </div>
+    ${footer()}`, `
+    .rows { margin-top:24px; display:grid; gap:11px; }
+    .row { display:grid; grid-template-columns:56px 14px 1fr auto; align-items:center; gap:24px; background:${B.panel}; border-radius:20px; padding:13px 32px; }
+    .n { font-family:"Big Shoulders Display"; font-weight:900; font-size:56px; color:${B.muted}; }
+    .chip { width:14px; height:76px; border-radius:7px; }
+    .who b { display:block; font-size:42px; font-weight:700; line-height:1.1; } .who span { font-size:24px; color:${B.muted}; } .who em { display:block; font-style:normal; font-size:25px; color:${B.ice}; margin-top:4px; }
+    .p { text-align:right; } .p b { display:block; font-family:"Big Shoulders Display"; font-weight:900; font-size:72px; color:${B.blue}; line-height:1; } .p span { display:block; font-size:21px; color:${B.muted}; }`);
+}
+
+// game totals: the book's line next to the goals we expect, for every game still to start
+function totals(T) {
+  const now = Date.now();
+  const G = T.games.filter((g) => g.market && g.market.total && new Date(g.start) > now - 600000);
+  const rows = G.map((g) => {
+    const m = g.market, exp = (g.away_xg + g.home_xg), po = m.model_p_over;
+    const lean = Math.abs(exp - m.total) < 0.25 ? "Even" : exp > m.total ? "Over" : "Under";
+    return `<div class="t">
+      <div class="chips"><i style="background:${tc(g.away)}"></i><i style="background:${tc(g.home) === tc(g.away) ? B.ice : tc(g.home)}"></i></div>
+      <div><b>${g.away} at ${g.home}</b><span>${etTime(g.start)}</span></div>
+      <div class="c"><em>Line</em><b>${m.total}</b></div>
+      <div class="c"><em>We expect</em><b style="color:${B.blue}">${exp.toFixed(1)}</b></div>
+      <div class="c"><em>Over</em><b>${pct(po)}</b></div>
+    </div>`;
+  }).join("");
+  const dense = G.length > 7;
+  return page(1080, 1350, `
+    <div style="padding:72px 72px 0">
+      ${wordmark(36)}
+      <div class="kicker" style="margin-top:44px">${dayLabel(T.date)}</div>
+      <h1 style="font-size:84px;margin-top:6px">Game totals</h1>
+      <p class="muted" style="font-size:25px;margin-top:12px;line-height:1.35">The sportsbook line next to the goals our numbers expect, and our chance the game goes over. Totals are the hardest thing in hockey to call, ours included.</p>
+      <div class="ts" style="gap:${dense ? 9 : 12}px">${rows}</div>
+    </div>
+    ${footer("Lines: DraftKings via the NHL · For information and entertainment. 21+. 1-800-GAMBLER")}`, `
+    .ts { margin-top:26px; display:grid; }
+    .t { display:grid; grid-template-columns:auto 1fr 120px 150px 120px; align-items:center; gap:18px; background:${B.panel}; border-radius:16px; padding:${dense ? "9px 26px" : "14px 26px"}; }
+    .chips { display:flex; gap:5px; } .chips i { width:10px; height:${dense ? 52 : 60}px; border-radius:5px; display:block; }
+    .t > div > b { display:block; font-size:${dense ? 32 : 36}px; font-weight:700; line-height:1.1; } .t > div > span { font-size:21px; color:${B.muted}; }
+    .c { text-align:right; } .c em { display:block; font-style:normal; font-size:17px; color:${B.muted}; text-transform:uppercase; letter-spacing:.08em; }
+    .c b { font-family:"Big Shoulders Display"; font-weight:900; font-size:${dense ? 46 : 52}px; line-height:1; }`);
 }
 
 function luck(P) {
@@ -169,8 +231,9 @@ function gameCard(G, C) {
       <div class="wp"><div class="wl"><b style="color:${ca}">${a} ${pct(pa)}</b><span>Our win chance</span><b style="color:${ch}">${pct(ph)} ${h}</b></div>
         <div class="bar"><div style="width:${pa * 100}%;background:${ca}"></div><div style="flex:1;background:${ch}"></div></div></div>
       <div class="gls">${goalie(ga, ca)}<div class="mid">goals saved<br>above expected</div>${goalie(gh, ch, true)}</div>
+      ${G.market?.total ? `<div class="tot"><div><span>Total goals</span><b>Line ${G.market.total}</b></div><div><span>We expect</span><b>${((G.away_xg || 0) + (G.home_xg || 0)).toFixed(1)}</b></div><div><span>Our over chance</span><b>${pct(G.market.model_p_over)}</b></div></div>` : ""}
     </div>
-    ${footer("For information and entertainment. 21+. 1-800-GAMBLER")}`, `
+    ${footer("Lines: DraftKings via the NHL · For information and entertainment. 21+. 1-800-GAMBLER")}`, `
     .threads { margin-top:34px; display:grid; gap:18px; }
     .threads p { font-size:30px; line-height:1.3; color:${B.ice}; padding-left:26px; border-left:5px solid ${B.red}; }
     .threads p b { color:${B.blue}; }
@@ -180,6 +243,8 @@ function gameCard(G, C) {
     .gls { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:20px; margin-top:30px; background:${B.panel}; border-radius:18px; padding:20px 28px; }
     .gl span { display:block; font-size:20px; color:${B.muted}; text-transform:uppercase; letter-spacing:.1em; } .gl b { font-size:30px; font-weight:700; margin-right:12px; } .gl i { font-style:normal; font-family:"Big Shoulders Display"; font-weight:900; font-size:38px; }
     .mid { font-size:19px; color:${B.muted}; text-align:center; line-height:1.25; }
+    .tot { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:16px; background:${B.panel}; border-radius:18px; padding:20px 28px; }
+    .tot span { display:block; font-size:20px; color:${B.muted}; text-transform:uppercase; letter-spacing:.1em; } .tot b { font-family:"Big Shoulders Display"; font-weight:900; font-size:40px; }
 `);
 }
 
@@ -215,18 +280,20 @@ function cover(T, { kicker, line, rows }) {
 const COUNT = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 function gamesCover(T, GAMES) {
   const titles = Object.fromEntries(GAMES.map(([G, C]) => [G.id, C.title]));
-  const n = T.games.length;
-  return cover(T, { kicker: "Game night", line: `${COUNT[n] || n} game${n === 1 ? "" : "s"} tonight. The story and our numbers for each.`,
-    rows: T.games.map((g) => ({ colors: [tc(g.away), tc(g.home) === tc(g.away) ? B.ice : tc(g.home)], title: `${NAMES[g.away]} at ${NAMES[g.home]}`, sub: titles[g.id], right: etTime(g.start) })) });
+  const ids = new Set(GAMES.map(([G]) => G.id)), list = T.games.filter((g) => ids.has(g.id)), n = list.length;
+  return cover(T, { kicker: "Game night", line: `${COUNT[n] || n} game${n === 1 ? "" : "s"} tonight. The totals, then the story and our numbers for each.`,
+    rows: list.map((g) => ({ colors: [tc(g.away), tc(g.home) === tc(g.away) ? B.ice : tc(g.home)], title: `${NAMES[g.away]} at ${NAMES[g.home]}`, sub: titles[g.id], right: etTime(g.start) })) });
 }
 // the players carousel: likeliest scorers, sleepers, and the day's stat card if there is one
 function playersCover(T, TODAY) {
   const top = [...T.props].filter((p) => p.lineup !== "returning").sort((a, b) => b.p_goal - a.p_goal)[0];
   const S = pickSleepers(T, TODAY.sleeper_notes || {});
   const rows = [{ colors: [tc(top.team)], title: "Likeliest goal scorers", sub: `${top.name} leads the night`, right: pct(top.p_goal) }];
+  const sh = [...T.props].filter((p) => p.lineup !== "returning").sort((a, b) => b.p_sog3 - a.p_sog3)[0];
+  if (sh) rows.push({ colors: [tc(sh.team)], title: "Busiest shooters", sub: `${sh.name} leads at ${sh.exp_sog.toFixed(1)} expected shots`, right: pct(sh.p_sog3) });
   if (S.length) rows.push({ colors: S.map((x) => tc(x.team)).filter((c, i, a) => a.indexOf(c) === i).slice(0, 3), title: "Sleepers", sub: `${COUNT[S.length]} under-the-radar name${S.length === 1 ? "" : "s"}, each with a reason`, right: `${S.length}` });
   if (TODAY.stat) rows.push({ colors: [tc(TODAY.stat.team)], title: TODAY.stat.cover || TODAY.stat.title, sub: TODAY.stat.cover_sub || "", right: TODAY.stat.big });
-  const parts = ["who scores", S.length ? "who surprises" : "", TODAY.stat ? "and one number worth knowing" : ""].filter(Boolean);
+  const parts = ["who scores", "who shoots", S.length ? "who surprises" : "", TODAY.stat ? "and one number worth knowing" : ""].filter(Boolean);
   return cover(T, { kicker: "Players to watch", line: `Tonight by our numbers: ${parts.join(", ").replace(", and", " and")}.`, rows });
 }
 
@@ -329,8 +396,10 @@ function pitch(S, i, n) {
     ...(TODAY.feature ? [["feature.png", 1080, 1350, feature(TODAY.feature)]] : []),
     ...(TODAY.stat ? [["stat.png", 1080, 1350, stat(TODAY.stat)]] : []),
     ...(GAMES.length ? [["cover-games.png", 1080, 1350, gamesCover(T, GAMES)]] : []),
+    ["totals.png", 1080, 1350, totals(T)],
     ...GAMES.map(([G, C]) => [`game-${G.away}-${G.home}.png`, 1080, 1350, gameCard(G, C)]),
     ["cover-players.png", 1080, 1350, playersCover(T, TODAY)],
+    ["shots.png", 1080, 1350, shots(T, TODAY.shot_notes || {})],
     ["sleepers.png", 1080, 1350, sleepers(T, TODAY.sleeper_notes || {})],
     ...(process.env.STORY === "1" ? [["story-sleepers.png", 1080, 1920, sleepers(T, TODAY.sleeper_notes || {}, true)]] : []),
   ];

@@ -1,85 +1,130 @@
 {
  "stat": {
-  "kicker": "Wednesday, Nov 11 · Predators at Ducks",
-  "big": "13",
-  "unit": "goals in his<br>last six games",
-  "title": "Cutter Gauthier can't miss",
-  "team": "ANA",
+  "kicker": "Thursday, Nov 12 · Jets at Stars",
+  "big": "999",
+  "bigSize": 400,
+  "unit": "career<br>points",
+  "title": "Jamie Benn needs one more for 1,000",
+  "size": 80,
+  "team": "DAL",
   "lines": [
-   "He has scored in six straight and has 15 goals in 17 games. The Ducks have won five in a row behind him.",
-   "Our numbers give him a <b style='color:#5b8deb'>45%</b> chance to make it seven straight tonight."
+   "He has played every one of his NHL games for Dallas, and has seven points in 17 this season.",
+   "Our numbers give him a <b style='color:#5b8deb'>38%</b> chance to get there tonight against Winnipeg."
   ],
-  "note": "For information and entertainment. 21+.",
-  "cover": "Gauthier's heater",
-  "cover_sub": "13 goals in his last six games"
+  "note": "For information and entertainment. 21+. 1-800-GAMBLER",
+  "cover": "Benn at 999",
+  "cover_sub": "One point from 1,000 for his career"
  },
  "scorer_notes": {
-  "8477934": "Goals in four straight games, six in all",
-  "8484801": "One point from 200 for his career",
-  "8483445": "Goals in six straight games, 13 in all",
-  "8478402": "A point in all 19 games this season",
-  "8477404": "Tampa's likeliest scorer with Brayden Point out"
+  "8478864": "Points in nine straight games",
+  "8478398": "On the ice for 91% of Winnipeg's power-play time",
+  "8481559": "Points in six straight games",
+  "8479420": "Chicago has lost six straight on 36% of the chances",
+  "8481557": "On the ice for 83% of Minnesota's power-play time"
+ },
+ "shot_notes": {
+  "8481559": "22 shots on goal in his last five games",
+  "8479420": "Eight shots in a single game on Oct. 31",
+  "8477492": "Ten goals and 30 points in 19 games",
+  "8481557": "Seven shots in one of his last five games",
+  "8480801": "Florida's top shooter with Barkov and Marchand out"
  },
  "sleeper_notes": {
-  "8479525": "Fourth-line minutes, but six shots from dangerous ice in his last ten games.",
-  "8482145": "Faces a Ducks team that gives up the fifth-most chances in the league.",
-  "8481582": "Dangerous shots from the third line, against the league's leakiest defense.",
-  "8485414": "No team gives up more chances than the Sharks."
+  "8479999": "Five shots from dangerous ice in his last ten, on the third line.",
+  "8481553": "Third-line minutes, dangerous shots, and Toronto's backup in net.",
+  "8475722": "Better shot quality than 99% of depth forwards over his last nine.",
+  "8470621": "Eight shots from dangerous ice in ten games, at 41 years old."
  },
  "games": {
-  "2026020293": {
-   "title": "Kucherov wants out. Tampa keeps winning.",
-   "size": 88,
-   "dek": "The trade request is two weeks old. The Lightning are 3-1-1 in their last five, and we give them a 92% chance at the playoffs.",
+  "2026020299": {
+   "title": "Two hot goalies, one old rivalry",
+   "dek": "Montreal has points in 11 straight. Boston has won four in a row. Neither has needed many goals.",
    "threads": [
-    "Brayden Point is on injured reserve. He had <b>16 points in 17 games</b>.",
-    "Anthony Cirelli plays his 600th game. Victor Hedman has four goals in his last ten.",
-    "Buffalo has been unlucky: poor finishing has cost the Sabres about <b>six goals</b>."
+    "Jacob Fowler has saved <b>12.1</b> goals more than expected. Jeremy Swayman is at 10.2.",
+    "Boston's record outruns its chances: a +26 goal difference on chances worth about +1.",
+    "Mike Matheson could return for Montreal. Ivan Demidov is still out."
    ]
   },
-  "2026020294": {
-   "title": "Cooley hasn't lost in five",
-   "dek": "Devin Cooley is 5-0-0 with a .945 save rate over his last five starts. The Rangers answer with their backup.",
+  "2026020300": {
+   "title": "The Wild walk into a Leafs referendum",
+   "dek": "Minnesota has points in nine straight. Toronto is winless in four and starts its backup.",
    "threads": [
-    "New York lost in Edmonton on Monday despite <b>65%</b> of the expected goals.",
-    "Joonas Korpisalo starts over Dylan Garand. He has one start this season.",
-    "Brennan Othmann faces the Rangers for the first time. Matt Coronato is one goal from 50."
+    "The Leafs' slide is real: outscored <b>17-7</b> on 42% of the chances.",
+    "Jesper Wallstedt leads the league at <b>16.0</b> goals saved above expected.",
+    "Kirill Kaprizov has points in nine straight and is tonight's likeliest scorer at 49%."
+   ],
+   "size": 88
+  },
+  "2026020301": {
+   "title": "Two goalies, opposite directions",
+   "dek": "Colorado rests Mackenzie Blackwood. Scott Wedgewood has been 5.4 goals worse than expected.",
+   "threads": [
+    "Linus Ullmark is at <b>+8.2</b> for Ottawa.",
+    "The Avalanche have scored about <b>13 more goals</b> than their chances usually produce.",
+    "Devon Toews has 11 points in his last ten games, and the chances back it."
    ]
   },
-  "2026020295": {
-   "title": "Nineteen and counting",
-   "dek": "Connor McDavid has a point in all 19 games. Leon Draisaitl has goals in four straight. The Flyers play their third game in four nights.",
+  "2026020303": {
+   "title": "Hellebuyck in Newark",
+   "dek": "Connor Hellebuyck gets the Devils' net two nights after his return to Winnipeg ended their five-game run.",
    "threads": [
-    "Draisaitl is <b>51%</b> to score tonight, the highest number on the slate.",
-    "The warning label: Edmonton has scored about <b>20 more goals</b> than its chances usually produce.",
-    "Philadelphia gets just 42% of the chances at five on five, and both goalies have been below par."
+    "New Jersey takes <b>58%</b> of the expected goals, among the best in the league.",
+    "Washington won the first meeting 4-2, though the Devils deserved it in 73% of replays.",
+    "Jack Hughes has points in six straight and 22 shots in his last five."
    ]
   },
-  "2026020296": {
-   "title": "The rematch",
-   "dek": "Vegas knocked Utah out in six games last spring. The Mammoth have been the better team since, everywhere but in net.",
+  "2026020304": {
+   "title": "Tampa, the morning after eight",
+   "dek": "The Lightning scored eight in Buffalo last night. Tonight they play again, with their backup in net.",
    "threads": [
-    "Utah takes <b>58%</b> of the chances at five on five. Its goaltending has given back about 12 goals.",
-    "Sebastian Cossa starts for the Mammoth over Karel Vejmelka.",
-    "Vegas has won three straight, with its goaltending doing much of the work."
+    "Dennis Hildeby starts over Andrei Vasilevskiy on the second night of a back-to-back.",
+    "Brayden Point is still out. Jake Guentzel plays his 700th game.",
+    "Matthew Knies has <b>no goals in ten games</b>, and the chances have dried up too."
    ]
   },
-  "2026020297": {
-   "title": "Two streaks, one of them real",
-   "dek": "Both teams have won five straight. Nashville earned its run. Anaheim has been riding Cutter Gauthier.",
+  "2026020302": {
+   "title": "Still no Larkin",
+   "dek": "Detroit is winless in four and the standoff with its captain drags on.",
    "threads": [
-    "Gauthier has goals in six straight games, <b>13 of them</b>.",
-    "The Ducks scored 26 goals in their five wins, on chances worth about 17.",
-    "Nashville played last night and starts backup Justus Annunen. Roman Josi is still one point from 800."
+    "The Red Wings' slide is real: outscored <b>13-5</b> on 43% of the chances.",
+    "John Gibson has an .856 save rate over his last five starts.",
+    "Florida is without Barkov and Marchand. Sam Reinhart is two points from 700."
    ]
   },
-  "2026020298": {
-   "title": "Celebrini at 199",
-   "dek": "Macklin Celebrini is one point from 200 for his career, and the Sharks have finally won a game.",
+  "2026020305": {
+   "title": "Chicago's bottom, Buffalo's tired legs",
+   "dek": "The Blackhawks are winless in six. The Sabres gave up eight at home last night.",
    "threads": [
-    "San Jose ended a five-game winless run on Monday, in a shootout.",
-    "No team allows more chances than the Sharks. Pittsburgh has lost four of five anyway.",
-    "Bryan Rust is out, and Sergei Murashov starts in goal for the Penguins over Arturs Silovs."
+    "Chicago has been outscored <b>32-13</b> in the skid, on 36% of the chances.",
+    "Buffalo starts backup Colten Ellis on the second night of a back-to-back.",
+    "Patrick Kane could be back for Chicago."
+   ]
+  },
+  "2026020306": {
+   "title": "Benn at 999",
+   "dek": "Jamie Benn is one point from 1,000, all of them in a Stars sweater.",
+   "threads": [
+    "Winnipeg has won four straight and earned it: <b>62%</b> of the expected goals.",
+    "Dallas is without Miro Heiskanen. Jake Oettinger is at +7.7 this season.",
+    "The Stars won the first meeting 3-2 in overtime, and deserved it."
+   ]
+  },
+  "2026020307": {
+   "title": "Utah's best process, worst goaltending",
+   "dek": "The Mammoth win the chances most nights. Their goalies have given back about 12 goals.",
+   "threads": [
+    "Karel Vejmelka has an <b>.847</b> save rate over his last five starts.",
+    "Utah is without Logan Cooley and Dylan Guenther, and played in Vegas last night.",
+    "Joel Hofer has saved 6.7 goals more than expected for St. Louis."
+   ]
+  },
+  "2026020308": {
+   "title": "Sorokin, standing on his head",
+   "dek": "Ilya Sorokin keeps saving the Islanders. They're winless in four anyway.",
+   "threads": [
+    "Sorokin is at <b>+8.2</b> goals saved above expected.",
+    "New York has been outscored 17-9 in the skid, on 43% of the chances.",
+    "Darcy Kuemper plays his 500th game. Corey Perry, 41, has eight shots from dangerous ice in ten games."
    ]
   }
  }
