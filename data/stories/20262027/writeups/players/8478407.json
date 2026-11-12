@@ -1,9 +1,9 @@
 {
- "text": "Vince Dunn is playing in a contract year, and NHL Trade Rumors reports the Kraken are making a serious run at an extension. That is worth knowing, because his early numbers tell two stories. He has nine points in 15 games, four on the power play, which is right on his usual pace. And Seattle has been buried at 5v5 with him on the ice: under 38% of the shot attempts and about 43% of the chances, worse than the team does without him.\n\nSome of that is circumstance. Evolving-Hockey had him playing with some of the weakest teammates of any defenseman last season, which makes raw on-ice numbers look worse than his own effect, and his teammates are converting 4.2 goals below their chances when he is out. Corey Sznajder's All Three Zones tracking shows the appeal (he gets to the dangerous ice in front of the net more than almost any defenseman) and the flaw: only 31% of his exits kept possession, so watch for clears and icings under a heavy forecheck. Four points in his last ten against about six and a half expected. A quiet stretch, not a collapse.",
- "headline": "Vince Dunn's contract year starts quietly",
+ "text": "Vince Dunn plays more than 23 minutes a night for Seattle and leads the Kraken blue line in the usual offensive ways: ten points, four on the power play, 34 shots. He scored late against the Rangers on Nov. 7, his first goal in ten games.\n\nThe 5v5 picture is rough. With Dunn on the ice the Kraken have 40% of shot attempts and 44% of expected goals. Evolving-Hockey notes he plays with some of the weakest teammates in the league by impact, which drags those numbers down, but they still had him barely above replacement last season.\n\nCorey Sznajder's All Three Zones tracking explains part of it. He gets to dangerous ice for a defenseman (96th percentile for chances from the home-plate area) but only 31% of his zone exits keep possession, so a lot of shifts end with the puck going back the other way.\n\nOff the ice, the story is his contract: KJR and others are asking how close Seattle is to an extension, and where Simon Edvinsson fits. His last ten games produced four points on 6.6 expected, so the offense should tick up.",
+ "headline": "Dunn's minutes keep coming, the chances keep going the other way",
+ "gp": 16,
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-07T22:54:45Z",
- "gp": 15
+ "written": "2026-11-12T12:46:51Z"
 }

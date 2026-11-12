@@ -1,9 +1,9 @@
 {
- "text": "Charlie McAvoy has played 11 of Boston's 17 games, and in those games the Bruins have looked like a different team. With him on the ice at 5v5 they take 61.9 percent of the expected goals (the quality of chances), 12 points better than when he sits. He is playing 24:42 a night against the other team's best, which is the job Evolving-Hockey's numbers said he did last season too, when his competition ranked in the 95th percentile and he was worth 1.8 wins.\n\nThe points are all assists: 8 in 11 games, including four assists against Nashville. One goal on 1.54 expected is about right for a defenseman whose game is moving the puck to someone else. Corey Sznajder's All Three Zones tracking has him in the 83rd percentile among defensemen for primary shot assists.\n\nMarkerzone had him and Trevor Connelly sparking a Bruins and Golden Knights brawl this week, so the edge is still there. The thing to watch is his availability. Boston is a better team when he is in the lineup, and the gap is not small.",
- "headline": "McAvoy is driving Boston when he plays",
+ "text": "Charlie McAvoy has played 12 of Boston's 18 games, and in them the Bruins have looked like a different team. They get 61% of the expected goals at five on five with him on the ice, more than ten points better than without him. For a defenseman playing 24 minutes a night against top lines, that's the number that matters most.\n\nThe scoresheet is quieter. One goal and 9 points, all 8 of his points in the last ten games coming as assists, including a four-assist night against Nashville. His shooting is low (4.8%) against a usual range near 7%, so a few more goals are owed.\n\nThe assists come with a caveat: Boston has scored 6.5 more goals than expected with him on, which pads them. Evolving-Hockey had him 30th of 215 defensemen last season, driving play at the 88th percentile against 95th-percentile competition, and Corey Sznajder's All Three Zones tracking shows a defenseman who gets to the home-plate area more than most. He also started a brawl with Vegas this month, per Markerzone. Watch the five-on-five share: that's his real line.",
+ "headline": "McAvoy is driving play, if not scoring",
+ "gp": 12,
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-08T12:47:52Z",
- "gp": 11
+ "written": "2026-11-12T12:49:10Z"
 }

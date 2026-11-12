@@ -1,1 +1,8 @@
-{"id": "s7f17ba4cd3", "headline": "Flyers activate Rasmus Ristolainen off injured reserve", "take": "Daily Faceoff reports the Flyers have activated defenseman Rasmus Ristolainen off injured reserve. He has missed 16 total games with a hand injury this season.\n\nHe comes back to a team that needs help. PHI sits at 5-10-5 and has had about 44% of the expected goals (a measure of shot quality) so far this season, so the underlying play matches the record. Ristolainen has played four games, scoring once from 0.33 expected goals, and he has been on the ice for only about 30% of the five-on-five expected goals while he's out there. That is a small sample, but it's a rough restart: the team has been 13 percentage points better with him off the ice. He was drafted eighth overall by the Sabres in 2013, and he logged more than 17 minutes a night in those four games. We'd watch whether that workload holds, because the Flyers don't have much room to ease anyone in.", "model": "claude-sonnet-5-5", "written": "2026-11-11T21:53:57+00:00"}
+{
+ "id": "s7f17ba4cd3",
+ "headline": "Flyers activate Rasmus Ristolainen off injured reserve",
+ "take": "Daily Faceoff reports the Flyers activated Rasmus Ristolainen off injured reserve after a hand injury that has cost him 16 games this season, and he wasted no time: he assisted on Travis Sanheim's tying goal in Edmonton on Wednesday. Ristolainen brings what Philadelphia's blue line has been short of, a right shot with real size and one of the hardest shots in the league (his top recorded shot is in the 98th percentile). The five-on-five results in his five games are rough, about 35% of the expected goals (the quality of chances) with him on the ice, though five games is far too few to judge. For a 5-10-6 team allowing 3.37 expected goals an hour, getting a regular back is a start. It is not a fix.",
+ "model": "claude-session",
+ "written": "2026-11-12T12:48:00+00:00",
+ "by": "session"
+}

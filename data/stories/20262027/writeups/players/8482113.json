@@ -1,9 +1,9 @@
 {
- "text": "Anton Lundell missed Saturday in Washington with an undisclosed injury, came back for the afternoon in Boston, put five shots on Jeremy Swayman and still went home without a point. That has been his autumn. He has 6 points in 17 games, and if you strip out the hat trick against Winnipeg on Oct. 30, his last ten games hold nothing at all.\n\nOur read is that most of this is bad luck rather than bad hockey. Florida has scored 6.0 fewer goals than its chances deserve with Lundell on the ice, and the Panthers take almost 56% of the expected goals (the quality of chances) when he plays at five on five, about five points better than without him. That is a two-time Stanley Cup winner doing his job against top competition, which Evolving-Hockey had in the 90th percentile last season.\n\nHis points rate sits at 1.2 per 60 minutes; our range for his true talent runs from 1.6 to 2.3. We project 42 more points. Watch whether the on-ice goals start arriving now that he's back from the injury.",
- "headline": "The goals went missing, not the game",
+ "text": "Anton Lundell has eight points in 18 games, which reads like a slow start for a two-time Stanley Cup winner playing 17 and a half minutes a night. The underlying numbers tell a different story. Florida has 56% of expected goals with him on the ice at 5v5, almost six points better than without him, and he leads this group in shots with 50.\n\nThe problem has been finishing, his and everyone else's. He is shooting 8% against a usual range around 12%, and the Panthers have scored 5.5 fewer goals than their chances deserved with him out there. That is the kind of gap that usually swings back, which is why our numbers flag him as due. His three-goal night against Winnipeg on Oct. 30 accounts for most of his goals in the last ten games.\n\nHe also draws hard matchups (Evolving-Hockey had his competition in the 90th percentile last season). He missed the Nov. 7 game day to day with an undisclosed injury, per Daily Faceoff and others, and returned with two assists in Columbus. Watch the shot totals; the goals tend to follow.",
+ "headline": "Lundell's points haven't caught up to his play",
+ "gp": 18,
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-08T22:58:12Z",
- "gp": 17
+ "written": "2026-11-12T12:46:51Z"
 }

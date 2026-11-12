@@ -1,9 +1,9 @@
 {
- "text": "Dylan Holloway was one of the stories of last season in St. Louis, the offer-sheet signing who turned into a 22-goal winger in 59 games and, by Evolving-Hockey's count, the 20th most valuable forward in the league. This season the line with Robert Thomas and Jimmy Snuggerud has been reunited, and Mike Fink of The Hockey News called it the Blues' line to watch.\n\nHis own goals haven't come along yet. He has three in 17 games on 4.2 expected (the quality of his chances), shooting 7.9%, below what we'd expect, and our win model has his goals near the bottom of the league in wins added. The rest of his game is fine: 12 points, a 95th percentile top speed, and the Blues are about four points better in 5v5 expected-goal share with him on than without. Evolving-Hockey did warn that last season's results ran ahead of his chances, so some regression was always coming. Our projection has 17 to 32 more goals. Snuggerud is getting the goals on that line; Holloway's should follow.",
- "headline": "Holloway is waiting on his goals",
+ "text": "Dylan Holloway has gone eight games without a goal, and that's the story of his season so far: 3 goals on 5.4 expected, shooting 6.7% when his range sits near 12%. Last season he was a 20th-ranked forward by Evolving-Hockey's wins above replacement, with 13 goals of even-strength offense. The chances haven't left. He's averaging nearly 2.5 shots a game.\n\nThe assists have kept him useful (13 points in 18 games), and St. Louis gets 54% of the expected goals at five on five with him on, six points better than without. That's a winger doing his job everywhere but the finish.\n\nThere's a line story too. The Hockey News and Yahoo argued for reuniting him with Robert Thomas and Jimmy Snuggerud, a group that has played together before. Evolving-Hockey's note is that last year's results ran a bit ahead of his chances, so he shouldn't be expected to repeat 2025-26 exactly. He's near the bottom of the league in wins added by goals this season, which is the dry spell in a single number. Watch the shooting percentage: it rarely stays this low on this many looks.",
+ "headline": "Holloway is due, and the line question matters",
+ "gp": 18,
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-07T22:57:59Z",
- "gp": 17
+ "written": "2026-11-12T12:48:00Z"
 }
