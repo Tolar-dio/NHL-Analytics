@@ -61,7 +61,8 @@ def build(shots, gg, prev_gg, games, names, out_dir, box=None, edge_areas=None, 
     lg_reb = float(rb.reb.sum() / max(rb.saved.sum(), 1))
     gg = gg[gg.game_type == "regular"].copy()
     if box is not None and len(box):
-        gg = gg.merge(box[["game_id", "player_id", "dec", "sa"]], on=["game_id", "player_id"], how="left")
+        cols = ["dec"] + ([] if "sa" in gg else ["sa"])   # goalie_games carries the boxscore's shots against since Nov 12, 2026
+        gg = gg.merge(box[["game_id", "player_id"] + cols], on=["game_id", "player_id"], how="left")
     else:
         gg["dec"], gg["sa"] = None, np.nan
     gm = games.set_index("game_id")

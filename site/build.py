@@ -210,7 +210,10 @@ def archive_tonight(day, games, props, lu):
     arc = json.load(open(path)) if os.path.exists(path) else dict(date=day, games={})
     now = dt.datetime.now(dt.timezone.utc)
     keep = ["id", "name", "team", "pos", "lineup", "p_goal", "p_1pt", "p_2pts", "p_3pts", "exp_sog", "p_sog2", "p_sog3",
-            "proj_toi", "g_f", "sleeper"]
+            "p_sog4", "exp_blk", "p_blk1", "p_blk2", "p_blk3", "proj_toi", "g_f", "sleeper"]
+    def saves_of(g, side):   # the projected starter's saves numbers (graded only when he starts)
+        x = (g.get(side + "_saves") or {}).get("by", {}).get(str(g.get(side + "_goalie")))
+        return dict(id=g.get(side + "_goalie"), exp_sa=g[side + "_saves"]["exp_sa"], **x) if x else None
     for g in games:
         gid = str(g["id"])
         start = dt.datetime.fromisoformat(g["start"].replace("Z", "+00:00")) if g.get("start") else None
@@ -223,6 +226,7 @@ def archive_tonight(day, games, props, lu):
             home_goalie_src=g.get("home_goalie_src"), away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
             o55=g["o55"], o65=g["o65"], lineup_source=lu["source"], market=g.get("market"),
             sleepers=[dict(id=x["id"], kind=x["kind"], p_goal=x["p_goal"], p_1pt=x["p_1pt"]) for x in g.get("sleepers") or []],
+            away_saves=saves_of(g, "away"), home_saves=saves_of(g, "home"),
             props=[{k: p.get(k) for k in keep} for p in props if p["game"] == g["id"]])
     os.makedirs(ARCHIVE, exist_ok=True)
     with open(path, "w") as f:
@@ -913,6 +917,44 @@ def main():
             d = SOG.prices(d, cur["pg"], prev["pg"], str(today))
         except Exception as e:
             print(f"  shot prices skipped: {e!r}")
+        try:      # blocked shots (analysis/blocks.py): his block rate, ice time, how much tonight's opponent shoots
+            import blocks as BLK
+            d = BLK.prices(d, cur["pg"], prev["pg"], cur["tg"], str(today))
+        except Exception as e:
+            print(f"  block prices skipped: {e!r}")
+        try:      # season shots on goal and blocks a game, shown next to the projections
+            sea = cur["pg"][(cur["pg"].game_id.astype(str).str[4:6] == "02") & (cur["pg"].date < str(today))]
+            sea = sea.groupby("player_id").agg(sog_s=("sog", "sum"), blk_s=("blk", "sum"), gp_s=("game_id", "nunique"))
+            d["sog_pg"] = (d.player_id.map(sea.sog_s) / d.player_id.map(sea.gp_s)).round(2)
+            d["blk_pg"] = (d.player_id.map(sea.blk_s) / d.player_id.map(sea.gp_s)).round(2)
+        except Exception as e:
+            print(f"  season shot and block rates skipped: {e!r}")
+        try:      # goalie saves (analysis/saves.py) for every goalie a team might start, so a goalie switch reprices them
+            import saves as SV
+            srows = [dict(game=g["id"], side=side, team=g[side], opp=g["home" if side == "away" else "away"],
+                          home=side == "home", goalie_id=o["id"])
+                     for g in gm_out for side in ("away", "home") for o in g[side + "_goalies"]]
+            if srows:
+                sv = SV.prices(pd.DataFrame(srows), cur["tg"], cur["gg"], prev["tg"], prev["gg"], str(today))
+                ggs = cur["gg"][(cur["gg"].game_id.astype(str).str[4:6] == "02") & (cur["gg"].date < str(today))]
+                gstat = ggs.groupby("player_id").agg(gp=("game_id", "nunique"), saves=("saves", "sum"), sa=("sa", "sum"))
+                for g in gm_out:
+                    for side in ("away", "home"):
+                        q = sv[(sv.game == g["id"]) & (sv.side == side)]
+                        if q.empty:
+                            continue
+                        by = {}
+                        for x in q.itertuples():
+                            st = gstat.loc[x.goalie_id] if x.goalie_id in gstat.index else None
+                            by[str(x.goalie_id)] = dict(sv=r(x.sv, 4), exp_saves=r(x.exp_saves, 2),
+                                                        **{f"p{k}": r(getattr(x, f"p_saves{k}"), 4) for k in SV.LINES},
+                                                        gp=int(st.gp) if st is not None else 0,
+                                                        saves_pg=r(st.saves / st.gp, 1) if st is not None and st.gp else None,
+                                                        sv_season=r(st.saves / st.sa, 3) if st is not None and st.sa else None)
+                        g[side + "_saves"] = dict(exp_sa=r(float(q.exp_sa.iloc[0]), 2), size=SV.SIZE, by=by)
+                print(f"  saves: {len(srows)} goalie options across {len(gm_out)} games")
+        except Exception as e:
+            print(f"  saves prices skipped: {e!r}")
         # sleepers: our own under-the-radar picks per game, on process, role and matchup (site/sleepers.py)
         sleepers, d["sleeper"] = {}, None
         try:
@@ -926,6 +968,7 @@ def main():
         d = d.rename(columns={"player_id": "id"}).sort_values("p_goal", ascending=False)
         props = records(d, ["id", "name", "team", "opp", "game", "pos", "gp", "g", "pts", "ixg", "proj_toi",
                             "pp_share", "p_goal", "p_1pt", "p_2pts", "p_3pts", "exp_sog", "p_sog2", "p_sog3", "p_sog4",
+                            "sog_pg", "exp_blk", "p_blk1", "p_blk2", "p_blk3", "blk_pg",
                             "lam_g", "lam_p", "g_f", "sleeper",
                             "lineup", "lineup_note"])
         archive_tonight(str(today), gm_out, props, lu)

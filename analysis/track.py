@@ -32,7 +32,7 @@ def track(cur, season=M.CUR):
     pg = cur["pg"][cur["pg"].game_type == "regular"]
     gg = cur["gg"]
     games = cur["games"].set_index("game_id")
-    rows, grows, lineup, goalies = [], [], [], []
+    rows, grows, lineup, goalies, saves_rows = [], [], [], [], []
     for f in files:
         arc = json.load(open(f))
         day = arc["date"]
@@ -58,7 +58,10 @@ def track(cur, season=M.CUR):
                                  base_g=1 - np.exp(-rg * p["proj_toi"]), base_2=1 - np.exp(-lp) * (1 + lp),
                                  y_goal=int(d.g >= 1), y_2=int(d.pts >= 2),
                                  p_sog2=p.get("p_sog2"), p_sog3=p.get("p_sog3"), exp_sog=p.get("exp_sog"),
-                                 sog=int(d.sog) if "sog" in d and not pd.isna(d.sog) else None, sleeper=p.get("sleeper")))
+                                 sog=int(d.box_sog) if "box_sog" in d and not pd.isna(d.box_sog) else
+                                 (int(d.sog) if "sog" in d and not pd.isna(d.sog) else None), sleeper=p.get("sleeper"),
+                                 p_blk1=p.get("p_blk1"), p_blk2=p.get("p_blk2"), exp_blk=p.get("exp_blk"),
+                                 blk=int(d.blk) if "blk" in d and not pd.isna(d.blk) else None))
             unpriced = [i for i in dressed.index if i not in priced]
             lineup += [dict(tag="unpriced", dressed=True) for _ in unpriced]
             gm = games.loc[gid]
@@ -67,6 +70,12 @@ def track(cur, season=M.CUR):
                 team = g[side]
                 if team in st.index and g.get(f"{side}_goalie"):
                     goalies.append(dict(src=g.get(f"{side}_goalie_src") or "model", hit=int(st[team]) == int(g[f"{side}_goalie"])))
+                    sv = g.get(f"{side}_saves")      # saves are priced for the projected starter: graded when he started
+                    if sv and int(st[team]) == int(g[f"{side}_goalie"]) and "saves" in gg:
+                        act = gg[(gg.game_id == gid) & (gg.player_id == int(st[team]))].saves
+                        if len(act) and not pd.isna(act.iloc[0]):
+                            saves_rows.append(dict(exp=sv["exp_saves"], act=int(act.iloc[0]),
+                                                   **{f"p{k}": sv.get(f"p{k}") for k in (20, 25, 30)}))
             tot = int(gm.home_score + gm.away_score)
             mk = g.get("market") or {}
             grows.append(dict(date=day, total=g["total"], actual=tot, p_home=win_home(g["away_xg"], g["home_xg"]),
@@ -88,7 +97,7 @@ def track(cur, season=M.CUR):
                   cal=[dict(n=int(r.n), pred=round(float(r.pred), 3), act=round(float(r.act), 3)) for r in cal.itertuples()]),
         pts=dict(pred=round(float(P.p_2pts.sum()), 1), act=int(P.y_2.sum()), ll=round(ll(P.y_2, P.p_2pts), 4),
                  ll_base=round(ll(P.y_2, P.base_2), 4)),
-        **tails(P), **shots(P), **sleeper_grade(P),
+        **tails(P), **shots(P), **blocks(P), **saves_grade(pd.DataFrame(saves_rows)), **sleeper_grade(P),
         lineup=dict(lu, unpriced=int((L.tag == "unpriced").sum())),
         goalies=dict(n=int(len(Q)), hits=int(Q.hit.sum()) if len(Q) else 0,
                      espn_n=int((Q.src == "espn").sum()) if len(Q) else 0,
@@ -119,6 +128,29 @@ def shots(P):
     return dict(sog=dict(n=int(len(q)), exp=round(float(q.exp_sog.sum()), 1), act=int(q.sog.sum()),
                          p2=round(float(q.p_sog2.sum()), 1), act2=int(y2.sum()), ll2=round(ll(y2, q.p_sog2), 4),
                          p3=round(float(q.p_sog3.sum()), 1), act3=int(y3.sum()), ll3=round(ll(y3, q.p_sog3), 4)))
+
+
+def blocks(P):
+    """1+ and 2+ blocked shots, graded where the archive has them (added Nov 12, 2026)."""
+    q = P.dropna(subset=["p_blk1", "blk"]) if "p_blk1" in P else P.iloc[0:0]
+    if q.empty:
+        return {}
+    y1, y2 = (q.blk >= 1).astype(int), (q.blk >= 2).astype(int)
+    return dict(blk=dict(n=int(len(q)), exp=round(float(q.exp_blk.sum()), 1), act=int(q.blk.sum()),
+                         p1=round(float(q.p_blk1.sum()), 1), act1=int(y1.sum()), ll1=round(ll(y1, q.p_blk1), 4),
+                         p2=round(float(q.p_blk2.sum()), 1), act2=int(y2.sum()), ll2=round(ll(y2, q.p_blk2), 4)))
+
+
+def saves_grade(S):
+    """The projected starter's saves, on the nights he started (added Nov 12, 2026): mean absolute error against a
+    flat 24-save guess, and 25+ saves."""
+    if S.empty:
+        return {}
+    y = (S.act >= 25).astype(int)
+    return dict(saves=dict(n=int(len(S)), exp=round(float(S.exp.sum()), 1), act=int(S.act.sum()),
+                           mae=round(float((S.exp - S.act).abs().mean()), 2),
+                           mae_flat=round(float((S.act - 24).abs().mean()), 2),
+                           p25=round(float(S.p25.sum()), 1), act25=int(y.sum()), ll25=round(ll(y, S.p25), 4)))
 
 
 def sleeper_grade(P):

@@ -609,7 +609,8 @@ def _goalies(P, season, cur, names, bios, goalie_rows, today):
     gg = cur["gg"][cur["gg"].game_type == "regular"].copy()
     box = goalie_box(season) if len(gg) else pd.DataFrame()
     if len(box):
-        gg = gg.merge(box[["game_id", "player_id", "dec", "sa"]], on=["game_id", "player_id"], how="left")
+        cols = ["dec"] + ([] if "sa" in gg else ["sa"])   # goalie_games carries the boxscore's shots against since Nov 12, 2026
+        gg = gg.merge(box[["game_id", "player_id"] + cols], on=["game_id", "player_id"], how="left")
     else:
         gg["dec"], gg["sa"] = None, np.nan
     gg = gg.sort_values(["date", "game_id"])

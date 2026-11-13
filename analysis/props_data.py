@@ -3,8 +3,8 @@
 Builds three tables in analysis/output/<season>/  (usage: python analysis/props_data.py 20252026):
   player_games.csv  one row per skater per game: TOI, individual xG/goals/assists,
                     on-ice (all situations) xGF/xGA/GF/GA, on-ice PP xGF, team PP xGF
-  team_games.csv    one row per team per game: xGF, xGA, GF, GA, PP xGF
-  goalie_games.csv  one row per goalie per game: TOI, xGA faced, GA, starter flag
+  team_games.csv    one row per team per game: xGF, xGA, GF, GA, PP xGF, shots on goal / attempts for and against, blocks
+  goalie_games.csv  one row per goalie per game: TOI, xGA faced, GA, starter flag, official saves and shots against
 
 xG source: MoneyPuck xGoal where the shot matches (credit MoneyPuck.com),
 our own model otherwise (run analysis/player_flags.py first).
@@ -73,7 +73,12 @@ for f in glob.glob(os.path.join(ROOT, "data", "raw", SEASON, "*", "boxscore.json
                 m, sec = (p.get("toi") or "0:00").split(":")
                 rows.append({"game_id": b["id"], "player_id": p["playerId"], "team": team,
                              "pos": "G" if grp == "goalies" else ("D" if grp == "defense" else "F"),
-                             "toi": int(m) + int(sec) / 60})
+                             "toi": int(m) + int(sec) / 60,
+                             # official boxscore counts, which is what props settle on
+                             "blk": p.get("blockedShots", 0) if grp != "goalies" else 0,
+                             "box_sog": p.get("sog", 0) if grp != "goalies" else 0,
+                             "saves": p.get("saves") if grp == "goalies" else None,
+                             "sa": p.get("shotsAgainst") if grp == "goalies" else None})
 box = pd.DataFrame(rows)
 box = box[box.toi > 0]
 
@@ -127,6 +132,12 @@ tg = tg.merge(tg[["game_id", "team", "xgf", "gf"]].rename(columns={"team": "opp"
               on=["game_id", "opp"])
 gtoi = box[box.pos == "G"].groupby(["game_id", "team"]).toi.sum().clip(lower=60).rename("toi")
 tg = tg.merge(gtoi.reset_index(), on=["game_id", "team"], how="left")
+# shots on goal (official), shot attempts and blocks, for and against: what the shots, blocks and saves prices use
+tb = box[box.pos != "G"].groupby(["game_id", "team"]).agg(sogf=("box_sog", "sum"), blkf=("blk", "sum"))
+ta = s.groupby(["game_id", "team"]).size().rename("attf")
+tg = tg.merge(tb.join(ta).fillna(0).reset_index(), on=["game_id", "team"], how="left")
+tg = tg.merge(tg[["game_id", "team", "sogf", "attf"]].rename(columns={"team": "opp", "sogf": "soga", "attf": "atta"}),
+              on=["game_id", "opp"], how="left")
 tg["toi"] = tg.toi.fillna(60)
 tg["date"] = tg.game_id.map(date_of)
 tg["game_type"] = tg.game_id.map(type_of)
@@ -136,7 +147,7 @@ tg.to_csv(os.path.join(OUT, "team_games.csv"), index=False)
 gs = s[s.unblocked & (s.state != "EN") & s.goalie_id.notna()]
 gg = gs.groupby(["game_id", "goalie_id"]).agg(xga=("xg", "sum"), ga=("is_goal", "sum")).reset_index()
 gg = gg.rename(columns={"goalie_id": "player_id"})
-gb = box[box.pos == "G"].copy()
+gb = box[box.pos == "G"].drop(columns=["blk", "box_sog"]).copy()
 gb["starter"] = gb.groupby(["game_id", "team"]).toi.rank(ascending=False, method="first") == 1
 gg = gb.merge(gg, on=["game_id", "player_id"], how="left").fillna({"xga": 0, "ga": 0})
 gg["date"] = gg.game_id.map(date_of)
@@ -144,7 +155,7 @@ gg["game_type"] = gg.game_id.map(type_of)
 gg.to_csv(os.path.join(OUT, "goalie_games.csv"), index=False)
 
 # ---- player-game
-pg = box[box.pos != "G"].set_index(["game_id", "player_id"])
+pg = box[box.pos != "G"].drop(columns=["saves", "sa"]).set_index(["game_id", "player_id"])
 pg = pg.join(on_ice).join(ind).join(a1).join(a2).fillna(0).reset_index()
 pg["a"] = pg.a1 + pg.a2
 pg["pts"] = pg.g + pg.a

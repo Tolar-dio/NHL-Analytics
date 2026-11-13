@@ -477,7 +477,20 @@ function liveGame(game) {
 }
 // the props markets, and P(X >= k) for a Poisson mean (gamma-mixed with shape r when the build set one)
 const MARKETS = [["p_goal", "Goal"], ["p_1pt", "1+ points"], ["p_2pts", "2+ points"], ["p_3pts", "3+ points"],
-  ["p_sog2", "2+ shots"], ["p_sog3", "3+ shots"]];
+  ["p_sog2", "2+ shots"], ["p_sog3", "3+ shots"], ["p_sog4", "4+ shots"],
+  ["p_blk1", "1+ blocks"], ["p_blk2", "2+ blocks"], ["p_blk3", "3+ blocks"], ["saves", "Goalie saves"]];
+const MARKET_GROUPS = [["Scoring", ["p_goal", "p_1pt", "p_2pts", "p_3pts"]], ["Shots on goal", ["p_sog2", "p_sog3", "p_sog4"]],
+  ["Blocked shots", ["p_blk1", "p_blk2", "p_blk3"]], ["Goalies", ["saves"]]];
+const mktKind = (k) => (k.startsWith("p_sog") ? "sog" : k.startsWith("p_blk") ? "blk" : k === "saves" ? "saves" : k === "p_goal" ? "goal" : "pts");
+// a goalie's saves tonight: the team's expected shots against times his save rate (analysis/saves.py), negative binomial
+function goalieSaves(game, side) {
+  const S2 = game[side + "_saves"]; if (!S2) return null;
+  const gl = goalieFor(game, side), x = S2.by[String(gl.id)];
+  const sv = x ? x.sv : 0.902, mu = S2.exp_sa * sv;
+  return { game, side, id: gl.id, name: gl.name, team: game[side], opp: game[side === "away" ? "home" : "away"], exp_sa: S2.exp_sa,
+    sv, sv_season: x && x.sv_season, gp: x ? x.gp : 0, saves_pg: x && x.saves_pg, exp_saves: mu, size: S2.size,
+    p20: nbTail(mu, S2.size, 20), p25: nbTail(mu, S2.size, 25), p30: nbTail(mu, S2.size, 30) };
+}
 // the model's correction to 1+ points (P1_CAL in analysis/models.py), reapplied when a goalie change reprices a player
 const p1cal = (p) => { const c = D.tonight.p1cal; if (!c) return p; const q = Math.min(Math.max(p, 1e-4), 1 - 1e-4);
   return 1 / (1 + Math.exp(-(c[0] + c[1] * Math.log(q / (1 - q))))); };
@@ -631,7 +644,7 @@ function renderTonight(view) {
     </section>` : ""}
     <section class="zone">
       <h2>Who scores, who stacks points</h2>
-      <p class="lede">Every skater's chance to score, to reach 1, 2 or 3+ points, or to put 2 or 3+ shots on goal tonight, with the fair odds each chance works out to. Have a sportsbook price? Type it in and we'll show the expected return. Positive means the book pays more than our number says it should.</p>
+      <p class="lede">Every skater's chance to score, to reach 1, 2 or 3+ points, to put 2, 3 or 4+ shots on goal, or to block 1, 2 or 3+ shots tonight, plus each starting goalie's expected saves, with the fair odds each chance works out to. Have a sportsbook price? Type it in and we'll show the expected return. Positive means the book pays more than our number says it should.</p>
       <div class="controls">
         <input type="search" id="q" placeholder="Find a player" value="${esc(S.q)}" aria-label="Find a player">
         <div class="chips" role="group" aria-label="Position">
@@ -640,10 +653,11 @@ function renderTonight(view) {
         <label class="check"><input type="checkbox" id="sleepOnly" ${S.sleepOnly ? "checked" : ""}> Sleepers only</label>
         ${followed.length ? `<label class="check"><input type="checkbox" id="followOnly" ${S.followOnly ? "checked" : ""}> Players I follow</label>` : ""}
       </div>
-      <div class="controls"><span class="dim">Market</span>
-        <div class="chips" role="group" aria-label="Market">
-          ${MARKETS.map(([k, l]) => `<button type="button" class="chip" data-mkt="${k}" aria-pressed="${S.mkt === k}">${l}</button>`).join("")}
-        </div></div>
+      <div class="mkt-groups">${MARKET_GROUPS.map(([g, keys]) => `<div class="mkt-group"><span class="dim">${g}</span>
+        <div class="chips" role="group" aria-label="${g}">
+          ${keys.map((k) => `<button type="button" class="chip" data-mkt="${k}" aria-pressed="${S.mkt === k}">${MARKETS.find(([m]) => m === k)[1]}</button>`).join("")}
+        </div></div>`).join("")}</div>
+      <p class="note" id="mktNote"></p>
       <div id="propsTable"></div>
       <p class="note">Sleepers are our own under-the-radar picks, explained above. Lineups: everyone who dressed in any of the team's last three games, minus players listed as injured, plus players returning; anyone who missed the last game is tagged, and every number assumes the player dresses. ${esc(T.goalie_note)}</p>
       <p class="note gamble-note">For information and entertainment, not betting advice. Odds you type stay in this browser. If you bet, do it only where it's legal and you're of age. Gambling problem? Call 1-800-GAMBLER.</p>
@@ -651,7 +665,47 @@ function renderTonight(view) {
 
   const startAt = Object.fromEntries(T.games.map((g) => [g.id, Date.parse(g.start)]));
   const started = (r) => (startAt[r.game] && Date.now() >= startAt[r.game] ? 1 : 0);
+  const MKT_NOTE = {
+    sog: "Shots on goal are the official count: goals and saved shots, not misses or blocked shots. We start from his shots per 60 minutes this season, blended with last season, then adjust for tonight's ice time and how many shots the opponent usually allows.",
+    blk: "Blocks are the official count, which depends a little on each rink's scorer. We start from his blocks per 60 minutes this season, blended with last season, then adjust for tonight's ice time and how many shots the opponent usually takes. Defensemen block about twice as many shots as forwards.",
+    saves: "Saves are for the goalie we expect to start (change him in the game cards above and this updates). We take the shots his team usually allows and the opponent usually takes, then his save rate, which we lean toward league average because save rates swing a lot. Type in a sportsbook's line to see our chance of the over. These are our least certain numbers: in testing they beat a flat league average, but not by much.",
+  };
+  const drawSaves = () => {
+    const Tgs = T.games.map(liveGame).filter((g) => !S.game || g.id === S.game);
+    let rows = Tgs.flatMap((g) => ["away", "home"].map((side) => goalieSaves(g, side))).filter(Boolean)
+      .map((x) => ({ ...x, id: x.id, gid: x.game.id }));
+    if (S.q) rows = rows.filter((r) => (r.name || "").toLowerCase().includes(S.q.toLowerCase()));
+    S.gSort ||= { key: "exp_saves", dir: -1 };
+    rows = sortRows(rows, S.gSort).sort((a, b) => started({ game: a.gid }) - started({ game: b.gid }));
+    const lineKey = (id) => `saveline:${T.date}:${id}`, oKey = (id) => `odds:${T.date}:saves:${id}`;
+    const overAt = (r) => { const l = parseFloat(store.get(lineKey(r.id)) || ""); return isFinite(l) ? nbTail(r.exp_saves, r.size, Math.floor(l) + 1) : null; };
+    const evCell = (r) => { const d = decimalOdds(store.get(oKey(r.id)) || ""), p = overAt(r);
+      if (!d || p == null) return `<span class="dim">–</span>`; const ev = p * d - 1; return `<span class="${ev >= 0 ? "pos" : "neg"}">${signed(100 * ev, 0)}%</span>`; };
+    const overCell = (r) => { const p = overAt(r); return p == null ? `<span class="dim">Enter a line</span>` : `<b>${pct(p)}</b> <span class="dim">fair ${fair(p)}</span>`; };
+    const cols = [
+      { key: "name", label: "Goalie", fmt: (r) => `${mug(r.team, r.id, r.name, 26)}<a class="who" href="#goalie/${r.id}">${esc(r.name)}</a><span class="sub">${r.team} vs ${r.opp}</span>${started({ game: r.gid }) ? `<span class="tag tag-started" data-tip="This game has started. These numbers were set before puck drop.">Started</span>` : ""}${injuryTag(r.name)}` },
+      { key: "exp_sa", label: "Shots against", fmt: (r) => num(r.exp_sa, 1), cls: "hide-sm" },
+      { key: "sv", label: "Save rate", fmt: (r) => `<span data-tip="${esc(`Our save rate for him: ${r.sv.toFixed(3).slice(1)}, his season ${r.sv_season != null ? r.sv_season.toFixed(3).slice(1) : "not started yet"}, leaned toward league average (about .900) because save rates swing a lot`)}">${r.sv.toFixed(3).slice(1)}<br><span class="dim">${r.sv_season != null ? r.sv_season.toFixed(3).slice(1) + " so far" : "no starts"}</span></span>`, cls: "hide-sm" },
+      { key: "exp_saves", label: "Saves: we expect", fmt: (r) => `<b>${num(r.exp_saves, 1)}</b>${r.saves_pg != null ? `<br><span class="dim">${num(r.saves_pg, 1)} a game</span>` : ""}` },
+      { key: "p20", label: "20+", fmt: (r) => pct(r.p20), cls: "hide-sm" },
+      { key: "p25", label: "25+", fmt: (r) => pct(r.p25) },
+      { key: "p30", label: "30+", fmt: (r) => pct(r.p30), cls: "hide-sm" },
+      { key: "line", label: "Book line", nosort: true, fmt: (r) => `<input class="odds-in line-in" inputmode="decimal" data-id="${r.id}" placeholder="26.5" value="${esc(store.get(lineKey(r.id)) || "")}" aria-label="Sportsbook saves line for ${esc(r.name)}">` },
+      { key: "over", label: "Over chance", nosort: true, fmt: overCell, cls: "over" },
+      { key: "odds", label: "Over odds", nosort: true, fmt: (r) => `<input class="odds-in" inputmode="text" data-id="${r.id}" placeholder="odds" value="${esc(store.get(oKey(r.id)) || "")}" aria-label="Book odds on the over for ${esc(r.name)}">` },
+      { key: "ev", label: "Return", nosort: true, fmt: evCell, cls: "ev" },
+    ];
+    $("#propsTable").innerHTML = rows.length ? table(rows, cols, S.gSort, "props") : `<p class="empty">No goalies match.</p>`;
+    bindSort($("#propsTable"), S.gSort, drawTable);
+    $$("#propsTable .odds-in", view).forEach((inp) => inp.addEventListener("input", () => {
+      store.set(inp.classList.contains("line-in") ? lineKey(inp.dataset.id) : oKey(inp.dataset.id), inp.value.trim());
+      const r = rows.find((x) => String(x.id) === inp.dataset.id), tr = inp.closest("tr");
+      tr.querySelector(".over").innerHTML = overCell(r); tr.querySelector(".ev").innerHTML = evCell(r);
+    }));
+  };
   const drawTable = () => {
+    $("#mktNote").textContent = MKT_NOTE[mktKind(S.mkt)] || "";
+    if (S.mkt === "saves") return drawSaves();
     let rows = liveProps();
     if (S.game) rows = rows.filter((r) => r.game === S.game);
     if (S.pos !== "all") rows = rows.filter((r) => r.pos === S.pos);
@@ -671,14 +725,18 @@ function renderTonight(view) {
       const ev = r[mk] * d - 1;
       return `<span class="${ev >= 0 ? "pos" : "neg"}">${signed(100 * ev, 0)}%</span>`;
     };
-    const other = mk === "p_goal" ? ["p_2pts", "2+ points"] : ["p_goal", "Goal chance"];
+    const kind = mktKind(mk);
+    const other = mk === "p_goal" ? ["p_2pts", "2+ points"] : kind === "blk" ? ["p_sog2", "2+ shots"] : ["p_goal", "Goal chance"];
+    const ctxCol = kind === "goal" ? { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" }
+      : kind === "sog" ? { key: "exp_sog", label: "Shots: we expect", fmt: (r) => `<b>${num(r.exp_sog, 1)}</b> <span class="dim">(${num(r.sog_pg, 1)} a game)</span>`, cls: "hide-sm" }
+      : kind === "blk" ? { key: "exp_blk", label: "Blocks: we expect", fmt: (r) => `<b>${num(r.exp_blk, 1)}</b> <span class="dim">(${num(r.blk_pg, 1)} a game)</span>`, cls: "hide-sm" }
+      : { key: "pts", label: "Points (GP)", fmt: (r) => `${r.pts} <span class="dim">(${r.gp})</span>`, cls: "hide-sm" };
     const cols = [
       { key: "name", label: "Player", fmt: (r) => `${mug(r.team, r.id, r.name, 26)}${playerLink(r.id, r.name)}<span class="sub">${r.team} vs ${r.opp}</span>${started(r) ? `<span class="tag tag-started" data-tip="This game has started. These numbers were set before puck drop.">Started</span>` : ""}${sleeperTag(r)}${formTag(r)}${injuryTag(r.name)}${lineupTag(r)}` },
       { key: "pos", label: "Pos", cls: "hide-sm" },
       { key: "proj_toi", label: "Proj TOI", fmt: (r) => num(r.proj_toi, 1), cls: "hide-sm" },
-      mk === "p_goal" ? { key: "g", label: "Goals (xG)", fmt: (r) => `${r.g} <span class="dim">(${num(r.ixg, 1)})</span>`, cls: "hide-sm" }
-        : { key: "pts", label: "Points (GP)", fmt: (r) => `${r.pts} <span class="dim">(${r.gp})</span>`, cls: "hide-sm" },
-      { key: mk, label: mk === "p_goal" ? "Goal chance" : `${mkLabel} chance`, fmt: (r) => cellBar(r[mk], mk === "p_1pt" ? 1 : 0.5) },
+      ctxCol,
+      { key: mk, label: mk === "p_goal" ? "Goal chance" : `${mkLabel} chance`, fmt: (r) => cellBar(r[mk], ["p_1pt", "p_sog2", "p_blk1"].includes(mk) ? 1 : 0.5) },
       { key: "fair_m", label: "Fair odds", nosort: true, fmt: (r) => fair(r[mk]) },
       { key: "odds", label: "Your odds", nosort: true, fmt: (r) => `<input class="odds-in" inputmode="text" data-id="${r.id}" placeholder="odds" value="${esc(store.get(oddsKey(r.id)) || "")}" aria-label="Book odds for ${esc(r.name)}, ${esc(mkLabel)}">` },
       { key: "ev", label: "Return", nosort: true, fmt: evCell, cls: "ev" },
@@ -702,7 +760,7 @@ function renderTonight(view) {
   bindWelcome(view);
   $$("[data-pos]", view).forEach((b) => b.addEventListener("click", () => { S.pos = b.dataset.pos; renderTonight(view); }));
   $$("[data-mkt]", view).forEach((b) => b.addEventListener("click", () => {
-    S.mkt = b.dataset.mkt; S.sort = { key: S.mkt, dir: -1 };
+    S.mkt = b.dataset.mkt; if (S.mkt !== "saves") S.sort = { key: S.mkt, dir: -1 };
     $$("[data-mkt]", view).forEach((x) => x.setAttribute("aria-pressed", x.dataset.mkt === S.mkt));
     drawTable();
   }));
@@ -1237,7 +1295,7 @@ function liveRecord(L) {
       <div><div class="bignum">${pc(lu.last.dressed, lu.last.priced)}</div><p>of players from each team's last lineup dressed. Of the ones tagged as missing the last game, ${pc(lu.recent.dressed, lu.recent.priced)} played${lu.returning.priced ? `; of those coming back, ${pc(lu.returning.dressed, lu.returning.priced)}` : ""}. ${lu.unpriced} dressed without a projection.</p></div>
       <div><div class="bignum">${pc(L.goalies.hits, L.goalies.n)}</div><p>of starting goalies called right (${L.goalies.espn_n ? `${pc(L.goalies.espn_hits, L.goalies.espn_n)} when ESPN had posted a probable starter` : "no ESPN probables yet"}).</p></div>
     </div>
-    <p class="note">Two or more points: ${L.pts.pred.toFixed(0)} predicted, ${L.pts.act} actual.${L.pts1 ? ` One or more: ${L.pts1.pred.toFixed(0)} predicted, ${L.pts1.act} actual. Three or more: ${L.pts3.pred.toFixed(0)} predicted, ${L.pts3.act} actual.` : ""}${L.sog ? ` Shots on goal (tracked since Oct 18): ${L.sog.exp.toFixed(0)} expected, ${L.sog.act} taken; two or more ${L.sog.p2.toFixed(0)} predicted, ${L.sog.act2} actual; three or more ${L.sog.p3.toFixed(0)} predicted, ${L.sog.act3} actual.` : ""} Game totals missed by ${L.totals.mae} goals on average (projected ${L.totals.mean_pred}, actual ${L.totals.mean_act}).</p>
+    <p class="note">Two or more points: ${L.pts.pred.toFixed(0)} predicted, ${L.pts.act} actual.${L.pts1 ? ` One or more: ${L.pts1.pred.toFixed(0)} predicted, ${L.pts1.act} actual. Three or more: ${L.pts3.pred.toFixed(0)} predicted, ${L.pts3.act} actual.` : ""}${L.sog ? ` Shots on goal (tracked since Oct 18): ${L.sog.exp.toFixed(0)} expected, ${L.sog.act} taken; two or more ${L.sog.p2.toFixed(0)} predicted, ${L.sog.act2} actual; three or more ${L.sog.p3.toFixed(0)} predicted, ${L.sog.act3} actual.` : ""}${L.blk ? ` Blocked shots (tracked since Nov 12): ${L.blk.exp.toFixed(0)} expected, ${L.blk.act} made; one or more ${L.blk.p1.toFixed(0)} predicted, ${L.blk.act1} actual; two or more ${L.blk.p2.toFixed(0)} predicted, ${L.blk.act2} actual.` : ""}${L.saves ? ` Goalie saves (tracked since Nov 12, ${L.saves.n} starts by the goalie we projected): ${L.saves.exp.toFixed(0)} expected, ${L.saves.act} made; off by ${L.saves.mae} a start against ${L.saves.mae_flat} for a flat 24; 25 or more ${L.saves.p25.toFixed(0)} predicted, ${L.saves.act25} actual.` : ""} Game totals missed by ${L.totals.mae} goals on average (projected ${L.totals.mean_pred}, actual ${L.totals.mean_act}).</p>
     ${L.sleepers ? `<p class="note"><b>Sleepers</b> (since Oct 20)${L.sleepers.depth ? `: depth scorers ${L.sleepers.depth.act} goals from ${L.sleepers.depth.n} picks, ${L.sleepers.depth.pred.toFixed(1)} expected` : ""}${L.sleepers.point ? `${L.sleepers.depth ? ";" : ":"} underrated point picks ${L.sleepers.point.act} of ${L.sleepers.point.n} got a point, ${L.sleepers.point.pred.toFixed(1)} expected` : ""}. Long shots by design; the honest test is whether hits keep pace with what we said.</p>` : ""}
     ${L.market && L.market.games ? `<p class="note"><b>Against the sportsbook</b> (DraftKings game lines published by the NHL, ${L.market.games} games): totals missed by ${L.market.total_mae_model} goals for us vs ${L.market.total_mae_market} for the book; over/under log loss ${L.market.over_ll_model.toFixed(3)} vs ${L.market.over_ll_market.toFixed(3)}; winner Brier score ${L.market.win_brier_model.toFixed(3)} vs ${L.market.win_brier_market.toFixed(3)}. Lower is better on all three; the sportsbook is the bar to clear.</p>` : ""}
   </section>`;
