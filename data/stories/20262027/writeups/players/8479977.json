@@ -1,9 +1,8 @@
 {
- "text": "Kailer Yamamoto has played only ten games for Utah this season, with a stint on injured reserve in early November reported by CBS Sports and Pro Hockey Rumors, but our data has him back on the ice in Vegas on Nov. 11 for 18 minutes. When he plays, the Mammoth control the ice.\n\nWith Yamamoto on at 5v5, Utah has 59% of shot attempts and 68% of expected goals, 13 points better than without him. Seven points in ten games, and his three goals sit close to his 3.41 expected goals, so this is not a shooting heater. Ten games is a small sample, but it fits what Evolving-Hockey saw last season: two wins above replacement, 53rd among forwards, and elite chance suppression (98th percentile).\n\nCorey Sznajder's All Three Zones tracking adds the style: a setup man (84th percentile in primary shot assists) whose offense lives in transition, with 53% of his shots off the rush.\n\nHe is a middle-six winger who makes his line better at both ends. Staying healthy is the thing to watch.",
- "headline": "Yamamoto's minutes are some of Utah's best",
- "gp": 10,
+ "text": "Kailer Yamamoto's season has been interrupted, but not by bad hockey. Utah placed him on injured reserve in early November, and he came back this week to 18:12 against Vegas and 20:12 against St. Louis, the two heaviest workloads of his season.\n\nWhen he has played, the Mammoth have owned the puck. At five on five they are getting 66% of the expected goals (the quality of chances) with him on the ice, nearly 11 points better than without him, and his own chances have jumped to 1.24 expected goals per 60 from 0.73 last season. He has 7 points in 11 games, and nothing about it looks lucky: his shooting and the finishing around him are both close to normal.\n\nThis fits what Evolving-Hockey saw last season, when he was worth 2.0 wins and in the 98th percentile among forwards at taking chances away. Corey Sznajder's All Three Zones tracking adds that 53% of his shots came off the rush. Eleven games is a small sample, so the question now is whether those bigger minutes stick once Utah is fully healthy.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:48:26Z"
+ "written": "2026-11-14T22:52:20Z",
+ "gp": 11
 }

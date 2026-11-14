@@ -1,9 +1,8 @@
 {
- "text": "Ryan Leonard played his 100th NHL game in Ottawa on Nov. 10, and RMNB marked it with Spencer Carbery recalling the early days. At 21, the eighth pick of 2023 is a regular in Washington's middle six, playing a little over 14 minutes a night with 11 points in 16 games.\n\nHis game is volume. Forty-one shots, many from distance (our comparisons put him alongside Jack Quinn and Arseny Gritsyuk), and five goals on 4.59 expected, so the finishing is about where it should be. The 5v5 shot share is fine at 52%, roughly level with the team.\n\nEvolving-Hockey had him worth 1.2 wins above replacement last season, mostly from offense, with a real knack for drawing penalties. The cost was defense: opponents got more chances with him on the ice (bottom 9% of forwards).\n\nAmong forwards drafted sixth to tenth since 2005, the median first full season is 0.40 points a game. Leonard is at about 0.69 this year. His ice time is the limit, not his production, and that is the number we'd watch.",
- "headline": "Leonard reaches 100 games still shooting from everywhere",
- "gp": 16,
+ "text": "Ryan Leonard reached 100 NHL games in Ottawa this week, and the headlines took stock. RMNB's piece carried Spencer Carbery remembering the start: \"Can't forget Ovi taking him out with the boys.\" The more useful number is what he's doing now. At 21, he has six goals and 12 points in 17 games while playing only 14:12 a night.\n\nThe goals are earned. He's generating 1.23 expected goals per 60 (the quality of his own chances), up from 0.87 last season, and his shooting percentage is exactly league average. Nothing here is running hot. He also shoots hard (93 mph, 96th percentile on NHL EDGE) and plays heavy, with 31 hits.\n\nFor context: forwards drafted sixth to tenth overall usually score about 0.40 points a game in their first full season. He's at 0.71.\n\nWhat to watch is the other end. Evolving-Hockey had opponents gaining 0.16 expected goals per 60 with him on the ice last season, bottom 9% of forwards, offset partly by the penalties he draws. If that improves, the minutes should follow. Our projection: about 25 goals.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:47:16Z"
+ "written": "2026-11-14T22:51:22Z",
+ "gp": 17
 }

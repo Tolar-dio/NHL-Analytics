@@ -1,9 +1,8 @@
 {
- "text": "Mason McTavish came to St. Louis from Anaheim with a promise attached: a bigger job. He has it. He is on the ice for 65% of the Blues' power-play chances, up from 36% last season, and his own chances are up to 1.65 expected goals per 60 from 1.22. That is why our numbers flag him as a breakout candidate at 23.\n\nThe results have gone cold, though. After a fast start he has three points in his last ten games against 6.3 expected, the kind of dip The Hockey News picked up on this month. Seven goals on 7.99 expected for the season says the finishing is roughly fair; the recent drought looks more like bad luck on the chances than a lack of them, since he keeps shooting (48 shots).\n\nCorey Sznajder's All Three Zones tracking had him among the better setup men last season, and Evolving-Hockey liked his offense while flagging his defense (bottom 2% of forwards for chances against). The role is real. The two-way game is what we'd watch.",
- "headline": "McTavish's bigger role hasn't found the net lately",
- "gp": 18,
+ "text": "St. Louis gave Anaheim two first-round picks, Nos. 15 and 29, for Mason McTavish in June, and The Hockey News already has him in a headline about players who \"have gone cold since hot starts to Blues career.\" The point totals back that up: 3 points in his last ten games, where our numbers expected about 6.\n\nThe chances say otherwise. McTavish is generating 1.59 expected goals per 60 (the quality of his shots), up from 1.22 in Anaheim. He has 52 shots in 19 games and 8.2 expected goals behind his 7 real ones. The Blues have also put him on the ice for 65% of their power-play chances, up from 36% last season. His linemates have finished about three goals below their chances, which is where the missing assists went.\n\nThe concern is the other end. Evolving-Hockey had opponents getting much more with him on the ice last season (bottom 2% of forwards), even as he helped drive play. This season St. Louis is about even on chances with him out there. If that holds, the cold spell is a finishing slump, not a role problem.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:46:25Z"
+ "written": "2026-11-14T22:54:04Z",
+ "gp": 19
 }

@@ -1,9 +1,8 @@
 {
- "text": "Chandler Stephenson has 13 points in 16 games, 11 of them assists, and on the surface he looks like a second-line center doing his job in Seattle. Underneath, the 5v5 numbers are the worst on this list: with him on the ice the Kraken have 39% of shot attempts and 39% of expected goals, almost nine points worse than when he sits.\n\nThat is not new. Evolving-Hockey had him around replacement level last season, with opponents getting far more chances with him on the ice (bottom 1% of forwards), though they also note he played with weak teammates, which drags his raw numbers down.\n\nThe offense comes in transition: Corey Sznajder's All Three Zones tracking had 56% of his shots coming off the rush. He shoots rarely (13 shots) and his points-per-60 is running above his usual range, which suggests the assist pace will slow.\n\nThe two-time Stanley Cup winner (Washington and Vegas) still plays 17 and a half minutes a night. Whether that holds if the shot share does not improve is the thing to watch.",
- "headline": "Stephenson's assists hide a 5v5 problem",
- "gp": 16,
+ "text": "Thirteen points in 18 games looks like a second-line center doing his job. The picture underneath is harsher for Chandler Stephenson. At five-on-five, Seattle has taken only 37% of the shot attempts and 37% of the expected goals (the quality of chances) with him on the ice, nearly 10 points worse than the Kraken manage without him. Evolving-Hockey flagged the same problem last season: opponents gained 0.39 expected goals per 60 with him out there, bottom 1% of forwards, though he also played beside some of the weakest teammates in the league.\n\nSix of his points have come on the power play, where the passing still works. He has 14 shots all season, which tells you who he is now: a setup man who rarely pulls the trigger himself.\n\nSome of this is bad luck. Seattle has scored about four fewer goals than its chances deserve with him on the ice, and that tends to swing back. The shot share is the bigger worry. For a two-time Stanley Cup winner at 32, the thing to watch is whether his 17:22 a night starts drifting toward younger centers.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:46:01Z"
+ "written": "2026-11-14T22:51:22Z",
+ "gp": 18
 }

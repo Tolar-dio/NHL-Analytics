@@ -1,9 +1,8 @@
 {
- "text": "Taylor Hall has played 999 NHL games, and the next one, if he dresses, comes in the Global Series in Finland against Seattle. NHL.com's Tracey Myers called it the perfect time for the milestone. The first pick of 2010 has been a Hart Trophy winner, a journeyman across seven teams, and, per his awards, a Stanley Cup champion with Carolina last season.\n\nHe has only played ten games this year after missing most of late October and early November (RotoWire and Yahoo Sports tracked the injury), and he is back in a depth role at about 13 minutes a night. Those minutes have been excellent: Carolina has 67% of expected goals with him on the ice at 5v5, almost ten points better than without him.\n\nSome context belongs with that. Evolving-Hockey notes he plays with strong teammates, which flatters raw on-ice numbers, though they still rated his own play-driving in the 91st percentile last season. Corey Sznajder's All Three Zones tracking had him among the best setup men in the league (92nd percentile in primary shot assists). He still makes the next play. Watch whether his ice time climbs now that he is healthy.",
- "headline": "Taylor Hall's 1,000th game is headed to Finland",
- "gp": 10,
+ "text": "Taylor Hall played his 1,000th NHL game on Thursday, in Finland of all places, with the Hurricanes wearing his 71 in warmups at the Global Series. It capped a strange first month: an upper-body injury knocked him out on Oct. 13 after barely four minutes of ice time, and he did not return until Nov. 5.\n\nThe hockey around the milestone is better than the box score. He has 7 points in 12 games on about 13 minutes a night, but Carolina is getting 67% of the five-on-five expected goals (the quality of chances) with him on the ice, nearly 9 points better than without him. His own chances are up to 1.35 expected goals per 60 from 0.90 last season. He is shooting 10.7%, the bottom of our range, and his linemates have finished 3.5 goals below their chances.\n\nContext matters, and Evolving-Hockey supplies it: he plays with strong teammates (96th percentile), which flatters those on-ice numbers, though even adjusted they had him in the 91st percentile at driving play. Corey Sznajder's All Three Zones tracking calls him a setup man. At 35 and a Cup champion, the question is minutes, not ability.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:48:26Z"
+ "written": "2026-11-14T22:53:47Z",
+ "gp": 12
 }

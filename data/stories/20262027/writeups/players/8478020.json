@@ -1,9 +1,8 @@
 {
- "text": "Michael Amadio has points in four straight games and six goals in 19, including the winner in Buffalo. Graeme Nichols of Coming Down the Pipe wrote that Amadio feels like he should have 10 or more already, and TSN's headline had Amadio saying he's been fortunate to get chances and capitalise. His goals have mattered: his wins-added total ranks 54th of 515 skaters.\n\nThe caveat is the shooting. Six goals on 24 shots is 25%, far above his usual range around 15%, and his own expected goals (4.3) say he is scoring more than his looks deserve, not fewer. The pace will come down.\n\nWhat he brings beyond goals is real. Evolving-Hockey had him worth 1.7 wins above replacement last season, 73rd among forwards, with strong chance suppression (93rd percentile), though they note he plays with strong teammates. Corey Sznajder's All Three Zones tracking had 57% of his shots coming off the rush.\n\nThe Sens Nation podcast is already asking about his next contract. He plays 16 minutes a night in Ottawa's middle six, and that role does not depend on the shooting.",
- "headline": "Amadio's goals are finally matching his chances, and then some",
- "gp": 19,
+ "text": "Michael Amadio has hired agent Andy Scott with extension talks ahead, the Ottawa Citizen reported this week, and he picked a good month to do it. Six goals in 20 games, four in his last ten, and our wins-added measure has him 57th of 522 skaters.\n\nHe's been modest about it. \"Fortunate enough to be getting some chances recently and capitalising on them,\" read his line in TSN's headline, and that's an honest read. His chances are up (0.80 expected goals per 60, from 0.64 last season), but he's shooting 24%, well beyond our range for him. Coming Down the Pipe's Graeme Nichols posted that he \"feels like he should have 10+ goals already.\" The underlying numbers say six is already generous.\n\nWhat makes him valuable doesn't depend on the shooting. Evolving-Hockey had him 73rd of 401 forwards by wins above replacement last season, with opponents getting 0.16 fewer expected goals per 60 when he was out there (93rd percentile), though he also played beside strong teammates. Corey Sznajder's All Three Zones tracking had 57% of his shots coming off the rush.\n\nHis minutes are climbing, near 17 a night lately, all without power-play time.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:48:26Z"
+ "written": "2026-11-14T22:54:39Z",
+ "gp": 20
 }

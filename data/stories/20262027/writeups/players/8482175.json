@@ -1,9 +1,8 @@
 {
- "text": "JJ Peterka is on his third team in three seasons, from Buffalo to Utah to Boston, and the fresh start is going well. He's playing 17:36 a night, up from just under 16 last season, with his ice time climbing to nearly 19 minutes over the last ten games. He has 14 points in 18 games.\n\nThe part that makes this a breakout rather than a hot streak is the chances. His expected goals per 60 minutes are up to 1.19 from 0.73, and his finishing is right on target (5 goals on 6.3 expected). Boston gets 55% of the expected goals at five on five with him on, three points better than without.\n\nOne caution: like most Bruins forwards, he's on the ice for more goals than the chances deserve (6.3 more), which helps the assist total. Evolving-Hockey's read on last season was that he was better than his results, around replacement level by goals but 1.5 wins by chance quality. This season the results are catching up. Watch the minutes: the coach keeps giving him more.",
- "headline": "Peterka's new start in Boston is working",
- "gp": 18,
+ "text": "Boston paid two first-round picks to get JJ Peterka from Utah in June, and the early returns look like a player who needed a bigger role. He is playing 17:38 a night, up from 15:59 last season, and has 14 points in 19 games. More telling, his own chances are up to 1.15 expected goals per 60 (the quality of his shots), from 0.73.\n\nThis is one of the cleaner breakouts on the board. His shooting is a little under our range, so the 5 goals, if anything, undersell the chances. The Bruins have finished about three goals better than expected with him on the ice, which flatters the assists some, but at five on five they are winning the chance battle with him out there (55% of expected goals).\n\nHis speed is the thing you notice: 62 bursts over 20 miles per hour already, 97th percentile in the league. His goal against Florida, which NHL.com clipped as \"Pastrnak sets up Peterka,\" is the version of him the trade was made for. Evolving-Hockey noted he was better than his goals last season too; watch whether the finishing finally catches up to the chances.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:48:36Z"
+ "written": "2026-11-14T22:53:18Z",
+ "gp": 19
 }

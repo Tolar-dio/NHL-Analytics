@@ -1,9 +1,8 @@
 {
- "text": "Brandon Montour is Seattle's minutes leader on defense at more than 24 a night, with 12 points in 15 games. He has been the tone setter, as Alison Lukan put it after the overtime win over Calgary, playing 30 minutes twice and joining the rush the way he did in Florida, where he won a Stanley Cup in 2024.\n\nThe numbers say the points are running hot. The Kraken have scored 5.2 more goals than their chances deserve with him on the ice, his own shooting (11%) is well above a defenseman's norm, and his points per 60 sit above his usual range. That is why our numbers flag him as due to cool.\n\nThe good news is that his game holds up relative to the team: Seattle is 6.5 points better in expected goals share with him than without him. Corey Sznajder's All Three Zones tracking had him among the better setup men on defense last season, with 31% of his shots coming off the rush. Evolving-Hockey had him better by expected wins than by actual goals last year. The role is solid; the scoring pace is the part to discount.",
- "headline": "Montour logs the minutes, and the bounces are helping",
- "gp": 15,
+ "text": "Seattle's defense has leaned hard on Brandon Montour. He's playing 24:05 a night, he topped 30 minutes against Detroit, and he has 12 points in 17 games. Alison Lukan called him \"a tone setter\" after the overtime win over Calgary.\n\nThere is some luck in the scoring. He's shooting 9.4%, above our range for him, his scoring rate is just past the top of the band we'd expect, and the Kraken have scored about four more goals than expected with him on the ice. Last season ran the other way: Evolving-Hockey had his chances worth 1.4 expected wins against -0.2 actual, so some of this is the bounces evening out.\n\nThe engine is still elite. NHL EDGE has him in the 98th percentile for 20-plus mph bursts and the 88th for shot speed, and Corey Sznajder's All Three Zones tracking had 31% of his shots coming off the rush last season, nearly double a typical defenseman. He lives in transition.\n\nThe team around him is the problem. At five-on-five Seattle has 45% of the shot attempts in his minutes, and the Kraken came home from the Global Series in Finland with two losses to Carolina.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:46:51Z"
+ "written": "2026-11-14T22:53:33Z",
+ "gp": 17
 }

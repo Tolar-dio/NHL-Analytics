@@ -1,9 +1,8 @@
 {
- "text": "Anton Lundell has eight points in 18 games, which reads like a slow start for a two-time Stanley Cup winner playing 17 and a half minutes a night. The underlying numbers tell a different story. Florida has 56% of expected goals with him on the ice at 5v5, almost six points better than without him, and he leads this group in shots with 50.\n\nThe problem has been finishing, his and everyone else's. He is shooting 8% against a usual range around 12%, and the Panthers have scored 5.5 fewer goals than their chances deserved with him out there. That is the kind of gap that usually swings back, which is why our numbers flag him as due. His three-goal night against Winnipeg on Oct. 30 accounts for most of his goals in the last ten games.\n\nHe also draws hard matchups (Evolving-Hockey had his competition in the 90th percentile last season). He missed the Nov. 7 game day to day with an undisclosed injury, per Daily Faceoff and others, and returned with two assists in Columbus. Watch the shot totals; the goals tend to follow.",
- "headline": "Lundell's points haven't caught up to his play",
- "gp": 18,
+ "text": "Anton Lundell missed a game last weekend, day to day, and came back to the kind of week Florida needed: two assists against Columbus, then two goals against Detroit on Thursday. Add the hat trick he scored on eight shots against Winnipeg on Oct. 30, and the two-time Cup winner has 6 goals in 19 games, 5 of them in his last ten.\n\nThe scoring line still undersells him. Florida is taking 59% of the five-on-five expected goals (the quality of chances) with him on the ice, 8.4 points better than without him, and his own chances are up to 1.15 expected goals per 60 from 0.89 last season. His shooting is normal. What isn't normal is his teammates' finishing: the Panthers have scored 6.9 fewer goals than their chances deserve with him out there, which explains why he has only 4 assists. That kind of gap usually swings back.\n\nEvolving-Hockey had most of his value last season coming on the power play, yet he has just one power-play point so far. Watch that number, and the assists; both have room to grow without him changing a thing.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:46:51Z"
+ "written": "2026-11-14T22:54:39Z",
+ "gp": 19
 }

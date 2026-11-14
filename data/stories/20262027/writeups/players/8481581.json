@@ -1,9 +1,8 @@
 {
- "text": "Thomas Harley plays almost 25 minutes a night for Dallas, and over the last ten games that has climbed toward 26. He is the defenseman the Stars lean on, and the 5v5 numbers back the trust: 54% of shot attempts and 53% of expected goals (the quality of chances) with him on the ice, nearly four points better than the team without him.\n\nThe production is fine rather than loud, 11 points in 17 games with five on the power play. His three-point night against San Jose on Nov. 7 got him headlines, and so did the trade speculation, though that is chatter, not reporting of anything real.\n\nThe question mark is defense. Evolving-Hockey had him around replacement level last season, with opponents getting more chances when he was out there (bottom 10% of defensemen). This year's shot share is a better look. Corey Sznajder's All Three Zones tracking shows a defenseman who joins the rush more than most (28% of his shots, typical is 17%), which is the part of his game to watch.",
- "headline": "Harley carries Dallas minutes, not yet the scoreboard",
- "gp": 17,
+ "text": "Thomas Harley is playing 25 minutes a night for Dallas, and closer to 26 lately, and the production has followed the ice time. He has 13 points in 18 games and 10 in his last ten, with two assists against Winnipeg on Thursday. He is also doing the unglamorous part: 41 blocked shots already.\n\nThe scoring is running a little ahead of him. His 1.73 points per 60 is above the top of our range for him (1.67), and over those ten games he has 10 points against roughly 6.6 expected. But this is not a luck story in the usual sense: his shooting and the finishing around him are both close to normal. The points are coming because Dallas is creating more with him out there (53% of five-on-five expected goals, 3.4 points better than without him).\n\nThat matters, because Evolving-Hockey had him around replacement level last season, with chances against piling up. Corey Sznajder's All Three Zones tracking had 28% of his shots coming off the rush, high for a defenseman. Watch his defensive numbers: if those hold, this is a real step.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:46:01Z"
+ "written": "2026-11-14T22:52:20Z",
+ "gp": 18
 }
