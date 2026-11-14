@@ -1,9 +1,1 @@
-{
- "text": "Ben Kindel made Pittsburgh's opening roster at 19, a year after the Penguins took him 11th overall out of the WHL's Calgary Hitmen, and he has 7 points in 15 games on more than 17 minutes a night. He missed a stretch in late October, came back, and has been practicing with the first power-play unit.\n\nHis point total undersells how he has played. The Penguins have scored 9.8 fewer goals than their chances deserve with him on the ice, the kind of cold run that tends to swing back. His own shooting is a bit low too, 9.4% against a range closer to 12%.\n\nThe context helps. Forwards drafted 6th to 16th since 2005 scored a median 0.37 points a game in their first full season; he is at 0.47. Corey Sznajder's All Three Zones tracking has him carrying the puck in on 56% of his entries, which is a veteran's habit. Our projection is about 41 points. For a teenager in a top-nine role, that would be a very good year.",
- "headline": "Kindel's rookie numbers are better than his luck",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-11T12:47:24Z",
- "gp": 15
-}
+{"text": "Ben Kindel is a 19-year-old rookie playing 17 and a half minutes a night on a Penguins team that keeps losing, and his numbers carry the weight of both facts. Eight points in 16 games looks modest. The more telling figure is this one: the Penguins have scored 10.7 fewer goals than their chances deserve with him on the ice, the biggest gap our numbers flag for him and the kind that usually swings back.\n\nHis own finishing is about where it should be (4 goals on 4.5 expected goals), so this is not a shooter running cold. It's a line that creates enough and keeps watching the puck stay out. He scored on the power play in Wednesday's shootout win in San Jose, his first goal since late October.\n\nThe 11th pick in 2025 put up 99 points in his last WHL season, and forwards picked in his range usually start around 0.37 points a game. He's at 0.50. When the bounces even out, that number climbs.", "headline": "Kindel has been better than his line", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-14T12:47:54Z", "gp": 16}

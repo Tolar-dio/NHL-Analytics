@@ -1,9 +1,1 @@
-{
- "text": "Morgan Frost has 12 points in 18 games for Calgary, which is about what you'd want from a 15-minute center. The breakdown is less comfortable. He has one goal in his last ten games, his own chances have thinned to 1.5 expected goals over that stretch, and his ice time is down a minute. Headlines are already asking what the Flames should do with him.\n\nHis scoring rate is running ahead of his talent range, mostly on assists (8 of them, 6 points on the power play). At five on five Calgary is slightly under water with him, 48% of the expected goals.\n\nThe case for patience is last season. Evolving-Hockey had him 73rd among 401 forwards in wins above replacement despite teammates in the bottom 7% by impact, and Corey Sznajder's All Three Zones tracking had him carrying the puck in on 61% of his entries with most of his shots off the rush. Our projection is about 46 points. He needs linemates who can finish what he starts.",
- "headline": "Frost's assists are carrying a quiet start",
- "by": "session",
- "model": "claude-session",
- "v": 2,
- "written": "2026-11-11T12:47:15Z",
- "gp": 18
-}
+{"text": "Morgan Frost is doing what Calgary got him to do: drive offense from the middle without a lot of help. He has 12 points in 19 games, six on the power play, and his scoring rate per hour sits above what our numbers expect from him. Goals are almost exactly in line with his chances (4 on 3.9 expected), so there's no luck to strip out.\n\nThe concern is volume. Over the last ten games he has one goal and only 1.0 expected goals of his own; the assists (five) are carrying the line. His shot is not a weapon either, in the 14th percentile for top speed by NHL Edge.\n\nWhere he hurts teams is in transition. Corey Sznajder's All Three Zones tracking had 61% of his shots coming off the rush last season, and Evolving-Hockey rated him 73rd of 401 forwards in value despite weaker linemates. With headlines asking what the Flames should do with him, the question is less about his game than his fit.", "headline": "Frost keeps the Flames' power play moving", "by": "session", "model": "claude-session", "v": 2, "written": "2026-11-14T12:47:54Z", "gp": 19}

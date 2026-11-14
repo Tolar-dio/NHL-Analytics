@@ -1,9 +1,9 @@
 {
- "text": "Will Smith's third season in San Jose has been slower on the scoresheet than the second, 13 points in 20 games, but the parts that matter are fine. He is getting 1.24 expected goals per 60 on his own shots, up from 0.96 last season, and he is converting at a normal rate. The problem is the ice around him: the Sharks have scored 6.5 fewer goals than their chances deserve with him on, which costs a playmaker points.\n\nCorey Sznajder's All Three Zones tracking had him in the 98th percentile of forwards at getting to the home-plate area last season, often off passes across the slot. The weak spot is defense: Evolving-Hockey had opponents getting noticeably more chances with him on the ice, bottom 8% of forwards.\n\nHe has talked about the power play's struggles after a loss in Dallas, and it is where a turnaround starts. Our projection lands him around 65 points, and we'd expect the luck to swing his way well before that.",
- "headline": "Will Smith is better than his points",
+ "text": "Will Smith has 14 points in 21 games for San Jose, and our numbers think that undersells him. The Sharks have scored 5.9 fewer goals than their chances deserve with him on the ice, which has cost him assists, and his scoring rate of 2.01 points per 60 sits below the low end of the range our talent model gives him.\n\nThe chances are there. He has 7 goals on 8.6 expected, shooting right around his normal rate, and Corey Sznajder's All Three Zones tracking had him at 98th percentile among forwards for chances from the slot last season, often off passes across the royal road. He's playing 20 minutes a night at 21, in his third NHL season, and the Sharks are better at five on five with him than without him, if still under water overall.\n\nThe power play has been a sore spot. He talked about its struggles after a loss in Dallas, though he scored on it that night. Evolving-Hockey's knock from last season was defensive: opponents generated more against him than against most forwards. The finishing and the setup are fine. Watch his line's defensive numbers, and watch the assists, which should start arriving.",
+ "headline": "Will Smith is better than his point total",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-11T12:47:15Z",
- "gp": 20
+ "written": "2026-11-14T12:48:00Z",
+ "gp": 21
 }

@@ -1,8 +1,9 @@
 {
- "text": "Winnipeg went eight straight games without a win this fall, and Kyle Connor kept scoring anyway. He has 13 goals in 18 games, nine power-play points and more than 21 minutes a night, and by our win-probability numbers his goals have been worth 2.28 wins, second among 506 skaters. Two of them came in the 5-4 comeback in Montreal that started the Jets' current three-game run.\n\nSome of this will cool. He's shooting 18% against 14% last season, 13 goals on 9.8 expected (the quality of his chances). But the luck runs the other way on his assists: with him on the ice, Winnipeg has scored 7.4 fewer goals than its chances deserve. Expect fewer goals and more helpers, and roughly the same player.\n\nThe process doesn't depend on any of that. Corey Sznajder's All Three Zones tracking had him carrying the puck in on 66% of his entries last season and getting 6.7 chances per 60 from right in front (87th percentile). Our projection: about 46 goals.",
+ "text": "Kyle Connor's goals have mattered more than anyone's this season. By our wins-added count, which weighs each goal by how much it swung the game, he's first among 522 skaters. He has 16 goals in 20 games, seven in his last ten, and two of them came Tuesday when the Jets beat Connor Hellebuyck in his first game back in Winnipeg since the trade that sent him to New Jersey.\n\nThe shooting is hot and will cool. He's at 19% against 14% last season, with 16 goals on 11.8 expected. But there's an offset: the Jets have scored 4.9 fewer goals than expected with him on the ice, so his assist total is running cold. One luck number is carrying him and another is holding him back.\n\nThe volume is the reason to believe. He has 84 shots, gets to the slot as well as almost any winger (Corey Sznajder's All Three Zones tracking had him 87th percentile in chances from the home-plate area last season), and carries the puck in on two of every three entries. Winnipeg has won its last five. Watch whether his assists start catching up as the goals slow.",
+ "headline": "Nobody has added more wins",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-10T22:58:11Z",
- "gp": 18
+ "written": "2026-11-14T12:46:33Z",
+ "gp": 20
 }
