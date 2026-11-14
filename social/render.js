@@ -15,6 +15,7 @@ const SITE = "https://readtheice.app/data/";
 // The site stays off the graphics until Tolar says otherwise (Nov 9, 2026: "not trying to show my hand just yet").
 // SHOW_SITE=1 puts readtheice.app back in the footers and calls to action.
 const LINK = process.env.SHOW_SITE === "1" ? "readtheice.app" : "";
+const CUTOFF = process.env.ALL_GAMES === "1" ? 0 : Date.now() - 600000;   // ALL_GAMES=1 keeps games already under way
 const B = { navy: "#0e1b2a", panel: "#15263a", line: "#22374d", ice: "#eef3f7", muted: "#8ea3b7", red: "#f0475e", blue: "#5b8deb" };
 const FONTS = `<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">`;
 const NAMES = { ANA: "Ducks", BOS: "Bruins", BUF: "Sabres", CAR: "Hurricanes", CBJ: "Blue Jackets", CGY: "Flames", CHI: "Blackhawks", COL: "Avalanche", DAL: "Stars", DET: "Red Wings", EDM: "Oilers", FLA: "Panthers", LAK: "Kings", MIN: "Wild", MTL: "Canadiens", NJD: "Devils", NSH: "Predators", NYI: "Islanders", NYR: "Rangers", OTT: "Senators", PHI: "Flyers", PIT: "Penguins", SEA: "Kraken", SJS: "Sharks", STL: "Blues", TBL: "Lightning", TOR: "Maple Leafs", UTA: "Mammoth", VAN: "Canucks", VGK: "Golden Knights", WSH: "Capitals", WPG: "Jets" };
@@ -108,7 +109,7 @@ function scorers(T, notes = {}) {
 
 // shots on goal: the five likeliest to put 3+ on net (same look as the scorers card)
 function shots(T, notes = {}) {
-  const now = Date.now(), live = new Set(T.games.filter((g) => new Date(g.start) > now - 600000).map((g) => [g.away, g.home]).flat());
+  const now = Date.now(), live = new Set(T.games.filter((g) => new Date(g.start) > CUTOFF).map((g) => [g.away, g.home]).flat());
   const top = [...T.props].filter((p) => p.lineup !== "returning" && live.has(p.team)).sort((a, b) => b.p_sog3 - a.p_sog3).slice(0, 5);
   const rows = top.map((p, i) => `
     <div class="row">
@@ -138,7 +139,7 @@ function shots(T, notes = {}) {
 // game totals: the book's line next to the goals we expect, for every game still to start
 function totals(T) {
   const now = Date.now();
-  const G = T.games.filter((g) => g.market && g.market.total && new Date(g.start) > now - 600000);
+  const G = T.games.filter((g) => g.market && g.market.total && new Date(g.start) > CUTOFF);
   const rows = G.map((g) => {
     const m = g.market, exp = (g.away_xg + g.home_xg), po = m.model_p_over;
     const lean = Math.abs(exp - m.total) < 0.25 ? "Even" : exp > m.total ? "Over" : "Under";
@@ -150,22 +151,22 @@ function totals(T) {
       <div class="c"><em>Over</em><b>${pct(po)}</b></div>
     </div>`;
   }).join("");
-  const dense = G.length > 7;
+  const dense = G.length > 7, tight = G.length > 10;   // a full Saturday slate needs a tighter row
   return page(1080, 1350, `
     <div style="padding:72px 72px 0">
       ${wordmark(36)}
-      <div class="kicker" style="margin-top:44px">${dayLabel(T.date)}</div>
-      <h1 style="font-size:84px;margin-top:6px">Game totals</h1>
-      <p class="muted" style="font-size:25px;margin-top:12px;line-height:1.35">The sportsbook line next to the goals our numbers expect, and our chance the game goes over. Totals are the hardest thing in hockey to call, ours included.</p>
-      <div class="ts" style="gap:${dense ? 9 : 12}px">${rows}</div>
+      <div class="kicker" style="margin-top:${tight ? 32 : 44}px">${dayLabel(T.date)}</div>
+      <h1 style="font-size:${tight ? 72 : 84}px;margin-top:6px">Game totals</h1>
+      <p class="muted" style="font-size:${tight ? 23 : 25}px;margin-top:${tight ? 8 : 12}px;line-height:1.35">The sportsbook line next to the goals our numbers expect, and our chance the game goes over. Totals are the hardest thing in hockey to call, ours included.</p>
+      <div class="ts" style="gap:${tight ? 7 : dense ? 9 : 12}px">${rows}</div>
     </div>
     ${footer("Lines: DraftKings via the NHL · For information and entertainment. 21+. 1-800-GAMBLER")}`, `
-    .ts { margin-top:26px; display:grid; }
-    .t { display:grid; grid-template-columns:auto 1fr 120px 150px 120px; align-items:center; gap:18px; background:${B.panel}; border-radius:16px; padding:${dense ? "9px 26px" : "14px 26px"}; }
-    .chips { display:flex; gap:5px; } .chips i { width:10px; height:${dense ? 52 : 60}px; border-radius:5px; display:block; }
-    .t > div > b { display:block; font-size:${dense ? 32 : 36}px; font-weight:700; line-height:1.1; } .t > div > span { font-size:21px; color:${B.muted}; }
+    .ts { margin-top:${tight ? 18 : 26}px; display:grid; }
+    .t { display:grid; grid-template-columns:auto 1fr 120px 150px 120px; align-items:center; gap:18px; background:${B.panel}; border-radius:16px; padding:${tight ? "4px 26px" : dense ? "9px 26px" : "14px 26px"}; }
+    .chips { display:flex; gap:5px; } .chips i { width:10px; height:${tight ? 40 : dense ? 52 : 60}px; border-radius:5px; display:block; }
+    .t > div > b { display:block; font-size:${tight ? 29 : dense ? 32 : 36}px; font-weight:700; line-height:1.1; } .t > div > span { font-size:${tight ? 19 : 21}px; color:${B.muted}; }
     .c { text-align:right; } .c em { display:block; font-style:normal; font-size:17px; color:${B.muted}; text-transform:uppercase; letter-spacing:.08em; }
-    .c b { font-family:"Big Shoulders Display"; font-weight:900; font-size:${dense ? 46 : 52}px; line-height:1; }`);
+    .c b { font-family:"Big Shoulders Display"; font-weight:900; font-size:${tight ? 40 : dense ? 46 : 52}px; line-height:1; }`);
 }
 
 function luck(P) {
@@ -254,7 +255,7 @@ function cover(T, { kicker, line, rows }) {
   const d = new Date(T.date + "T12:00:00Z");
   const mon = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }), day = d.getUTCDate();
   const wk = d.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
-  const dense = rows.length > 5;
+  const dense = rows.length > 5, crowded = rows.length > 10;   // a full slate goes to two columns
   const html = rows.map((r) => `
     <div class="g">
       <div class="chips">${r.colors.map((c) => `<i style="background:${c}"></i>`).join("")}</div>
@@ -265,17 +266,17 @@ function cover(T, { kicker, line, rows }) {
     ${rinkBg(880, 330, 300)}
     <div style="padding:72px 72px 0">
       ${wordmark(36)}
-      <div class="kicker" style="margin-top:${dense ? 40 : 90}px">${wk} · ${esc(kicker)}</div>
-      <h1 style="font-size:${dense ? 240 : 330}px;line-height:.84;margin-top:6px">${mon} <span style="color:${B.blue}">${day}</span></h1>
-      <p style="font-size:40px;font-weight:600;margin-top:${dense ? 16 : 30}px">${esc(line)}</p>
-      <div class="gs" style="margin-top:${dense ? 22 : 44}px;gap:${dense ? 8 : 16}px">${html}</div>
+      <div class="kicker" style="margin-top:${crowded ? 32 : dense ? 40 : 90}px">${wk} · ${esc(kicker)}</div>
+      <h1 style="font-size:${crowded ? 200 : dense ? 240 : 330}px;line-height:.84;margin-top:6px">${mon} <span style="color:${B.blue}">${day}</span></h1>
+      <p style="font-size:${crowded ? 34 : 40}px;font-weight:600;margin-top:${dense ? 16 : 30}px">${esc(line)}</p>
+      <div class="gs" style="margin-top:${dense ? 22 : 44}px;gap:${crowded ? "10px 12px" : dense ? "8px" : "16px"};${crowded ? "grid-template-columns:1fr 1fr" : ""}">${html}</div>
     </div>
     <div class="foot"><span>For information and entertainment. 21+. 1-800-GAMBLER</span><span style="color:${B.ice};font-weight:700;font-size:26px">Swipe &#8594;</span></div>`, `
     .gs { display:grid; }
-    .g { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:24px; background:${B.panel}; border-radius:20px; padding:${dense ? "10px 28px" : "20px 30px"}; }
+    .g { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:24px; background:${B.panel}; border-radius:20px; padding:${crowded ? "12px 18px" : dense ? "10px 28px" : "20px 30px"}; gap:${crowded ? 14 : 24}px; }
     .chips { display:flex; gap:6px; } .chips i { width:12px; height:${dense ? 40 : 64}px; border-radius:6px; display:block; }
-    .g b { display:block; font-size:${dense ? 30 : 38}px; font-weight:700; line-height:1.15; } .g span { display:block; font-size:25px; color:${B.muted}; margin-top:2px; }
-    .g em { font-style:normal; font-family:"Big Shoulders Display"; font-weight:800; font-size:${dense ? 30 : 36}px; color:${B.ice}; white-space:nowrap; }`);
+    .g b { display:block; font-size:${crowded ? 25 : dense ? 30 : 38}px; font-weight:700; line-height:1.15; } .g span { display:block; font-size:25px; color:${B.muted}; margin-top:2px; }
+    .g em { font-style:normal; font-family:"Big Shoulders Display"; font-weight:800; font-size:${crowded ? 24 : dense ? 30 : 36}px; color:${B.ice}; white-space:nowrap; }`);
 }
 const COUNT = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 function gamesCover(T, GAMES) {
@@ -380,7 +381,9 @@ function pitch(S, i, n) {
 // ---------------------------------------------------------------- render
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
-  const get = async (f) => (await fetch(SITE + f)).json();
+  // DATA_DIR=<folder> reads tonight.json, team_profiles.json and previews/ from disk instead (lines added by hand, say)
+  const get = async (f) => (process.env.DATA_DIR && fs.existsSync(path.join(process.env.DATA_DIR, f))
+    ? JSON.parse(fs.readFileSync(path.join(process.env.DATA_DIR, f), "utf8")) : (await fetch(SITE + f)).json());
   const [T, P] = await Promise.all([get("tonight.json"), get("team_profiles.json")]);
   const tf = path.join(__dirname, "today.json");
   const TODAY = fs.existsSync(tf) ? JSON.parse(fs.readFileSync(tf, "utf8")) : {};
