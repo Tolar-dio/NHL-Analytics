@@ -1,8 +1,8 @@
 {
- "text": "Ryan Strome came to Calgary at last season's trade deadline, and tonight he sees the Rangers, the team he spent 263 games with. He's a middle-six centre in this version of his career, at about 14 minutes a night, with six points in 18 games.\n\nThe points are light, and our numbers think a good part of that is bad luck around him: the Flames have scored 6.0 fewer goals than their chances deserved with him on the ice, the kind of gap that usually swings back. Calgary is about even in chances with him on the ice, and better than without him. The shooting is a mixed picture. Corey Sznajder's All Three Zones tracking had him shooting a lot last season (81st percentile in attempts) but not from the slot as often as that volume suggests, and only 31% of his entries were carries, which tilts his line toward dump-ins. His top speed and shot speed both sit near the bottom of the league. If the luck turns, expect something close to our 34-point median.",
+ "text": "Ryan Strome is 33, on his fifth NHL team, and past 500 career points, which he reached before this season started. In Calgary he's a middle-six center on 14 minutes a night with seven points in 20 games, and that's about where you'd expect a veteran of his profile to land.\n\nThe interesting part is the gap between his chances and his results. The Flames have scored 5.3 fewer goals than their chances deserve with him on the ice, which is the biggest reason his points look thin. He's shooting 7.1% against a usual 12 or so, and the five-on-five play with him is even, 50% of the expected goals. That kind of drought tends to swing back.\n\nHe isn't a burner: bottom-20% top speed, a soft shot, and in Corey Sznajder's All Three Zones tracking last season he carried the puck in on only 31% of his entries, so his line lives on dump-ins and the forecheck. He shoots a lot but often from outside. Watch whether he gets to the slot more. If he does, the points should follow.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-11T22:56:08Z",
- "gp": 18
+ "written": "2026-11-15T12:45:30Z",
+ "gp": 20
 }

@@ -1,0 +1,12 @@
+{
+ "text": "This week Sports Illustrated ran a piece on how Filip Forsberg broke out of his slump and \"saved Nashville's season\", which tells you where the Predators were not long ago. They have now won seven straight, outscored teams 25-12 in that stretch, and on Friday Roman Josi won it in the shootout in Vegas after Juuse Saros made 40 saves. Ryan Wilson, a self-described Penguins guy, called it this group \"making a Last Stand\". It's been fun to watch.\n\nHow real is it? Our numbers say about half. Nashville has taken 51% of the expected goals, the quality of chances, during the streak, which is fine but not dominant. The rest is Saros: .922 and 10.9 goals saved above expected this season, after a year that was 10 goals below. Shane Wright, new in town from Seattle this month, had three points against Anaheim on Tuesday, and Jonathan Marchessault is off the out list and day-to-day.\n\nSan Jose is coming off one of the strangest games of its season, a 6-5 shootout win in Utah after trailing by two, with Eric Pohlkamp scoring his first NHL goal. The Sharks have Macklin Celebrini, who is at 42% to score tonight by our numbers, and an interesting second piece in Ivar Stenberg, who moved up beside Celebrini and Will Smith last game. Stenberg is our Sleeper for a point at 54%: his ice time is up and his line creates 3.80 expected goals per 60 when he's on it. Smith is one goal from 50 for his career. Alex Nedeljkovic gets the start over Yaroslav Askarov, which makes sense on the second night of a back-to-back, and he has been good (5.3 goals saved above expected in seven games).\n\nBoth teams have been outchanced at five on five this season (Nashville 47%, San Jose 45%), and San Jose won the only meeting in a shootout in October. Our numbers lean Nashville on chances, 3.37 expected goals to 2.91, with the Sharks playing on tired legs.",
+ "headline": "Nashville's seven-game run lands in San Jose",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-15T12:51:47Z",
+ "goalies": [
+  8477424,
+  8477968
+ ]
+}

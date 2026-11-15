@@ -1,0 +1,12 @@
+{
+ "text": "Four days ago these two went to overtime in Edmonton, and the Oilers won it 3-2. Since then, the conversation around the Flyers has been almost all about Matvei Michkov. The headlines have covered his ice time, a clip of Travis Konecny barking at him on the bench, and ESPN's Kevin Weekes reporting that the young winger may want out, which Rick Tocchet and Danny Briere both said was not a formal request. The Philadelphia Inquirer has reported that Danny Briere has put Tocchet on notice. Then Michkov went to Columbus last night and scored a goal that PHLY's Charlie O'Connor called \"an absolutely fantastic individual effort\", and the Flyers came back from two down to win 4-3. It was the first time all season they had won a game that was tied at any point in the third.\n\nEdmonton arrives on a far calmer note. Devon Levi stopped all 19 Toronto shots last night for his first career shutout, a 1-0 win that made it four straight. Connor McDavid has a point in 21 games in a row (11 goals, 39 assists), and Zach Hyman needs one more point for 500 in his career.\n\nOur numbers aren't sold on all of it. The Oilers are +25 in goal difference on +3.8 expected, the quality of their chances, and their finishing has added almost 20 goals above what those chances usually produce. In the four-game streak they took only 48% of the expected goals. Tristan Jarry, our projected starter tonight, has been hot (.942 over his last five starts), but his season sits just below average.\n\nBoth teams played last night, so the back-to-back cancels out. Philadelphia's problem is the long view: 43% of the five-on-five expected goals, a 4% chance at the playoffs in our simulations, and a coach being second-guessed out loud. Edmonton is near-certain (98%) to be playing in April. One more good night from Michkov would change the conversation in Philadelphia, at least until morning.",
+ "headline": "The Flyers' noise meets the Oilers' hot streak",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-15T12:55:02Z",
+ "goalies": [
+  8477465,
+  8478435
+ ]
+}
