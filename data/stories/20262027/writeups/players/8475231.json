@@ -1,9 +1,8 @@
 {
- "text": "Casey Cizikas is nearing 1,000 NHL games, every one of them as an Islander, which makes him the longest-serving player on the team and one of the rare one-franchise careers left in the league. At 35 he's playing about 12 minutes a night as the fourth-line center, and since the injuries he has had Kyle Palmieri and Simon Holmstrom on his wings.\n\nThe points are thin, three in 16 games and one in his last ten, but that's not the job. The Islanders take about 53% of the expected goals with him on the ice, nearly four points better than without him. Evolving-Hockey had opponents getting fewer chances against him last season than against 96% of forwards, which is exactly what you want from a checking center.\n\nOur range has him at 5 to 14 goals over a full season, and he'll probably land near the low end; that's fine. What to watch is the milestone, and the moment it comes in an Islanders sweater at home, it will be one of the better nights of the season on Long Island.",
- "headline": "Cizikas, closing in on 1,000",
+ "text": "Casey Cizikas has played 997 NHL games, every one of them for the Islanders, and Newsday's Andrew Gross has been chronicling the march toward 1,000. At 35, he is still doing the job he has always done: about 12 minutes a night of checking-line hockey, with 22 hits and very little scoring. He has 3 points in 19 games, 1 goal on 1.57 expected goals (the quality of chances he has generated).\n\nThe offense is quieter than last season, when he scored 10 goals, and the chances aren't there to suggest a bounce is coming: he is generating 0.41 expected goals per 60 minutes, down from 0.79 a year ago. The defensive side is the reason he still plays. Evolving-Hockey had opponents creating 0.18 fewer expected goals per 60 with him on the ice last season, 96th percentile among forwards. With him out there this season, the Islanders are getting just under half the shots and chances at five on five, which for a checking center is the point. The milestone is the story to watch this week.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-09T12:56:23Z",
- "gp": 16
+ "written": "2026-11-16T22:54:32Z",
+ "gp": 19
 }

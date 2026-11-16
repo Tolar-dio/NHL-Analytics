@@ -1,8 +1,8 @@
 {
- "text": "Jack Hughes was named the NHL's second star of the week and he's on a six-game point streak (five goals, seven assists). He has 26 points in 19 games, and the Devils take 64% of the expected goals at five on five with him on the ice, a dominant number.\n\nNone of it looks fluky. His shooting (11.8%) is a touch below normal on 10.9 expected goals, and New Jersey's on-ice finishing is close to average. By our win probability, his goals have added more wins than all but nine skaters. He played 61 games last season; healthy, this is what he looks like.\n\nCorey Sznajder's All Three Zones tracking has the full set: 97th percentile for chances from the slot, 69% of exits with possession, 58% of entries carried in. One blog has him as the best 3-on-3 player in the world. Our range: 89 to 120 points.",
+ "text": "Jack Hughes is shooting like a different player. He's at 1.63 expected goals per 60 minutes (a measure of the quality of chances he gets himself), up from 1.05 last season, and he has put 81 shots on goal while the Devils won eight of his last ten games. He has 27 points in 21 games, and the scoring isn't lucky: 10 goals on 11.79 expected, so if anything he has left a couple out there.\n\nThe bigger picture is that New Jersey controls the puck with him on the ice, 61.5% of the expected goals at five on five, and his last ten games brought 15 points against 12.4 expected. Corey Sznajder's All Three Zones tracking explains how: he carried the puck into the zone on 58% of his entries last season, and in tracked games carries led to a scoring chance 25% of the time, dump-ins 8%. Evolving-Hockey had him drawing more penalties than he takes, worth 2.2 goals. Our closest stylistic matches are Macklin Celebrini and Connor Bedard, which tells you where his game lives: on the puck, through the middle, at full speed.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T22:55:45Z",
- "gp": 19
+ "written": "2026-11-16T22:52:50Z",
+ "gp": 21
 }

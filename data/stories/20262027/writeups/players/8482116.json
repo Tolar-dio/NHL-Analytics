@@ -1,8 +1,8 @@
 {
- "text": "Tim Stützle is getting MVP talk in Ottawa (the Ottawa Citizen's phrase was an \"MVP-calibre start\"), and TSN's Mike Johnson has been talking about his 200-foot game. Twenty-three points in 19 games, nearly 22 minutes a night, and since William Eklund went down he has moved onto the line with Dylan Cozens and Fabian Zetterlund.\n\nSome cooling is likely. He's shooting 21% against 18% last season, and his points per 60 sit near the top of our range. But Ottawa takes 57% of the expected goals at five on five with him on, and his last ten games came in right at his expected points, so the play underneath is sound.\n\nHe carries the puck in on 62% of his entries and sits in the 95th percentile for primary shot assists in Corey Sznajder's All Three Zones tracking. Evolving-Hockey had him 29th of 401 forwards in wins above replacement. Our range: 80 to 107 points.",
+ "text": "Tim Stützle has 11 goals in 21 games, and the finish is doing a lot of the work. His chances add up to 6.76 expected goals (the quality of his shots), and he's shooting 22% against 18% last season, well above the top of our range for him. That's the kind of rate that rarely lasts, even for a skilled shooter. His last ten games brought 10 points against 11.8 expected, so the overall production has already settled back toward normal.\n\nWhat's encouraging for Ottawa is underneath the goals. The Senators hold 56.9% of the expected goals at five on five with him on the ice, even though the shot attempts are roughly even, which means the chances they get are the better ones. He's also been more physical than his reputation, with 45 hits. Corey Sznajder's All Three Zones tracking had him carrying the puck in on 62% of his entries last season, and Evolving-Hockey had him drawing more penalties than he takes. The flip side, per Evolving-Hockey, was defense: bottom 4% among forwards in chances allowed. We'd watch the goal pace cool and the playmaking carry more of the load.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T22:56:07Z",
- "gp": 19
+ "written": "2026-11-16T22:53:35Z",
+ "gp": 21
 }
