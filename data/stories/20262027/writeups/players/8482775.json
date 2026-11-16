@@ -1,0 +1,8 @@
+{
+ "text": "Oliver Kapanen scored 22 goals as a rookie last season. This season he has one in 13 games, and the headlines have turned: Montreal Hockey Fanatics wrote that the Canadiens are exploring trades involving him, and other outlets have debated whether they missed their window to sell. Now, with Ivan Demidov out, he's back on the top line beside Juraj Slafkovsky and Alex Newhook.\n\nThe chances say he hasn't forgotten how to score. His own shot quality, 0.93 expected goals per 60, is a bit higher than last season, and he has 1 goal on 2.4 expected. Corey Sznajder's All Three Zones tracking had him in the 94th percentile for chances from the slot last season, with a lot of his shots coming off passes across the slot. That's a finisher's profile, and our model compares him to Frank Vatrano. Montreal also takes 56% of the five-on-five expected goals with him on, 6 points better than without him.\n\nThe worry from last season was defense: Evolving-Hockey had opponents creating more against him than against almost any forward. That hasn't shown this year. Our talent range has him around 12 goals. A top-line spot is the best chance he'll get to change the conversation.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-16T12:53:24Z",
+ "gp": 13
+}
