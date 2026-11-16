@@ -1,8 +1,8 @@
 {
- "text": "Bobby McMann scored 29 goals last season, mostly in Toronto, and the Kraken traded for that player. So far they have a different one: pointless in six, one point in his last ten games, and Seattle has 42% of the expected goals at five on five with him on the ice.\n\nOur numbers call the slump mixed. He's getting a few fewer chances than usual, and the ones he gets aren't going in (6.7% shooting against a typical 13). The first part is the worry. He's on a line with Jordan Eberle and Chandler Stephenson that has been out-chanced badly (39% of the expected goals), and that's not a situation that fixes itself.\n\nHe's a transition player, with more than half his shots off the rush in Corey Sznajder's All Three Zones tracking, on a team that hasn't had the puck much. An undrafted free agent who made himself a scorer, he has earned patience. Our range still says 19 to 34 goals.",
+ "text": "Bobby McMann scored 29 goals last season, the late bloomer's breakout after years of working up from the ECHL. In his first full season in Seattle, the goals have gone quiet: three in 18 games, none in his last ten, and two points over that stretch.\n\nOur read is that this one is a real dip, not just bad luck. His own chances over those ten games are down, 1.9 expected goals (the quality of chances) against 2.5 usually, and Seattle takes only 41% of the five-on-five expected goals with him on the ice, more than 4 points worse than without him. For the season, his three goals on 4.3 expected aren't far off. The problem isn't finishing. It's that the looks aren't coming the way they did.\n\nThe profile hasn't changed. He's a big, fast shooter whose offense lives in transition, with 53% of his shots off the rush by Corey Sznajder's All Three Zones tracking, and our model compares him to Owen Tippett. Evolving-Hockey had him facing 97th-percentile competition last season. Our talent range still has him around 25 goals. Watch the rush chances: when Seattle starts creating them again, he will too.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T22:56:31Z",
- "gp": 17
+ "written": "2026-11-16T12:56:22Z",
+ "gp": 18
 }

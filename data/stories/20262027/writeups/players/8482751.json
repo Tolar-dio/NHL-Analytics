@@ -1,0 +1,8 @@
+{
+ "text": "Ryan Winterton has gone ten games without a point, and unlike some slumps, this one is about the chances drying up. With him on the ice over those ten games, Seattle has produced 3.3 expected goals (the quality of chances) against a usual 4.6. The 23-year-old, a 2021 third-round pick out of the Kraken's first draft class, has six points in 18 games.\n\nThe season-long picture has a puzzle in it. Seattle takes only 38% of the five-on-five shot attempts with him on the ice, which is very low, but 48% of the expected goals, and that's 5 points better than the Kraken do without him. That suggests he's on the ice for fewer shots but better ones, and Corey Sznajder's All Three Zones tracking had him in the 81st percentile for chances from the slot last season.\n\nEvolving-Hockey noted he played with some of the weakest teammates in the league last season, which drags down his raw numbers. Our model compares him to Adam Henrique, a passer more than a shooter. Our talent range has him around 26 points. Playing just under 13 minutes on a team that's struggling to create, he needs the chances to come back before the points can.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-16T12:56:22Z",
+ "gp": 18
+}
