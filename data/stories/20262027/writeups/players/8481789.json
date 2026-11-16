@@ -1,9 +1,8 @@
 {
- "text": "Tye Kartye was a fourth-liner in Seattle, undrafted, a free-agent find who worked his way up through the AHL. In New York he is playing 16 minutes a night, up from under 12, with 13 points in 19 games after 0.34 a game last season. He scored against the Kraken on Saturday, which made for a good weekend.\n\nThe breakout is real in the ways that matter. His own chances have more than doubled, from 0.46 expected goals per 60 to 0.99, and the Rangers take 56% of the expected goals (the quality of chances) with him on the ice. He also has 52 hits, so the game he made his name with hasn't gone anywhere.\n\nSome scoring will cool. He is shooting 18.2% against a range near 14%. And 19 games is a small sample; ice time settles faster than scoring does. Our projection is about 52 points, which would still be more than double his best season. The Rangers seem to have found a middle-six forward on a bargain, and he seems to know it.",
- "headline": "Kartye has found a bigger job in New York",
+ "text": "Tye Kartye is the kind of story a good season needs. Undrafted, a Seattle depth winger until this year, he's now playing 16:48 a night for the Rangers, up from under 12 minutes last season, with 14 points in 21 games and a spot on the power play he never used to see. Sports Illustrated has started calling him a building block.\n\nThis qualifies as a breakout by our rules, and the underlying numbers back it up. His own chances have more than doubled, 1.04 expected goals (the quality of chances) per 60 against 0.46 last season, and the Rangers take 57% of the five-on-five expected goals with him on the ice. Seven goals on 6.1 expected is fair finishing, and if anything his linemates have been unlucky: the team has scored 4.7 fewer goals than the chances deserve with him out there.\n\nHe still plays like the grinder who earned the job, with 57 hits in 21 games, and our model compares him to penalty-killing forwards like Connor Dewar and Jordan Martinook. Our talent range has him around 53 points for the season. Watch whether the power-play time sticks once Sean Durzi is back.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-11T12:47:15Z",
- "gp": 19
+ "written": "2026-11-16T12:51:13Z",
+ "gp": 21
 }

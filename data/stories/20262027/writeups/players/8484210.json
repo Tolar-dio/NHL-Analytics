@@ -1,8 +1,8 @@
 {
- "text": "Gabe Perreault is playing on the Rangers' top line, beside Mika Zibanejad and Alexis Lafrenière, and he's starting to look like he belongs there. He has six goals in 19 games, two of them in his last three, and he opened the scoring in Seattle on Nov. 7. Nothing about it looks like a heater: his goals sit right on his expected goals (5.65), and the Rangers take 54.6% of the expected goals (the quality of chances) with him on the ice at five on five.\n\nThe 23rd pick in 2023 was a Boston College scorer who our league translation had at about 55 points over 82 NHL games in his last college season, and his game is built on speed into space: Corey Sznajder's All Three Zones tracking had 60% of his shots coming off the rush last season, in a small sample of eight games. At 0.47 points a game, he's ahead of the median for forwards picked 18th to 28th since 2005 (0.37 in their first full season). Our projection lands around 22 goals and 45 points, and his power-play role (three points so far) is the thing that could push it higher.",
+ "text": "Gabe Perreault, the Rangers' 23rd overall pick in 2023, is 21 and in the top six, and The New York Times has written about his calm approach to getting better: \"There's still more there.\" Seven goals and 11 points in 21 games is a solid first full season so far, and he's scored in three of his last five.\n\nThe finishing is fair, 7 goals on 6.1 expected, and his own chances, about 1.05 expected goals per 60, are in line with what he showed last season. Our model's closest comparison is Igor Chernyshov in San Jose, another young winger who gets to dangerous spots. The Rangers take 53% of the five-on-five expected goals with him on, about their team level, though the shot-attempt share (44%) shows they spend real time defending with him out there.\n\nHistory is kind to players drafted where he was: of the 111 forwards picked 18th to 28th from 2005 on with four or more seasons, 64 reached 200 NHL games, and the median first full season was 0.37 points a game. He's at 0.52. Corey Sznajder's All Three Zones tracking, in a small sample, had 60% of his shots coming off the rush. Our talent range projects about 22 goals.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-11T22:54:07Z",
- "gp": 19
+ "written": "2026-11-16T12:51:13Z",
+ "gp": 21
 }

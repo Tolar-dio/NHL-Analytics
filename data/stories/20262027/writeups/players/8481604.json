@@ -1,9 +1,8 @@
 {
- "text": "Pavel Dorofeyev came to the Rangers from Vegas as a finisher, and the chances have followed him: 57 shots and 8.3 expected goals in 19 games, the most dangerous individual looks on the team by rate. The goals have lagged. He has 6, on a 10.5% shooting rate against a talent range closer to 14%.\n\nThe bigger number is around him. New York has scored about 20 fewer goals than its chances deserve with Dorofeyev on the ice. That is an enormous gap for 19 games, and it explains why an even-strength line winning 54% of expected goals has so little to show for it. He has been heating up lately, with goals in three of his last five games.\n\nCorey Sznajder's All Three Zones tracking had him on the end of the best passes last season, and Evolving-Hockey liked his defense more than people expect from a sniper. Our range has him around 30 goals by April. We'd be surprised if he isn't scoring at a much higher clip by Christmas.",
- "headline": "Dorofeyev is getting chances, not results",
+ "text": "Pavel Dorofeyev was a 37-goal scorer in Vegas last season, and the Rangers brought him in to finish. He has six goals in 21 games. That sounds like a disappointment until you look at the chances.\n\nHe takes 1.62 expected goals per 60 on his own shots, higher than last season's 1.26, and he's put 64 shots on goal in 21 games. Six goals on 9.5 expected is bad luck, not bad play, and goals tend to follow chances. The Rangers have also scored far fewer goals than expected with him on the ice, which has cost him points. Newsday wrote that the Rangers hope he's heating up, and his go-ahead goal against Seattle was a start. Our talent range has him around 28 goals for the season.\n\nHe fits the type: more finisher than passer, a player whose shots come off passes across the slot, by Corey Sznajder's All Three Zones tracking. Our model's closest match is Cole Caufield. Evolving-Hockey liked his defense too, 92nd percentile at taking chances away. He's playing under 17 minutes a night; if the goals come, the minutes should follow.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-11T12:46:13Z",
- "gp": 19
+ "written": "2026-11-16T12:50:33Z",
+ "gp": 21
 }

@@ -1,8 +1,8 @@
 {
- "text": "Jake Evans got hurt at practice, and Montreal can't easily replace what he's been doing. Sportsnet reported he's being evaluated; outlets have described it differently, so we'll wait for the Canadiens to say what it is. It comes with Nick Suzuki already out.\n\nEvans had stepped up. His ice time over the last ten games was up more than three minutes, to almost 17 a night and close to 20 in two games, and Montreal had 57% of the five-on-five expected goals (the quality of chances) with him on the ice, seven points better than without him. Chris Kreider told Eric Engels of Sportsnet that \"it's like he always makes the right play.\"\n\nHe has six points in 17 games, and his finishing is close to his chances (two goals on 2.6 expected). He's a seventh-round pick in 2014 who has played all 435 of his NHL games in Montreal. Our projection had him around 34 points; the injury will decide whether that number means anything.",
+ "text": "Jake Evans is the Canadiens' checking centre, a seventh-round pick from 2014 who has played 438 games for the only NHL team he's known. Martin St-Louis has leaned on him more as the injuries pile up: Florian Xhekaj moved onto his wing when Chris Kreider went down, and Evans has played through a knock of his own that made him a game-time decision against Minnesota.\n\nHis results are fair and quietly useful. Eight points in 20 games, with his goals exactly on his expected total, and Montreal takes 55% of the five-on-five expected goals (the quality of chances) with him on the ice, more than 5 points better than without him. On a team whose results are running ahead of its chances, he's one of the forwards actually winning his minutes. His winner against Boston came in a two-point night last week.\n\nHe doesn't shoot much, 16 shots on goal all season, and our model compares him to penalty-killing centres like Collin Graf and Marat Khusnutdinov. Corey Sznajder's All Three Zones tracking doesn't find a clear strength or weakness, which is about right for a player whose value is not losing. Our talent range has him around 13 goals.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-10T22:58:11Z",
- "gp": 17
+ "written": "2026-11-16T12:51:52Z",
+ "gp": 20
 }
