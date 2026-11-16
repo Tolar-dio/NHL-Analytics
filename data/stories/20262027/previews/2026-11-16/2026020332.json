@@ -1,0 +1,12 @@
+{
+ "text": "The Canucks finally won a hockey game. After seven straight losses, they put six past Vegas last night, with Drew O'Connor answering 24 seconds after the Golden Knights pulled within two. It's the kind of night a sinking team clings to, and they'll need to cling to it on short rest: Vancouver is on the second half of a back-to-back, with 9 points from 22 games and, by our playoff simulations, roughly a one-in-a-thousand chance at the postseason.\n\nThat's why so much of the noise around this team is about who leaves. Elias Pettersson has been the most written-about Canuck for two weeks, with reports that Carolina has renewed its pursuit, and Jake DeBrusk's name is in the same columns, though the reports say Vancouver is holding firm on its price. Meanwhile Brock Boeser, who reached 500 career points last week, carries a seven-game point streak into Salt Lake City. The other problem is in net. Kevin Lankinen has a .805 save rate and has allowed 15.1 more goals than his shots deserved, and the Canucks take just 40% of the expected goals (the quality of chances) at five on five.\n\nUtah is the better team on paper and a frustrated one in practice. The Mammoth control 57% of the five-on-five expected goals, yet they're winless in five (0-2-3), and the last two went to shootouts, including a 6-5 loss to San Jose after leading by two. Karel Vejmelka is at -6.1 saved above expected, which explains a lot of that. The lineup is patched: Dylan Guenther is out until about Dec 5, Nick Schmaltz and Nate Schmidt are out, and Vincent Trocheck has slid beside Clayton Keller and is playing more than 25 minutes a night. He's one assist from 400 for his career. Logan Cooley, hot before he got hurt with 13 points in his last 10, is now day-to-day.\n\nOur numbers see a lopsided night in the chances, 4.05 expected goals for Utah to 2.55. Two goalies who've been beaten more than they should be is the reason no one should feel comfortable.",
+ "headline": "Canucks finally win, then fly into Utah",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-16T12:46:09Z",
+ "goalies": [
+  8480947,
+  8478872
+ ]
+}
