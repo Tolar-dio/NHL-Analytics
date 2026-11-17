@@ -1,0 +1,12 @@
+{
+ "text": "Los Angeles arrives in Boston winless in four, outscored 16-6 in that stretch, and the strange part is how little of it the Kings earned. They took 54% of the expected goals (the quality of the chances each side created) across those four losses. Their season reads the same way: a minus-14 goal difference on chances that say they should be slightly ahead. Finishing has cost them 7.5 goals, and the goaltending another 8.9. Darcy Kuemper, who played his 500th NHL game last week against the Islanders, sits at minus-7.6 goals saved above expected with an .873 save percentage. For a team at 12 points and a 23% playoff chance by our simulations, that gap between process and results is the whole season so far.\n\nThey are doing it shorthanded, too. Artemi Panarin, with 19 points in 17 games, is away for personal reasons, with ESPN estimating a Nov. 19 return. In his absence Alex Turcotte has moved up beside Alex Laferriere and Adrian Kempe, and Brandt Clarke has taken a spot on the first power-play unit. The good news is Kevin Fiala, back from a long absence last week with a power-play assist in his first game, and now one assist from 300 for his career.\n\nBoston is the mirror image. The Bruins are 27 points into the season with a plus-19 goal difference built on chances that are only a little better than even. Jeremy Swayman (+6.0 goals saved above expected) and 6.2 goals of extra finishing are carrying them, and David Pastrnak called the team's start \"UNACCEPTABLE\" in a headline from Audacy this week. Back-to-back home losses to Montreal and Minnesota, the second a 6-2 rout, gave him a point. James Hagens, twelve points in 17 games, is on injured reserve with a back injury.\n\nOur numbers have Boston slightly ahead in expected goals tonight, 3.13 to 2.84. Two things to watch: a Kings power play that creates 0.77 expected goals a game against a Bruins team taking five penalties a night, and whether Los Angeles finally gets a few bounces to match the chances.",
+ "headline": "The Kings keep winning the chances and losing the games",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-17T12:45:54Z",
+ "goalies": [
+  8475311,
+  8480280
+ ]
+}

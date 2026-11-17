@@ -1,8 +1,9 @@
 {
- "text": "The goal column says one. Everything else says Charlie McAvoy is playing some of the best hockey of his career. Boston has taken 62% of the expected goals (the quality of chances) at five-on-five with him on the ice, nearly 12 points better than without him, and he does it in 24:16 a night. Evolving-Hockey had him 30th of 215 defensemen by wins above replacement last season, mostly from even-strength offense, against competition in the 95th percentile.\n\nThe points are arriving as assists: seven in his last ten games, no goals. His shooting percentage sits at 4.8%, below even the low end of our range for him, which is the kind of number that tends to climb. Corey Sznajder's All Three Zones tracking calls him a setup man (5.6 primary shot assists per 60, 83rd percentile among defensemen), so watch where the puck goes after he touches it.\n\nOne caution runs the other way. The Bruins have scored about four more goals than their chances deserve with him on the ice, and that kind of luck usually fades. Our projection has him around 59 points by season's end, with a range of 47 to 71.",
+ "text": "Charlie McAvoy has nine points and one goal in 14 games, which undersells how well the Bruins play when he is out there. Boston takes 62.7% of the expected goals at five on five with him on the ice (expected goals measure chance quality), almost 12 points better than without him, and he is doing it in 24 minutes a night against top competition.\n\nThe scoring is the soft spot. No goals in his last ten, seven assists, and a points rate below his usual pace; last season he had 61 points. His shooting is at 4.8% on just 21 shots. The Bruins are scoring roughly what their chances deserve with him on the ice, and the assists should follow the possession.\n\nHe also matched a franchise legend in the win over Florida, per a Yahoo Sports headline, and his recent words about the Bruins and Canadiens rivalry made the rounds. Evolving-Hockey had him 30th among defensemen last season, a play driver in the 88th percentile. The Bruins have lost their last two badly, 5-2 to Montreal and 6-2 to Minnesota. If they are going to steady, he is the one who drives it from the back.",
+ "headline": "McAvoy is winning his minutes, quietly",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-14T22:51:22Z",
- "gp": 13
+ "written": "2026-11-17T12:47:49Z",
+ "gp": 14
 }

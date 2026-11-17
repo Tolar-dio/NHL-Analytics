@@ -1,0 +1,12 @@
+{
+ "text": "The loudest story in Philadelphia is a 21-year-old who leads the team in goals. A week ago ESPN's Kevin Weekes reported that Matvei Michkov would likely want a fresh start elsewhere, a day after a heated exchange with Nick Seeler on the Flyers' bench in Vancouver. General manager Daniel Briere told reporters the report was \"not correct,\" that Michkov told him it did not come from him, and that the Flyers have no plan to trade him. Rick Tocchet told PhillyVoice the team has handled the noise \"really well,\" while admitting it is there. Meanwhile the play has done some talking: Michkov has a four-game point streak, his projected ice time is up to 18:43 from 16:28 on the season, and he is our sleeper tonight at 61% for a point, well above his season pace.\n\nThe Flyers need the help. They sit at 18 points with a 4% playoff chance in our simulations, and a minus-23 goal difference. Some of that is bad finishing (11.7 goals below what their chances usually produce), but they also take just 44% of the expected goals (the quality of chances each side creates) at five on five, which is no fluke. Sunday's 5-2 loss to Edmonton summed it up: 75% of the expected goals, 0-for-8 on the power play, and Travis Konecny saying he had \"way too many\" looks not to score, per PHLY Sports.\n\nBuffalo is in a similar hole. The Sabres are winless in four, outscored 17-6, after an 8-3 home loss to Tampa in which Ukko-Pekka Luukkonen was pulled and then back-to-back road losses to Chicago and Dallas. Alex Lyon, who made his season debut in Chicago, gets the start over Luukkonen, who has 12 of the 20 starts. The Sabres' process is roughly even, and 9.3 goals of missing finish explain much of their minus-14. Tage Thompson is one assist from 200.\n\nOur numbers have Buffalo slightly ahead, 3.04 expected goals to 2.93. Philadelphia won the first meeting 3-1 in October in a game it deserved 48% of the time.",
+ "headline": "Michkov, the noise, and two teams going nowhere",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-17T12:47:49Z",
+ "goalies": [
+  8479312,
+  8478435
+ ]
+}

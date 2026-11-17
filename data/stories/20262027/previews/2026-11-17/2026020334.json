@@ -1,0 +1,12 @@
+{
+ "text": "Two of the best players of their generation share the ice tonight, and both of them are heading for the exit. Alex Ovechkin has said this is his final NHL season, and this is the Capitals' last scheduled trip to Tampa while he plays, per NHL.com. The farewell tour has been warmer than the scoresheet: TSN noted last week that he was goalless in 11 straight. Across the ice, Nikita Kucherov plays his 900th NHL game, all of them for the Lightning, two weeks after Sportsnet's Elliotte Friedman reported that he had asked for a trade and would not re-sign. Kucherov later said it was about \"poor communication and respect\"; general manager Julien BriseBois has said the team has no intention of trading him. He keeps producing: six points in two games last week, per CBS Sports.\n\nTampa is playing without Brayden Point, on injured reserve with 16 points in 17 games. Brandon Hagel has slid into his spot beside Jake Guentzel and Kucherov, and Sam O'Reilly, a two-time Memorial Cup champion called up last week, is on the first power-play unit while he waits for his first NHL goal. Anthony Cirelli is off the out list and day-to-day. The Lightning take 56% of the expected goals (the quality of chances each side creates) at five on five, and sit at a 95% playoff chance in our simulations.\n\nWashington comes in bruised. The Capitals were swept in a home-and-home by New Jersey, 5-2 and 7-4, and they lost the chance battle in four of their last five games. Tom Wilson, who avoided a suspension for his hit on Florida's Sandis Vilmanis, has no goals in 14 games on 4.3 expected goals. Pierre-Luc Dubois has gone the other way, with goals in four straight. Logan Thompson (.889) and Andrei Vasilevskiy (.888) are both well off last season's form in net.\n\nOur numbers lean Tampa, 3.43 expected goals to 2.98. Our sleeper is Conor Geekie, a fourth-liner whose 1.19 expected goals per 60 over his last ten games beats 89% of depth forwards.",
+ "headline": "Ovechkin's last night in Tampa, Kucherov's 900th",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-17T12:46:45Z",
+ "goalies": [
+  8480313,
+  8476883
+ ]
+}

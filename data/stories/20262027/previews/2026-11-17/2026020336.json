@@ -1,0 +1,12 @@
+{
+ "text": "Mathew Barzal played his first game of the season on Saturday in Anaheim and picked up an assist in a 6-2 win. A New York Post headline quoted him calling the road back from knee inflammation the \"hardest journey of my life,\" and the Islanders are bringing him along slowly, on a line with Ondrej Palat and Matias Maccelli at Monday's practice and on the second power-play unit, per NHL.com's Stefen Rosner. Tonight is his first home game back.\n\nHe returns to a team whose record is running well ahead of its play. The Islanders have a plus-5 goal difference on chances that say they should be at minus-10.7, and they lost the expected-goals battle (the quality of chances each side creates) in all of their last five games. Ilya Sorokin is the reason the standings look fine: .915, plus-9.4 goals saved above expected. Around him, things are fun. Matthew Schaefer, the first overall pick in 2025, scored a power-play goal in his 100th game and has 13 points in his last ten. Simon Holmstrom went from a fourth-line demotion to his first NHL hat trick in Anaheim, with five goals in four games. Calum Ritchie is still in a non-contact jersey and Jean-Gabriel Pageau is day-to-day.\n\nColumbus has the opposite problem. The Blue Jackets are winless in four, outscored 16-7, and the chances say most of it is real. Sean Monahan (upper body) is out until around Nov. 25 and Conor Garland went on injured reserve, week-to-week. Jet Greaves, so good last season at plus-15.0 goals saved above expected, is at .875 and minus-3.7. At 14 points, our simulations put their playoff chance at 8%. Mathieu Olivier, fresh off a heavyweight fight with Tampa's Scott Sabourin, is one goal from 50 for his career.\n\nOur numbers see a close game, 3.04 expected goals for New York to 2.90. Our sleepers: Victor Eklund, the Islanders' rookie who has 2.4 expected goals in his last ten, and Charlie Coyle, pointless in five on 4.2 expected but on a line that creates 3.80 expected goals per 60.",
+ "headline": "Barzal is back, and Sorokin is still holding the line",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-17T12:47:15Z",
+ "goalies": [
+  8482982,
+  8478009
+ ]
+}

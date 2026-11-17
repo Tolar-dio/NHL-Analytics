@@ -1,0 +1,12 @@
+{
+ "text": "Toronto just finished what The Leafs Nation called the worst homestand in the Maple Leafs' 109-year history. They are winless in six, outscored 23-9, and the chances say it is real: 41% of the expected goals (the quality of chances each side creates) over that stretch, and only one of the last five games where they had the better looks. Saturday's 1-0 loss to Edmonton came with a disallowed John Tavares tying goal. The headlines have followed the results. Auston Matthews publicly backed coach Jim Hiller, Daily Faceoff's Toronto show described general manager John Chayka's support of Hiller as the \"KISS OF DEATH,\" William Nylander has been answering trade questions, and rookie Gavin McKenna's limited ice time keeps drawing comment. At 18 points, our simulations give Toronto a 4% playoff chance.\n\nKirill Marchenko (14 points in 14 games) is on injured reserve until around Nov. 23, which has pushed Tavares back beside Nick Paul and Nylander and handed Jack Roslovic, with points in eight of nine games at one point this month per CBS Sports, the first power-play role. In net, Sergei Bobrovsky is at .857 over his last five starts, all losses.\n\nChicago knows the feeling. Connor Bedard spent last week defending coach Jeff Blashill through a six-game losing streak, and the Blackhawks sit at a minus-36 goal difference, though the chances say they deserve closer to minus-19. They finally won on Thursday, 3-2 in overtime over Buffalo with Patrick Kane back from injured reserve, then blew a 4-0 lead to Winnipeg on Saturday and lost in a shootout. Spencer Knight is at .844 over his last five. At 12 points, Chicago's playoff chance is under 1%.\n\nOur numbers see a near coin flip, 3.10 expected goals for Toronto to 3.01, with two struggling goalies. Our sleepers are both Blackhawks: Roman Kantserov, at 59% for a point on a line that creates 3.85 expected goals per 60 with Bedard, and fourth-liner Ryan Donato, whose recent shot quality beats 71% of depth forwards.",
+ "headline": "Two coaches under pressure, and a lot of losing",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-17T12:48:15Z",
+ "goalies": [
+  8475683,
+  8481519
+ ]
+}

@@ -1,8 +1,9 @@
 {
- "text": "Zach Werenski won the Norris last season, and the start in Columbus has been fine without being that. Fourteen points in 16 games, 28 minutes a night, two goals on 49 shots.\n\nThe luck cuts both ways. Columbus has scored 6.4 more goals than expected with him on the ice, which is padding his points, and his own shooting (4%) is below his usual. Over his last ten he's at nine points on 9.8 expected, about even. The Blue Jackets are roughly even in chances at five on five with him on, which is the real gap from last season.\n\nLast season's version is still the baseline. Evolving-Hockey had him fourth of 215 defensemen in wins above replacement, and Corey Sznajder's All Three Zones tracking had him in the 99th percentile for chances from the slot with 70% of his exits keeping possession. Our range: 68 to 96 points.",
+ "text": "Zach Werenski won the Norris Trophy last season, and Evolving-Hockey had him fourth among 215 defensemen in wins above replacement. This season has been quieter, and the context is a team in a hole: Columbus has lost five straight.\n\nHe's still playing 27:58 a night with 15 points in 18 games, 40 blocked shots and 58 shots of his own. Two goals on 3.5 expected is a little unlucky. The bigger warning runs the other way: the Blue Jackets have scored 7.3 more goals than the chances deserve with him on the ice, which is padding his assists. At five on five they're getting 48.5% of the expected goals with him out there, roughly even with how they do without him, which is not the play-driving profile he had a year ago (98th percentile among defensemen by Evolving-Hockey's measure).\n\nWhat to watch: his ice time has dropped 2:02 a night over the last ten games. Corey Sznajder's All Three Zones tracking had him getting to the slot more than almost any defenseman last season. When those chances come back, he'll look like himself again.",
+ "headline": "Werenski's points are steadier than Columbus",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T22:57:10Z",
- "gp": 16
+ "written": "2026-11-17T12:46:54Z",
+ "gp": 18
 }
