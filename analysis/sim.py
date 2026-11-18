@@ -90,13 +90,15 @@ def params(refit=False):
     goals = ev[ev.event == "goal"]
     nast = goals.player2_id.notna().astype(int) + goals.player3_id.notna().astype(int)
     p_ast = nast.value_counts(normalize=True).sort_index().reindex([0, 1, 2]).fillna(0).tolist()
+    gpu = unb.groupby("st").event.apply(lambda e: (e == "goal").mean())
+    q_state = (gpu / (unb.event == "goal").mean()).to_dict()     # e.g. a power-play chance is a better chance
     home_att = att.is_home.mean() * 2 - 1          # share above 50% of attempts by home teams
     pens = ev[(ev.event == "penalty") & ev.penalty_minutes.isin([2, 4])]
     pen_rate = len(pens) / (ngames * 2 * 3600)
     sh = pd.concat([pd.read_csv(os.path.join(ROOT, "data", "tables", S, "shifts.csv.gz"), usecols=["game_id", "player_id", "start_sec", "end_sec"]) for S in SEASONS])
     sh["len"] = sh.end_sec - sh.start_sec
     sh = sh[(sh.len > 5) & (sh.len < 180)]
-    p = dict(rate=rate, p_block=p_block, p_net=p_net, p_ast=p_ast, home_att=float(home_att), pen_rate=float(pen_rate),
+    p = dict(rate=rate, p_block=p_block, p_net=p_net, p_ast=p_ast, q_state=q_state, home_att=float(home_att), pen_rate=float(pen_rate),
              pp4_share=float((pens.penalty_minutes == 4).mean()), shift_mean=float(sh.len.mean()),
              wp=json.load(open(os.path.join(ROOT, "data", "derived", "winprob.json"))))
     os.makedirs(os.path.dirname(PARAMS_PATH), exist_ok=True)
@@ -226,6 +228,7 @@ class Game:
         self.names = (home, away)
         self.m_att = np.array([1.0, 1.0])
         self.m_g = np.array([1.0, 1.0])
+        self.m_blk = np.array([1.0, 1.0])
 
     def arr(self, tuples):
         return np.array([[self.ix[p] for p in t] for t in tuples])
@@ -246,6 +249,8 @@ def simulate(G, P, n=1000, seed=0):
     faced by its goalie (n,2; empty-net shots excluded)."""
     rng = np.random.default_rng(seed)
     rate, pb, pn = P["rate"], P["p_block"], P["p_net"]
+    qst = {k: v / P["q_state"].get("ev", 1.0) for k, v in P.get("q_state", {}).items()}   # relative to even strength
+    qst.pop("ed", None); qst.pop("ea", None)
     pull = {1: P["wp"]["pull"]["1"], 2: P["wp"]["pull"]["2"]}
     NP = len(G.ids)
     st = dict(g=np.zeros((n, NP), np.int16), a=np.zeros((n, NP), np.int16), s=np.zeros((n, NP), np.int16), b=np.zeros((n, NP), np.int16))
@@ -289,11 +294,10 @@ def simulate(G, P, n=1000, seed=0):
             change(cf[k], tf[k], wl[k], 30, 60)
             change(cd[k], td[k], wp[k], 35, 65)
         if not ot:
-            free = (pen[:, 0] <= 0) & (pen[:, 1] <= 0)
-            for k in (0, 1):
-                hit = free & (rng.random(n) < P["pen_rate"])
+            for k in (0, 1):       # a team already serving a penalty can't take another here; the other team can (4-on-4)
+                hit = (pen[:, k] <= 0) & (rng.random(n) < P["pen_rate"])
                 pen[hit, k] = 120
-                ppo[hit, 1 - k] += 1
+                ppo[hit & (pen[:, 1 - k] <= 0), 1 - k] += 1
         pen = np.maximum(pen - 1, 0)
         diff = (score[:, 0] - score[:, 1]).astype(int)
         secs_left = 3600 - t
@@ -315,11 +319,13 @@ def simulate(G, P, n=1000, seed=0):
                 Ak = np.c_[L[k][cf[k]], D[k][cd[k]], -np.ones((n, 1), int)]
                 pp = (pen[:, o] > 0) & ~(pen[:, k] > 0)
                 pk = (pen[:, k] > 0) & ~(pen[:, o] > 0)
+                four = (pen[:, o] > 0) & (pen[:, k] > 0)
                 Ak[pp] = PPu[k][np.where(pen[pp, o] > 50, 0, 1)]
                 Ak[pk] = PKu[k][np.where(pen[pk, k] > 60, 0, 1)]
+                Ak[four, 2] = -1                              # 4-on-4: one forward fewer
                 Ak[pulled[k], 5] = extra[k]
                 A[k] = Ak
-                LAB[k] = np.where(pulled[k], "ea", np.where(pulled[o], "ed", np.where(pp, "pp", np.where(pk, "pk", "ev"))))
+                LAB[k] = np.where(pulled[k], "ea", np.where(pulled[o], "ed", np.where(pp, "pp", np.where(pk, "pk", np.where(four, "4v4", "ev")))))
             DD[k] = np.clip(md, -2, 2)
         for k in (0, 1):
             o = 1 - k
@@ -341,7 +347,7 @@ def simulate(G, P, n=1000, seed=0):
             att_n[idx, k] += 1
             labs = lab[idx]
             shooter = _choose(rng, A[k][idx], G.w_att)
-            blocked = rng.random(len(idx)) < np.array([pb.get(l, 0.27) for l in labs])
+            blocked = rng.random(len(idx)) < np.clip(np.array([pb.get(l, 0.27) for l in labs]) * G.m_blk[o], 0, 0.6)
             if blocked.any():
                 bi = idx[blocked]
                 blocker = _choose(rng, A[o][bi], G.w_blk)
@@ -354,7 +360,8 @@ def simulate(G, P, n=1000, seed=0):
             pnet = np.clip(np.array([pn.get(l, 0.65) for l in ul]) * (G.net[us] / 0.66), 0.2, 0.95)
             onnet = rng.random(len(ui)) < pnet
             en = ul == "ed"
-            q = np.where(en, 1.0, np.clip(G.xgs[us] * G.fin[us] * G.m_g[k] / pnet, 0, 0.9))
+            qs = np.array([qst.get(l, 1.0) for l in ul])
+            q = np.where(en, 1.0, np.clip(G.xgs[us] * G.fin[us] * G.m_g[k] * qs / pnet, 0, 0.9))
             goal = onnet & (rng.random(len(ui)) < q)
             np.add.at(st["s"], (ui[onnet], us[onnet]), 1)
             gn = onnet & ~en
@@ -403,6 +410,10 @@ def calibrate(G, P, target_goals, target_sog, n=600, seed=1, rounds=2, players=N
         G.m_g = G.m_g * (np.asarray(target_goals) / np.maximum(g, 0.2)) / (np.asarray(target_sog) / np.maximum(tsog, 1))
         if players:
             gl, ast, blk = out["g"].mean(0), out["a"].mean(0), out["b"].mean(0)
+            for t, ix in enumerate(team_idx):       # the team's blocks: match the sum of its skaters' expected blocks
+                want = sum(players[G.ids[i]]["blk"] for i in ix if G.ids[i] in players)
+                if want > 0 and blk[ix].sum() > 0:
+                    G.m_blk[t] = G.m_blk[t] * want / blk[ix].sum()
             for t, ix in enumerate(team_idx):
                 have = [i for i in ix if G.ids[i] in players]
                 if len(have) < 8:

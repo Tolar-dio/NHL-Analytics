@@ -147,7 +147,8 @@ def scorecard(Gg, j=None):
     en = np.where(home, gc.str[0] == "0", gc.str[3] == "0")
     own = np.where(home, gc.str[2], gc.str[1]).astype(int)
     opp = np.where(home, gc.str[1], gc.str[2]).astype(int)
-    pp = (own > opp) & ~en
+    own_g = np.where(home, gc.str[3] == "1", gc.str[0] == "1")
+    pp = (own > opp) & ~en & own_g          # a delayed-penalty six-on-five isn't a power play
     per_game = lambda m: pd.Series(m, index=goals.index).groupby(goals.game_id).sum().reindex(list(ids)).fillna(0)
     ot = ev[ev.period_type.isin(["OT", "SO"])].game_id.unique()
     pens = ev[(ev.event == "penalty") & ev.penalty_minutes.isin([2, 4])].groupby("game_id").size().reindex(list(ids)).fillna(0)
