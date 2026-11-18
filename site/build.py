@@ -1072,6 +1072,10 @@ def main():
         model["live"] = track.track(cur)
     except Exception as e:
         print("  live track record skipped:", e)
+    try:   # how much of each stat is skill (analysis/stability.py, last full season): the "signal and noise" table
+        model["stability"] = json.load(open(os.path.join(ROOT, "data", "derived", "stability.json")))
+    except Exception as e:
+        print(f"  stability table skipped: {e!r}")
     dump("model.json", model)
 
     # ---- in-game xG model for the live game page (ESPN feed, before MoneyPuck's numbers exist)

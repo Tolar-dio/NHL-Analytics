@@ -1300,6 +1300,25 @@ function liveRecord(L) {
     ${L.market && L.market.games ? `<p class="note"><b>Against the sportsbook</b> (DraftKings game lines published by the NHL, ${L.market.games} games): totals missed by ${L.market.total_mae_model} goals for us vs ${L.market.total_mae_market} for the book; over/under log loss ${L.market.over_ll_model.toFixed(3)} vs ${L.market.over_ll_market.toFixed(3)}; winner Brier score ${L.market.win_brier_model.toFixed(3)} vs ${L.market.win_brier_market.toFixed(3)}. Lower is better on all three; the sportsbook is the bar to clear.</p>` : ""}
   </section>`;
 }
+// How much of each stat is skill and how much is luck (analysis/stability.py, fitted on last season's totals).
+function signalNoise(S) {
+  if (!S || !S.rows) return "";
+  const pos = { F: "Forwards", D: "Defensemen", G: "Goalies" };
+  const order = ["onice_xgf", "shots", "blocks", "ixg", "points", "onice_xga", "goals", "sv_pct", "sh_pct"];
+  const rows = order.flatMap((k) => S.rows.filter((r) => r.stat === k));
+  return `<section class="zone">
+    <h2>Signal and noise</h2>
+    <p class="lede">Every stat is part skill and part luck. This is how many games it takes before a player's own number tells you more than the league average does, measured two independent ways on last season (they agree closely). It's why our projections lean on shots and chances far more than on goals: a hot shooting week barely moves our numbers, while a jump in shots moves them fast.</p>
+    ${table(rows, [
+      { key: "label", label: "Stat", fmt: (r) => esc(r.label) },
+      { key: "pos", label: "Who", fmt: (r) => pos[r.pos] },
+      { key: "games_half_signal", label: "Games until half skill", fmt: (r) => `<b>${r.games_half_signal >= 100 ? Math.round(r.games_half_signal) : num(r.games_half_signal, 0)}</b>${r.pos === "G" ? " starts" : ""}` },
+      { key: "rel_20", label: "Skill share after 20 games", fmt: (r) => cellBar(r.rel_20, 1), cls: "hide-sm" },
+      { key: "rel_82", label: "After a full season", fmt: (r) => cellBar(r.rel_82, 1) },
+    ], null, "sn")}
+    <p class="note">Read it like this: a forward's shots on goal are half skill after about ${Math.round((S.rows.find((r) => r.stat === "shots" && r.pos === "F") || {}).games_half_signal || 10)} games, but his shooting percentage needs about ${Math.round((S.rows.find((r) => r.stat === "sh_pct" && r.pos === "F") || {}).games_half_signal || 100)}, more than a season. Offense on the ice settles fast; defense on the ice takes about four times as long, so be slow to judge a player's defense from his numbers.</p>
+  </section>`;
+}
 function renderModel(view) {
   const M = D.model, ts = M.this_season;
   view.innerHTML = `
@@ -1313,6 +1332,7 @@ function renderModel(view) {
       </div>
     </section>
     ${liveRecord(M.live)}
+    ${signalNoise(M.stability)}
     <section class="zone grid-2">
       <div class="figure narrow"><h3>Goal chances</h3><p class="note">Each dot groups player-games by the chance we gave. On the diagonal means that when we said 20%, it happened about 20% of the time. Bigger dots hold more games.</p>${calibrationChart(M.goal.cal, "Goal probability calibration")}</div>
       <div class="figure narrow"><h3>Two or more points</h3><p class="note">Same check for multi-point games.</p>${calibrationChart(M.pts.cal, "Two point probability calibration")}</div>
