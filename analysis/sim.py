@@ -113,7 +113,7 @@ if __name__ == "__main__" and sys.argv[1:2] == ["params"]:
 
 # ------------------------------------------------------------------ lineups and player rates
 
-def units(ctx, team, dressed, before, n_games=3):
+def units(ctx, team, dressed, before, n_games=3, pos_map=None):
     """Lines, pairs and special-teams units for a team from its last few games (context_games.csv), limited to
     tonight's dressed skaters. Returns dict of lists of player-id tuples and their usage weights."""
     c = ctx[(ctx.team == team) & (ctx.date < before) & ctx.player_id.isin(dressed)]
@@ -121,7 +121,7 @@ def units(ctx, team, dressed, before, n_games=3):
     c = c[c.game_id.isin(last)]
     agg = c.groupby("player_id").agg(toi5=("toi5", "mean"), toipp=("toipp", "mean"), toipk=("toipk", "mean"), pos=("pos", "last"))
     newest = c[c.game_id == (last[-1] if last else None)].set_index("player_id")
-    pos = {p: agg.pos.get(p) for p in dressed}
+    pos = {p: (agg.pos.get(p) if p in agg.index and isinstance(agg.pos.get(p), str) else (pos_map or {}).get(p)) for p in dressed}
     for p in dressed:          # skaters with no recent games: depth by default
         if p not in agg.index:
             agg.loc[p] = dict(toi5=6.0, toipp=0.0, toipk=0.0, pos=None)
@@ -142,6 +142,9 @@ def units(ctx, team, dressed, before, n_games=3):
             if q not in used and q not in line:
                 line.append(q)
         if len(line) == 3:
+            lines.append(tuple(line)); used.update(line)
+        elif len(line) >= 1 and len(lines) == 3 and lines:     # short a forward: the top line's centre double-shifts
+            line = (line + [lines[0][0], lines[0][1]])[:3]
             lines.append(tuple(line)); used.update(line)
     pairs, usedd = [], set()
     for p in D:

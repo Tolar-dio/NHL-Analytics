@@ -79,8 +79,9 @@ def main():
                 continue
             dh, da = set(dpg[(dpg.game_id == gid) & (dpg.team == g.home)].player_id), set(dpg[(dpg.game_id == gid) & (dpg.team == g.away)].player_id)
             try:
-                uh, ua = SIM.units(ctx26, g.home, dh, cut), SIM.units(ctx26, g.away, da, cut)
-                if len(uh["lines"]) < 4 or len(ua["lines"]) < 4 or len(uh["pairs"]) < 3 or len(ua["pairs"]) < 3:
+                pm = rates.pos.to_dict()
+                uh, ua = SIM.units(ctx26, g.home, dh, cut, pos_map=pm), SIM.units(ctx26, g.away, da, cut, pos_map=pm)
+                if min(len(uh["lines"]), len(ua["lines"])) < 3 or min(len(uh["pairs"]), len(ua["pairs"])) < 2:
                     continue
             except Exception:
                 continue

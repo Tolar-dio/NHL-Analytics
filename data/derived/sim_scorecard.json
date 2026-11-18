@@ -1,0 +1,68 @@
+{
+ "games": 113,
+ "first": "2026-10-20",
+ "last": "2026-11-17",
+ "rows": [
+  {
+   "assumption": "Games that reach overtime",
+   "simulated": 0.207,
+   "actual": 0.23,
+   "unit": "share"
+  },
+  {
+   "assumption": "Games decided in a shootout",
+   "simulated": 0.073,
+   "actual": 0.088,
+   "unit": "share"
+  },
+  {
+   "assumption": "Empty-net goals a game",
+   "simulated": 0.321,
+   "actual": 0.345,
+   "unit": "per game"
+  },
+  {
+   "assumption": "Power-play goals a game",
+   "simulated": 1.367,
+   "actual": 1.442,
+   "unit": "per game"
+  },
+  {
+   "assumption": "Minor penalties a game",
+   "simulated": 5.652,
+   "actual": 7.053,
+   "unit": "per game"
+  },
+  {
+   "assumption": "One-goal games",
+   "simulated": 0.319,
+   "actual": 0.451,
+   "unit": "share"
+  },
+  {
+   "assumption": "Games decided by 3+",
+   "simulated": 0.395,
+   "actual": 0.389,
+   "unit": "share"
+  },
+  {
+   "assumption": "Shot attempts a game",
+   "simulated": 112.727,
+   "actual": 115.708,
+   "unit": "per game"
+  },
+  {
+   "assumption": "Blocked shots a game",
+   "simulated": 27.976,
+   "actual": 30.0,
+   "unit": "per game"
+  },
+  {
+   "assumption": "Linemates who both get a point",
+   "simulated": 0.298,
+   "actual": 0.273,
+   "unit": "share",
+   "independent": 0.206
+  }
+ ]
+}

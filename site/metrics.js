@@ -114,7 +114,7 @@ async function renderThreatBoard(el) {
   try { T = await getJSON("data/threat.json"); } catch (e) { return; }
   if (!el || !T) return;
   const team = Object.fromEntries(D.skaters.map((p) => [p.id, p.team]));
-  const li = (r) => `<li><a class="who" href="#player/${r.id}">${esc(r.name || "")}</a> <span class="dim">${team[r.id] || ""}</span> <b>+${num(r.total60, 2)}</b></li>`;
+  const li = (r) => `<li><a class="who" href="#players/${r.id}">${esc(r.name || "")}</a> <span class="dim">${team[r.id] || ""}</span> <b>+${num(r.total60, 2)}</b></li>`;
   const v = T.values || {};
   el.innerHTML = `<h2>Threat added</h2>
     <p class="lede">Every play changes what happens next. We value each event by how it moved its team's expected goals over the following 20 seconds, then add it up per 60 minutes for every skater. On average this season a takeaway is worth ${num(v.takeaway || 0, 3)} expected goals, a faceoff win ${num(v.faceoff || 0, 3)}, a giveaway ${num(v.giveaway || 0, 3)} and a penalty taken ${num(v.penalty || 0, 3)}.</p>

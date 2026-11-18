@@ -226,7 +226,7 @@ def archive_tonight(day, games, props, lu):
             home_goalie_src=g.get("home_goalie_src"), away_xg=g["away_xg"], home_xg=g["home_xg"], total=g["total"],
             o55=g["o55"], o65=g["o65"], lineup_source=lu["source"], market=g.get("market"),
             sleepers=[dict(id=x["id"], kind=x["kind"], p_goal=x["p_goal"], p_1pt=x["p_1pt"]) for x in g.get("sleepers") or []],
-            away_saves=saves_of(g, "away"), home_saves=saves_of(g, "home"),
+            away_saves=saves_of(g, "away"), home_saves=saves_of(g, "home"), sim=g.get("sim"),
             props=[{k: p.get(k) for k in keep} for p in props if p["game"] == g["id"]])
     os.makedirs(ARCHIVE, exist_ok=True)
     with open(path, "w") as f:
@@ -991,6 +991,50 @@ def main():
                 print(f"  saves: {len(srows)} goalie options across {len(gm_out)} games")
         except Exception as e:
             print(f"  saves prices skipped: {e!r}")
+        # the game simulator (analysis/sim.py): linemate links and the shape of each game. Published prices stay with
+        # the separate models (they tested as good or better); the simulator adds what they can't see: how teammates'
+        # nights move together, and how often a game reaches overtime, the empty net or the power play.
+        try:
+            import sim as SIM
+            P_sim = SIM.params()
+            SIM_LINK = 0.73
+            ctxp = os.path.join(ROOT, "analysis", "output", PREV, "context_games.csv")
+            rates_s, pos_avg_s = SIM.player_rates(cur["pg"], prev["pg"], str(today), ctx_cur=ctx_games,
+                                                  ctx_prev=pd.read_csv(ctxp) if os.path.exists(ctxp) else None)
+            fin_s = fpt["fin"].to_dict() if "fin" in fpt else None
+            nsim = 0
+            for g in gm_out:
+                dd = d[d.game == g["id"]]
+                pm = rates_s.pos.to_dict()
+                uh = SIM.units(ctx_games, g["home"], set(dd[dd.team == g["home"]].player_id), str(today), pos_map=pm)
+                ua = SIM.units(ctx_games, g["away"], set(dd[dd.team == g["away"]].player_id), str(today), pos_map=pm)
+                if min(len(uh["lines"]), len(ua["lines"])) < 3 or min(len(uh["pairs"]), len(ua["pairs"])) < 2:
+                    continue
+                G = SIM.Game(g["home"], g["away"], uh, ua, rates_s, pos_avg_s, fin_s)
+                tg_p = {int(x.player_id): dict(g=float(x.lam_g), pts=float(x.lam_p), sog=float(x.exp_sog), blk=float(x.exp_blk))
+                        for x in dd.itertuples() if not pd.isna(x.lam_g) and not pd.isna(getattr(x, "exp_sog", np.nan)) and not pd.isna(getattr(x, "exp_blk", np.nan))}
+                sog_t = (g["away_saves"]["exp_sa"] / SV.SCALE, g["home_saves"]["exp_sa"] / SV.SCALE) if g.get("away_saves") and g.get("home_saves") else (28.0, 28.0)
+                SIM.calibrate(G, P_sim, (g["home_xg"], g["away_xg"]), sog_t, n=300, rounds=3, players=tg_p)
+                out = SIM.simulate(G, P_sim, 2000, seed=g["id"] % 100000)
+                pts = out["g"] + out["a"]
+                pairs = []
+                for side, u in (("home", uh), ("away", ua)):
+                    for line in u["lines"][:2]:
+                        for a_, b_ in ((line[0], line[1]), (line[0], line[2]), (line[1], line[2])):
+                            pa, pb = pts[:, G.ix[a_]] >= 1, pts[:, G.ix[b_]] >= 1
+                            # the simulator keeps lines together all game, so it overstates the link: in the
+                            # walk-forward test the excess over independence was 0.73 of what it said (27.3% actual,
+                            # 29.8% simulated, 20.6% independent); scale it back by that much
+                            ind = pa.mean() * pb.mean()
+                            both = ind + SIM_LINK * ((pa & pb).mean() - ind)
+                            pairs.append(dict(a=int(a_), b=int(b_), team=g[side], p_a=r(pa.mean(), 3), p_b=r(pb.mean(), 3), p_both=r(both, 3)))
+                sc = out["score"]
+                g["sim"] = dict(p_ot=r(out["went_ot"].mean(), 3), p_so=r(out["tied"].mean(), 3), en=r(out["en_goals"].sum(1).mean(), 2),
+                                ppg=r(out["pp_goals"].sum(1).mean(), 2), one_goal=r((np.abs(sc[:, 0] - sc[:, 1]) == 1).mean(), 3), pairs=pairs)
+                nsim += 1
+            print(f"  simulator: {nsim} of {len(gm_out)} games")
+        except Exception as e:
+            print(f"  simulator skipped: {e!r}")
         # sleepers: our own under-the-radar picks per game, on process, role and matchup (site/sleepers.py)
         sleepers, d["sleeper"] = {}, None
         try:
@@ -1096,6 +1140,10 @@ def main():
         model["live"] = track.track(cur)
     except Exception as e:
         print("  live track record skipped:", e)
+    try:   # the game simulator's assumptions against reality (analysis/sim_check.py scorecard)
+        model["scorecard"] = json.load(open(os.path.join(ROOT, "data", "derived", "sim_scorecard.json")))
+    except Exception as e:
+        print(f"  scorecard skipped: {e!r}")
     try:   # how much of each stat is skill (analysis/stability.py, last full season): the "signal and noise" table
         model["stability"] = json.load(open(os.path.join(ROOT, "data", "derived", "stability.json")))
     except Exception as e:

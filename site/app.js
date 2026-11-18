@@ -547,6 +547,23 @@ function sleeperCard(x, game) {
     <h3 class="sl-name">${mug(x.team, x.id, x.name, 44)}<span>${playerLink(x.id, x.name)} <span class="dim">${x.team} vs ${x.opp}</span></span></h3>
     <p>${esc(x.why.replace(/\s*We have him at [^.]*\.$/, ""))}</p><p class="sl-odds">${p}</p></article>`;
 }
+// Lines that score together (analysis/sim.py): the game simulator's joint chances for linemates
+function linkSection(games, props) {
+  const nm = Object.fromEntries((props || []).map((p) => [p.id, p.name]));
+  const all = games.flatMap((g) => ((g.sim && g.sim.pairs) || []).map((x) => ({ ...x, g })))
+    .filter((x) => nm[x.a] && nm[x.b] && x.p_a > 0 && x.p_b > 0 && x.p_a < 1)
+    .map((x) => ({ ...x, lift: x.p_both / (x.p_a * x.p_b), cond: x.p_both / x.p_a, other: (x.p_b - x.p_both) / (1 - x.p_a) }))
+    .sort((a, b) => b.p_both - a.p_both).slice(0, 6);
+  if (!all.length) return "";
+  return `<section class="zone"><h2>Lines that score together</h2>
+    <p class="lede">Linemates' nights are tied together: when one gets a point, his linemates usually were on the ice for it. Our game simulator plays each game out second by second, lines and all, so it can say how often two linemates both get a point. Tested on this season's games so far, linemates both got a point 27% of the time, against 21% if their nights had been unrelated; the simulator said 30%, so we scale its links back by that much.</p>
+    <div class="links">${all.map((x) => `<article class="link-card">
+      <a class="sl-game" href="#preview/${x.g.id}">${x.g.away} at ${x.g.home}</a>
+      <h3>${mug(x.team, x.a, nm[x.a], 32)}${mug(x.team, x.b, nm[x.b], 32)} <span>${playerLink(x.a, nm[x.a])} &amp; ${playerLink(x.b, nm[x.b])}</span></h3>
+      <p><b>${pct(x.p_both)}</b> both get a point <span class="dim">(${pct(x.p_a * x.p_b)} if their nights were unrelated)</span></p>
+      <p class="dim">When ${esc(nm[x.a].split(" ").slice(-1)[0])} gets a point, ${esc(nm[x.b].split(" ").slice(-1)[0])} gets one ${pct(x.cond)} of the time, against ${pct(x.other)} when he doesn't.</p>
+    </article>`).join("")}</div></section>`;
+}
 function sleeperSection(games) {
   const all = games.flatMap((g) => (g.sleepers || []).map((x) => [x, g]));
   if (!all.length) return "";
@@ -637,6 +654,7 @@ function renderTonight(view) {
       <div class="slate">${games.map(gameCard).join("")}</div>
     </section>
     ${sleeperSection(games)}
+    ${linkSection(games, T.props)}
     ${(T.headlines || []).length ? `<section class="zone">
       <h2>Tonight's storylines</h2>
       <p class="lede">What's happening around tonight's games. Tap one for the full preview, which also says whether each storyline is factored into our numbers. More on the <a href="#pulse">Pulse</a> page.</p>
@@ -1323,6 +1341,21 @@ function signalNoise(S) {
     <p class="note">Read it like this: a forward's shots on goal are half skill after about ${Math.round((S.rows.find((r) => r.stat === "shots" && r.pos === "F") || {}).games_half_signal || 10)} games, but his shooting percentage needs about ${Math.round((S.rows.find((r) => r.stat === "sh_pct" && r.pos === "F") || {}).games_half_signal || 100)}, more than a season. Offense on the ice settles fast; defense on the ice takes about four times as long, so be slow to judge a player's defense from his numbers.</p>
   </section>`;
 }
+// Does the simulated game look like the real one? (analysis/sim_check.py, walk-forward on this season)
+function scorecardSection(S) {
+  if (!S || !S.rows) return "";
+  const f = (r, v) => (r.unit === "share" ? pct(v) : num(v, v >= 10 ? 1 : 2));
+  return `<section class="zone">
+    <h2>Does our game look like the real one?</h2>
+    <p class="lede">Behind the scenes we play every game out second by second: lines rotating, penalties, score effects, goalies pulled late. Here is what those simulated games look like next to the ${S.games} real ones from ${shortDate(S.first)} to ${shortDate(S.last)}, each simulated using only what we knew before it. Where they differ, our picture of hockey is wrong, and this is where we look first.</p>
+    ${table(S.rows, [
+      { key: "assumption", label: "", fmt: (r) => esc(r.assumption) },
+      { key: "simulated", label: "Simulated", fmt: (r) => f(r, r.simulated) + (r.independent != null ? ` <span class="dim">(${pct(r.independent)} if unrelated)</span>` : "") },
+      { key: "actual", label: "Real games", fmt: (r) => `<b>${f(r, r.actual)}</b>` },
+    ], null, "sc")}
+    <p class="note">The biggest miss: real games are tighter than simulated ones. Far more end within a goal, which suggests teams protect leads in ways shot rates alone don't capture. Linemates' points move together much as the simulator says, which is why it powers "Lines that score together" on the Tonight page. The prices we publish still come from our separate models, which tested as good or better on each market.</p>
+  </section>`;
+}
 function renderModel(view) {
   const M = D.model, ts = M.this_season;
   view.innerHTML = `
@@ -1337,6 +1370,7 @@ function renderModel(view) {
     </section>
     ${liveRecord(M.live)}
     ${signalNoise(M.stability)}
+    ${scorecardSection(M.scorecard)}
     <section class="zone grid-2">
       <div class="figure narrow"><h3>Goal chances</h3><p class="note">Each dot groups player-games by the chance we gave. On the diagonal means that when we said 20%, it happened about 20% of the time. Bigger dots hold more games.</p>${calibrationChart(M.goal.cal, "Goal probability calibration")}</div>
       <div class="figure narrow"><h3>Two or more points</h3><p class="note">Same check for multi-point games.</p>${calibrationChart(M.pts.cal, "Two point probability calibration")}</div>
