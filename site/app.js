@@ -797,7 +797,8 @@ function renderLeague(view) {
         (g) => `<b>${esc(g.name)}</b> ${g.team}<br>${g.gp} GP, ${pct(g.sv_pct, 1)} save rate<br>Allowed ${g.ga} on ${num(g.xga, 1)} expected${g.prev_gsax != null ? `<br>Last season ${signed(g.prev_gsax)}` : ""}<br><span class="dim">Tap for his page</span>`,
         (g) => `#goalie/${g.id}`)}</div>
     </section>
-    <section class="zone" id="lClutch" hidden></section>`;
+    <section class="zone" id="lClutch" hidden></section>
+    <section class="zone" id="lThreat" hidden></section>`;
   const draw = () => {
     const rows = sortRows(teams.map((t) => ({ ...t, id: t.team, rec: `${t.w}-${t.l}-${t.otl}`, gaLuck: t.xga - t.ga })), S.lSort);
     $("#standings").innerHTML = table(rows, [
@@ -814,6 +815,7 @@ function renderLeague(view) {
   draw();
   renderRace($("#lRace")).catch(() => {});
   renderClutch($("#lClutch")).catch(() => {});
+  renderThreatBoard($("#lThreat")).catch(() => {});
 }
 
 // ------------------------------------------------------------------ TEAMS
@@ -1119,6 +1121,7 @@ function renderPlayers(view, param) {
       </div>
     </section>
     <section class="zone plays" id="pRange" hidden></section>
+    <section class="zone plays" id="pThreat" hidden></section>
     <section class="zone path" id="pPath" hidden></section>
     <section class="zone plays" id="pValue" hidden></section>
     <section class="zone plays" id="pDef" hidden></section>
@@ -1136,6 +1139,7 @@ function renderPlayers(view, param) {
     if (ed && $("#pEdge")) $("#pEdge").innerHTML = edgeBlock(ed, rows);
     if (!Array.isArray(file) && file.story && $("#pBio")) $("#pBio").innerHTML = playerBio(file.story);
     if (!Array.isArray(file) && $("#pRange")) renderRange($("#pRange"), file, p);
+    if (!Array.isArray(file) && $("#pThreat")) renderThreat($("#pThreat"), file, p);
     if (!Array.isArray(file) && file.like && $("#pLike")) renderLike($("#pLike"), file.like, p.name);
     if (!Array.isArray(file) && file.dossier && $("#pPath")) renderPath($("#pPath"), file.dossier, p.name);
     if (!Array.isArray(file) && file.eh && $("#pValue")) renderValue($("#pValue"), file.eh, p.id).catch(() => {});

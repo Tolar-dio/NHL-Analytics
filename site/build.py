@@ -646,6 +646,30 @@ def main():
                         return dict(r, kind=key, rank=i + 1 if r.get(val, 0) > 0 else None, of=len([x for x in rows if x.get(val, 0) > 0]))
                     return dict(r, kind=key, rank=i + 1, of=len(rows))
         return None
+    # Threat Added (analysis/threat.py): every event valued by what it did to its team's next 20 seconds
+    threat_cards, threat_out = {}, None
+    try:
+        import threat as TH
+        te = TH.main()
+        tr = TH.ratings(CUR, te[["game_id", "season", "event", "threat", "player1_id", "player2_id"]])
+        kinds = [k for k in ("shooting", "puck", "faceoffs", "physical", "discipline") if k + "60" in tr]
+        q = tr[tr.toi >= 200]
+        for pid, x in tr.iterrows():
+            if x.toi < 60:
+                continue
+            peers = q[q.pos == x.pos].total60
+            threat_cards[int(pid)] = dict(total60=r(x.total60, 3), total=r(x.total, 2), toi=r(x.toi, 0), pos=x.pos,
+                                          pct=r(float((peers < x.total60).mean()), 3) if len(peers) and x.toi >= 200 else None,
+                                          kinds={k: r(x[k + "60"], 3) for k in kinds})
+        names_ = {int(i): n for i, n in names.items()}
+        board = lambda pos, asc: [dict(id=int(i), name=names_.get(int(i)), total60=r(x.total60, 3), toi=r(x.toi, 0),
+                                       **{k: r(x[k + "60"], 3) for k in kinds}) for i, x in q[q.pos == pos].sort_values("total60", ascending=asc).head(10).iterrows()]
+        tv = te[te.season.astype(str) == CUR].groupby("event").threat.mean()
+        threat_out = dict(forwards=board("F", False), defense=board("D", False), values={k: r(v, 4) for k, v in tv.items()})
+        dump("threat.json", threat_out)
+        print(f"  threat added: {len(threat_cards)} skaters")
+    except Exception as e:
+        print(f"  threat added skipped: {e!r}")
     # deserved standings and playoff odds (analysis/race.py)
     try:
         import race as RACE
@@ -1044,7 +1068,7 @@ def main():
             except Exception as e:
                 print(f"  ! dossier {pid}: {e!r}")
                 dos = None
-            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, range=rng_sk.get(pid), wins=wins_of(pid), like=sim.get(pid), a3z=a3z_cards.get(pid), eh=eh_cards.get(pid), defense=def_cards.get(pid),
+            json.dump(dict(log=rows, edge=edge["player"].get(pid), story=story or None, range=rng_sk.get(pid), wins=wins_of(pid), threat=threat_cards.get(pid), like=sim.get(pid), a3z=a3z_cards.get(pid), eh=eh_cards.get(pid), defense=def_cards.get(pid),
                            dossier=dos,
                            reel=sorted(reel.get(pid, []), key=lambda r: (r["date"], r["period"], r["t"]), reverse=True)), f, separators=(",", ":"),
                       default=lambda o: o.item() if hasattr(o, "item") else str(o))

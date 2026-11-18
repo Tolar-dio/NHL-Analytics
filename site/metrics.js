@@ -89,6 +89,40 @@ async function renderRace(el) {
   el.hidden = false;
 }
 
+// Threat Added (analysis/threat.py): every event valued by the change it made to its team's next 20 seconds
+const THREAT_KIND = { shooting: "Shooting", puck: "Takeaways and giveaways", faceoffs: "Faceoffs", physical: "Hits and blocks", discipline: "Penalties" };
+function renderThreat(el, file, p) {
+  const t = file.threat;
+  if (!el || !t || t.toi < 200) return;
+  const kinds = Object.entries(t.kinds).filter(([k]) => THREAT_KIND[k]);
+  const max = Math.max(0.15, ...kinds.map(([, v]) => Math.abs(v)));
+  const pos = t.pos === "D" ? "defensemen" : "forwards";
+  el.innerHTML = `<h2>Threat added</h2>
+    <p class="lede">Shots aren't the only plays that matter. We value every event on the ice by what it did to his team's chances over the next 20 seconds: a takeaway at the blue line, a won faceoff, a giveaway in his own end, a blocked shot, a penalty. Added up per 60 minutes and compared with a typical one of the ${pos}.</p>
+    <div class="grid-2"><div>
+      <div class="stat-row stat-row-2"><div class="stat"><b>${t.total60 >= 0 ? "+" : ""}${num(t.total60, 2)}</b><span>Expected goals per 60, against a typical ${t.pos === "D" ? "defenseman" : "forward"}</span></div>
+      ${t.pct != null ? `<div class="stat"><b>${Math.round(100 * t.pct)}</b><span>Percentile among ${pos}</span></div>` : ""}</div>
+      <p class="note">It's one of the steadier numbers we track: split last season in two and players' halves matched closely (about 0.8 correlation), about as steady as on-ice expected goals, and it's built mostly from his own plays rather than his linemates'.</p>
+    </div><div>
+      ${kinds.map(([k, v]) => `<div class="tbar"><span>${THREAT_KIND[k]}</span><div class="tb-track"><i class="${v >= 0 ? "pos" : "neg"}" style="${v >= 0 ? "left:50%" : `left:${50 - (50 * Math.abs(v)) / max}%`};width:${(50 * Math.abs(v)) / max}%"></i></div><b>${v >= 0 ? "+" : ""}${num(v, 2)}</b></div>`).join("")}
+      <p class="note">Per 60 minutes, against his position's average. Hit and giveaway counts depend on each rink's scorer, so treat those two rows loosely.</p>
+    </div></div>`;
+  el.hidden = false;
+}
+async function renderThreatBoard(el) {
+  let T;
+  try { T = await getJSON("data/threat.json"); } catch (e) { return; }
+  if (!el || !T) return;
+  const team = Object.fromEntries(D.skaters.map((p) => [p.id, p.team]));
+  const li = (r) => `<li><a class="who" href="#player/${r.id}">${esc(r.name || "")}</a> <span class="dim">${team[r.id] || ""}</span> <b>+${num(r.total60, 2)}</b></li>`;
+  const v = T.values || {};
+  el.innerHTML = `<h2>Threat added</h2>
+    <p class="lede">Every play changes what happens next. We value each event by how it moved its team's expected goals over the following 20 seconds, then add it up per 60 minutes for every skater. On average this season a takeaway is worth ${num(v.takeaway || 0, 3)} expected goals, a faceoff win ${num(v.faceoff || 0, 3)}, a giveaway ${num(v.giveaway || 0, 3)} and a penalty taken ${num(v.penalty || 0, 3)}.</p>
+    <div class="grid-2"><div><h3>Forwards</h3><ol class="clutch">${T.forwards.map(li).join("")}</ol></div>
+    <div><h3>Defensemen</h3><ol class="clutch">${T.defense.map(li).join("")}</ol></div></div>
+    <p class="note">Per 60 minutes at all strengths, against the position average, 200+ minutes. Inspired by possession-value models in soccer (VAEP) and hockey (Markov-game action values).</p>`;
+  el.hidden = false;
+}
 async function renderClutch(el) {
   let C;
   try { C = await getJSON("data/clutch.json"); } catch (e) { return; }
