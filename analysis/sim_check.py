@@ -49,7 +49,7 @@ def main():
     Rr, _, _ = RT.run([M.PREV, M.CUR])
     mu = Rr.set_index("game_id")[["mu_h", "mu_a"]]
     tired = M.back_to_back(cur["games"])
-    prow, grow = [], []
+    prow, grow, pair_rows = [], [], []
     t0 = time.time()
     for cut, day in games.groupby("date"):
         try:
@@ -92,7 +92,10 @@ def main():
                            tg26, gg26, tg25, gg25, cut)
             sog_h, sog_a = float(sv.exp_sa.iloc[1]) / SV.SCALE, float(sv.exp_sa.iloc[0]) / SV.SCALE   # home shots = away goalie's shots faced
             G = SIM.Game(g.home, g.away, uh, ua, rates, pos_avg, fin)
-            SIM.calibrate(G, P, (lh, la), (sog_h, sog_a), n=300, rounds=2)
+            tg_p = {pid: dict(g=float(sep.loc[(gid, pid)].lam_g), pts=float(sep.loc[(gid, pid)].lam_p),
+                              sog=float(sep.loc[(gid, pid)].exp_sog), blk=float(sep.loc[(gid, pid)].exp_blk))
+                    for pid in G.ids if (gid, pid) in sep.index}
+            SIM.calibrate(G, P, (lh, la), (sog_h, sog_a), n=300, rounds=3, players=tg_p)
             out = SIM.simulate(G, P, NS, seed=gid % 100000)
             pts = out["g"] + out["a"]
             yg = (g.home_score > g.away_score)
@@ -103,7 +106,19 @@ def main():
                              sim_o55=float((tot >= 6).mean()), sim_o65=float((tot >= 7).mean()), sim_ot=float(out["tied"].mean() + ((sc[:, 0] == sc[:, 1]) & False).mean()),
                              rt_p_home=float(RT.win_prob(la, lh)), la=la, lh=lh,
                              sim_sv_h=float(out["saves"][:, 0].mean()), sim_sv_a=float(out["saves"][:, 1].mean()),
-                             sep_sv_h=float(sv.exp_saves.iloc[0]), sep_sv_a=float(sv.exp_saves.iloc[1])))
+                             sep_sv_h=float(sv.exp_saves.iloc[0]), sep_sv_a=float(sv.exp_saves.iloc[1]),
+                             # the assumption scorecard: what the simulated games look like, to compare with real ones
+                             sc_ot=float(out["went_ot"].mean()), sc_so=float(out["tied"].mean()), sc_en=float(out["en_goals"].sum(1).mean()),
+                             sc_ppg=float(out["pp_goals"].sum(1).mean()), sc_ppo=float(out["pp_opps"].sum(1).mean()),
+                             sc_1goal=float((np.abs(sc[:, 0] - sc[:, 1]) == 1).mean()), sc_3plus=float((np.abs(sc[:, 0] - sc[:, 1]) >= 3).mean()),
+                             sc_blk=float(out["blocked"].sum(1).mean()), sc_att=float(out["attempts"].sum(1).mean())))
+            # linemates: joint chance two forwards on the same line both get a point, vs independence
+            for t, u in ((0, uh), (1, ua)):
+                for line in u["lines"][:3]:
+                    for a_, b_ in ((line[0], line[1]), (line[0], line[2]), (line[1], line[2])):
+                        i, k_ = G.ix[a_], G.ix[b_]
+                        pa, pb_ = pts[:, i] >= 1, pts[:, k_] >= 1
+                        pair_rows.append(dict(game_id=gid, a=a_, b=b_, p_a=pa.mean(), p_b=pb_.mean(), p_both=(pa & pb_).mean()))
             for p, i in G.ix.items():
                 if (gid, p) not in sep.index:
                     continue
@@ -117,6 +132,44 @@ def main():
         print(f"{cut}: {len(grow)} games, {len(prow)} player-games, {time.time() - t0:.0f}s", flush=True)
         pd.DataFrame(prow).to_csv(os.path.join(OUT, "players.csv"), index=False)
         pd.DataFrame(grow).to_csv(os.path.join(OUT, "games.csv"), index=False)
+        pd.DataFrame(pair_rows).to_csv(os.path.join(OUT, "pairs.csv"), index=False)
+
+
+def scorecard(Gg, j=None):
+    """Simulated vs real: overtime, empty-net goals, power plays, margins, blocks and attempts per game."""
+    ids = set(Gg.game_id)
+    ev = pd.read_csv(os.path.join(ROOT, "data", "tables", M.CUR, "events.csv.gz"), low_memory=False)
+    ev = ev[ev.game_id.isin(ids)]
+    c = ev.situation_code.astype(str).str.zfill(4)
+    goals = ev[(ev.event == "goal") & (ev.period_type != "SO")]
+    gc = c[goals.index]
+    home = goals.team == goals.home_team
+    en = np.where(home, gc.str[0] == "0", gc.str[3] == "0")
+    own = np.where(home, gc.str[2], gc.str[1]).astype(int)
+    opp = np.where(home, gc.str[1], gc.str[2]).astype(int)
+    pp = (own > opp) & ~en
+    per_game = lambda m: pd.Series(m, index=goals.index).groupby(goals.game_id).sum().reindex(list(ids)).fillna(0)
+    ot = ev[ev.period_type.isin(["OT", "SO"])].game_id.unique()
+    pens = ev[(ev.event == "penalty") & ev.penalty_minutes.isin([2, 4])].groupby("game_id").size().reindex(list(ids)).fillna(0)
+    att = ev[ev.event.isin(ATT_EV)].groupby("game_id").size().reindex(list(ids)).fillna(0)
+    blk = ev[ev.event == "blocked-shot"].groupby("game_id").size().reindex(list(ids)).fillna(0)
+    g = pd.read_csv(os.path.join(ROOT, "data", "tables", M.CUR, "games.csv.gz")).set_index("game_id")
+    gm = g.loc[list(ids)]
+    margin = (gm.home_score - gm.away_score).abs()
+    so = ev[ev.period_type == "SO"].game_id.unique()
+    rows = [("Games that reach overtime", Gg.sc_ot.mean(), np.isin(list(ids), ot).mean(), "share"),
+            ("Games decided in a shootout", Gg.sc_so.mean(), np.isin(list(ids), so).mean(), "share"),
+            ("Empty-net goals a game", Gg.sc_en.mean(), per_game(en).mean(), "per game"),
+            ("Power-play goals a game", Gg.sc_ppg.mean(), per_game(pp).mean(), "per game"),
+            ("Minor penalties a game", Gg.sc_ppo.mean(), pens.mean(), "per game"),
+            ("One-goal games", Gg.sc_1goal.mean(), (margin == 1).mean(), "share"),
+            ("Games decided by 3+", Gg.sc_3plus.mean(), (margin >= 3).mean(), "share"),
+            ("Shot attempts a game", Gg.sc_att.mean(), att.mean(), "per game"),
+            ("Blocked shots a game", Gg.sc_blk.mean(), blk.mean(), "per game")]
+    return pd.DataFrame(rows, columns=["assumption", "simulated", "actual", "unit"]).round(3)
+
+
+ATT_EV = ["shot-on-goal", "missed-shot", "blocked-shot", "goal"]
 
 
 def report():
@@ -149,6 +202,13 @@ def report():
     as_ = [st.get((g, t)) for g, t in zip(Gg.game_id, Gg.away)]
     S = pd.DataFrame(dict(act=np.r_[hs, as_], sim=np.r_[Gg.sim_sv_h, Gg.sim_sv_a], sep=np.r_[Gg.sep_sv_h, Gg.sep_sv_a])).dropna()
     print(f"  starter saves: actual {S.act.mean():.2f}; sim {S.sim.mean():.2f} MAE {np.abs(S.sim - S.act).mean():.3f}; separate {S.sep.mean():.2f} MAE {np.abs(S.sep - S.act).mean():.3f}")
+    if "sc_ot" in Gg:
+        print(scorecard(Gg, j).to_string(index=False))
+    pr = os.path.join(OUT, "pairs.csv")
+    if os.path.exists(pr):
+        Q = pd.read_csv(pr).join(pg[["pts"]].rename(columns={"pts": "ya"}), on=["game_id", "a"]).join(pg[["pts"]].rename(columns={"pts": "yb"}), on=["game_id", "b"]).dropna()
+        both = ((Q.ya >= 1) & (Q.yb >= 1)).mean()
+        print(f"  linemates both get a point: actual {both:.3f} | simulator joint {Q.p_both.mean():.3f} | if independent {(Q.p_a * Q.p_b).mean():.3f} ({len(Q)} pairs)")
 
 
 if __name__ == "__main__":

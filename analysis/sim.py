@@ -218,10 +218,10 @@ class Game:
         R = rates.reindex(self.ids)
         for c in ("att60", "xgs", "net", "a160", "a260", "blk60", "oxf"):
             R[c] = R[c].fillna(pd.Series({p: pos_avg.get(R.pos.get(p) if isinstance(R.pos.get(p), str) else "F", pos_avg["F"])[c] for p in self.ids}))
-        self.w_att, self.xgs, self.net = R.att60.values, R.xgs.values, R.net.values
-        self.w_a1, self.w_a2, self.w_blk = R.a160.values + 1e-6, R.a260.values + 1e-6, R.blk60.values + 1e-6
+        self.w_att, self.xgs, self.net = (R.att60.to_numpy(float).copy(), R.xgs.to_numpy(float).copy(), R.net.to_numpy(float).copy())
+        self.w_a1, self.w_a2, self.w_blk = (R.a160.to_numpy(float) + 1e-6, R.a260.to_numpy(float) + 1e-6, R.blk60.to_numpy(float) + 1e-6)
         self.fin = np.array([(fin or {}).get(p, 1.0) for p in self.ids])
-        self.oxf = np.append(R.oxf.values, np.nan)        # index -1 (an empty slot) reads as missing
+        self.oxf = np.append(R.oxf.to_numpy(float), np.nan)        # index -1 (an empty slot) reads as missing
         self.u = [uh, ua]
         self.names = (home, away)
         self.m_att = np.array([1.0, 1.0])
@@ -385,14 +385,39 @@ def simulate(G, P, n=1000, seed=0):
                 en_goals=eng, pp_goals=ppg, pp_opps=ppo, attempts=att_n, blocked=blk_n, went_ot=went_ot, **st)
 
 
-def calibrate(G, P, target_goals, target_sog, n=600, seed=1, rounds=2):
+def calibrate(G, P, target_goals, target_sog, n=600, seed=1, rounds=2, players=None):
     """Scale each team's attempt and finishing levels so a pilot run reproduces the team models' expected goals
-    (target_goals = (home, away)) and shots on goal (target_sog)."""
-    for _ in range(rounds):
-        out = simulate(G, P, n, seed)
-        sog = out["s"].sum(0)
-        tsog = np.array([sog[[G.ix[p] for p in G.ids if G.team.get(p) == t]].sum() for t in (0, 1)]) / n
+    (target_goals = (home, away)) and shots on goal (target_sog).
+
+    players: optional {player_id: dict(g=, pts=, sog=, blk=)} expectations from the props models. Each skater's
+    shot weight, finishing, assist weights and block weight are then nudged so his share of his team's shots,
+    goals, assists and blocks matches those expectations (the first walk-forward test showed the simulator alone
+    flattened stars toward the middle), while the team levels stay with the team models."""
+    team_idx = [np.array([G.ix[p] for p in G.ids if G.team.get(p) == t]) for t in (0, 1)]
+    for r in range(rounds):
+        out = simulate(G, P, n, seed + r)
+        sog = out["s"].sum(0) / n
+        tsog = np.array([sog[ix].sum() for ix in team_idx])
         g = out["score"].mean(0)
         G.m_att = G.m_att * np.asarray(target_sog) / np.maximum(tsog, 1)
         G.m_g = G.m_g * (np.asarray(target_goals) / np.maximum(g, 0.2)) / (np.asarray(target_sog) / np.maximum(tsog, 1))
+        if players:
+            gl, ast, blk = out["g"].mean(0), out["a"].mean(0), out["b"].mean(0)
+            for t, ix in enumerate(team_idx):
+                have = [i for i in ix if G.ids[i] in players]
+                if len(have) < 8:
+                    continue
+                h = np.array(have)
+                tg = np.array([players[G.ids[i]] for i in h], dtype=object)
+                def nudge(arr, sim_v, want, lo=0.33, hi=3.0, damp=0.8):
+                    want = np.asarray(want, float)
+                    share_w = want / max(want.sum(), 1e-9)
+                    share_s = sim_v[h] / max(sim_v[h].sum(), 1e-9)
+                    ratio = np.clip((share_w + 1e-4) / (share_s + 1e-4), lo, hi) ** damp
+                    arr[h] = arr[h] * ratio
+                nudge(G.w_att, sog, [x["sog"] for x in tg])
+                nudge(G.fin, gl / np.maximum(sog, 1e-3), [x["g"] / max(x["sog"], 0.05) for x in tg])   # goals per shot on goal
+                nudge(G.w_a1, ast, [max(x["pts"] - x["g"], 0.01) for x in tg])
+                nudge(G.w_a2, ast, [max(x["pts"] - x["g"], 0.01) for x in tg])
+                nudge(G.w_blk, blk, [x["blk"] for x in tg])
     return G
