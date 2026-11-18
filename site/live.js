@@ -246,7 +246,7 @@ function buildLiveNHL(pbp, g0, model, wpm) {
         const dir = (p.homeTeamDefendingSide === "right") === isHome ? -1 : 1;
         let xg = null;
         if (d.xCoord != null && model) {
-          const dt = prev ? t - secsOf(prev) : 99, pd = prev?.details || {};
+          const dt = prev ? t - secsOf(prev) - (k === "goal" ? 1 : 0) : 99, pd = prev?.details || {};   // goals are logged about 1 s late
           const rebound = prev && NHL_ATT[prev.typeDescKey] && dt <= 3 ? 1 : 0;
           const rush = prev && pd.xCoord != null && dt <= 4 && !["faceoff", "stoppage"].includes(prev.typeDescKey) && pd.xCoord * dir <= 25 ? 1 : 0;
           const st = SHOT_TYPES.includes(d.shotType) ? d.shotType : "other";
@@ -306,7 +306,7 @@ function buildLive(sum, g0, model) {
         const state = { "power-play": "PP", "short-handed": "SH" }[p.strength?.abbreviation] || "EV";
         let xg = null;
         if (p.coordinate && model) {
-          const dir = dirOf(team, p.period.number), dt = prev ? t - secs(prev) : 99;
+          const dir = dirOf(team, p.period.number), dt = prev ? t - secs(prev) - (k === "goal" ? 1 : 0) : 99;   // goals are logged about 1 s late
           const rebound = prev && KIND[prev.type.text] && dt <= 3 ? 1 : 0;
           const rush = prev && prev.coordinate && dt <= 4 && !["Face Off", "Stoppage"].includes(prev.type.text) && prev.coordinate.x * dir <= 25 ? 1 : 0;
           xg = xgOf(model, featurise(p.coordinate.x, p.coordinate.y, dir, shotType(p.text), state, rebound, rush));

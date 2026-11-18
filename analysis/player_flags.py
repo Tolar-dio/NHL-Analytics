@@ -27,13 +27,19 @@ PREV_TYPES = ["faceoff", "hit", "giveaway", "takeaway", "blocked-shot", "missed-
 def shots_for(season):
     """Unblocked, non-empty-net shots with location, context and sequence features.
 
-    Sequence features (added Oct 2026, AUC 0.740 -> 0.752 out of fold on 2025-27 shots; MoneyPuck 0.769):
+    Sequence features (added Oct 2026; out of fold on 2025-27 shots AUC 0.741 -> 0.743 once goal times are
+    corrected for the NHL's logging lag, see t_seq below; the 0.752 first measured was mostly the lag; MoneyPuck 0.769):
     time since the previous event, how far and how fast the puck moved from it, whether it crossed the
     slot's centre line just before the shot ("royal road", a pass proxy), the previous event's type and
     team, and how long the shooter had been on the ice in his shift."""
     ev = pd.read_csv(os.path.join(ROOT, "data", "tables", season, "events.csv.gz"), low_memory=False)
     ev = ev[ev.period_type != "SO"].sort_values(["game_id", "sort_order"]).reset_index(drop=True)
     ev["situation_code"] = ev.situation_code.astype(str).str.zfill(4)
+    # The NHL logs a goal about a second after the puck leaves the stick (rebound goals read 2-3 s after the
+    # previous shot, saved rebounds 1-2 s: backwards from how hockey works). Sequence features use the corrected
+    # time; without it, timing features "found" goals through the lag (Nov 18, 2026: AUC 0.752 with the lag,
+    # 0.743 corrected, 0.741 with no sequence features at all). Official times stay for shift matching.
+    ev["t_seq"] = ev.game_seconds - (ev.event == "goal").astype(int)
     prev = ev.groupby("game_id").shift(1)
     s = ev[ev.event.isin(UNBLOCKED)].copy()
     p = prev.loc[s.index]
@@ -50,7 +56,7 @@ def shots_for(season):
     opp = np.where(is_home, c.str[1], c.str[2]).astype(int)
     opp_goalie_in = np.where(is_home, c.str[0], c.str[3]) == "1"
     s["state"] = np.select([own > opp, own < opp], ["PP", "SH"], "EV")
-    s["dt_prev"] = (s.game_seconds - p.game_seconds).clip(0, 60).fillna(60)
+    s["dt_prev"] = (s.t_seq - p.t_seq).clip(0, 60).fillna(60)
     s["rebound"] = (p.event.isin(UNBLOCKED + ["blocked-shot"]) & (s.dt_prev <= 3)).astype(int)
     s["rush"] = ((s.dt_prev <= 4) & p.zone.isin(["N", "D"]) & ~p.event.isin(["faceoff", "stoppage"])).astype(int)
     px, py, sx, sy = p.x * d, p.y * d, s.x * d, s.y * d
@@ -63,10 +69,10 @@ def shots_for(season):
     s["shift_t"] = 40.0
     if os.path.exists(sh_path):
         sh = pd.read_csv(sh_path, usecols=["game_id", "player_id", "start_sec", "end_sec"])
-        m = s[["game_id", "player1_id", "game_seconds"]].reset_index().merge(
+        m = s[["game_id", "player1_id", "game_seconds", "t_seq"]].reset_index().merge(
             sh, left_on=["game_id", "player1_id"], right_on=["game_id", "player_id"], how="left")
         m = m[(m.start_sec < m.game_seconds) & (m.game_seconds <= m.end_sec)].drop_duplicates("index")
-        s["shift_t"] = m.set_index("index").eval("game_seconds - start_sec").reindex(s.index).fillna(40).clip(0, 180)
+        s["shift_t"] = m.set_index("index").eval("t_seq - start_sec").reindex(s.index).fillna(40).clip(0, 180)
     s = s[opp_goalie_in & s.x.notna()].copy()   # drop empty-net shots: they'd distort the model
     s["goal"] = (s.event == "goal").astype(int)
     s["shot_type"] = s.shot_type.fillna("unknown")

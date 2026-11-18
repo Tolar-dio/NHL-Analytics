@@ -43,7 +43,8 @@ def _band_table(s):
 def _rebounds(s):
     """Saves by each goalie and how many were followed by another unblocked shot from the same team within 3 s."""
     s = s.sort_values(["game_id", "game_seconds"])
-    nxt_t = s.groupby(["game_id", "period"]).game_seconds.shift(-1)
+    # a goal is logged about 1 s after the shot (player_flags.py), which would hide quick rebound goals
+    nxt_t = (s.game_seconds - (s.event == "goal").astype(int)).groupby([s.game_id, s.period]).shift(-1)
     nxt_team = s.groupby(["game_id", "period"]).team.shift(-1)
     saved = s.event == "shot-on-goal"
     reb = saved & (nxt_team == s.team) & ((nxt_t - s.game_seconds) <= 3)

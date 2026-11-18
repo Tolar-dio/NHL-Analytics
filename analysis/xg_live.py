@@ -54,7 +54,7 @@ def load_shots():
                              np.where(np.where(is_home, side == "left", side == "right"), 1.0, -1.0),
                              np.where(ev.x.fillna(0) >= 0, 1.0, -1.0))
         prev = ev.groupby("game_id").shift(1)
-        dt = ev.game_seconds - prev.game_seconds
+        dt = ev.game_seconds - (ev.event == "goal").astype(int) - prev.game_seconds   # goals are logged about 1 s late (see player_flags.py)
         s = ev[ev.event.isin(UNBLOCKED)].copy()
         p_ = prev.loc[s.index]
         dt_ = dt.loc[s.index]

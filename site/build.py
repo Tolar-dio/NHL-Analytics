@@ -878,14 +878,26 @@ def main():
     if slate:
         fpt = M.fit_players(cur, str(today), pri, extra=lu["extra"])
         tm = M.fit_teams(cur, str(today), fpt, pri, M.K, rosters)
+        try:   # dynamic team ratings (analysis/ratings.py, Nov 18, 2026) replace the season-average team strength
+            import ratings as RT
+            dyn = RT.current((PREV, CUR))
+            print(f"  dynamic ratings: {len(dyn['a'])} teams, league level {np.exp(dyn['c']):.2f} goals")
+        except Exception as e:
+            dyn = None
+            print(f"  dynamic ratings skipped, using season averages: {e!r}")
         for g in slate:
             (ga_, gas), (gh_, ghs) = proj_goalie(g["away"]), proj_goalie(g["home"])
             for team, opp, og in ((g["away"], g["home"], gh_), (g["home"], g["away"], ga_)):
                 rows += [{"player_id": i, "team": team, "opp": opp, "opp_goalie": og, "game": g["id"],
                           "lineup": st, "lineup_note": note, "b2b": tired(team), "opp_b2b": tired(opp), "home": team == g["home"]}
                          for i, (st, note) in lu["pool"].get(team, {}).items()]
-            la = M.team_lambda(tm, g["away"], g["home"], gh_) * M.b2b_factor(tired(g["away"]), tired(g["home"])) * M.home_factor(False)
-            lh = M.team_lambda(tm, g["home"], g["away"], ga_) * M.b2b_factor(tired(g["home"]), tired(g["away"])) * M.home_factor(True)
+            if dyn:
+                la0, lh0 = RT.goal_means(dyn, g["away"], g["home"])
+                la = la0 * M.goalie_factor(tm, g["home"], gh_) * M.b2b_factor(tired(g["away"]), tired(g["home"]))
+                lh = lh0 * M.goalie_factor(tm, g["away"], ga_) * M.b2b_factor(tired(g["home"]), tired(g["away"]))
+            else:
+                la = M.team_lambda(tm, g["away"], g["home"], gh_) * M.b2b_factor(tired(g["away"]), tired(g["home"])) * M.home_factor(False)
+                lh = M.team_lambda(tm, g["home"], g["away"], ga_) * M.b2b_factor(tired(g["home"]), tired(g["away"])) * M.home_factor(True)
             dist = M.total_dist(la, lh)
             k = np.arange(len(dist))
             def options(team, chosen):
