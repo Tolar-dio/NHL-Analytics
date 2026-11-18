@@ -1,8 +1,8 @@
 {
- "text": "Jake Evans is the Canadiens' checking centre, a seventh-round pick from 2014 who has played 438 games for the only NHL team he's known. Martin St-Louis has leaned on him more as the injuries pile up: Florian Xhekaj moved onto his wing when Chris Kreider went down, and Evans has played through a knock of his own that made him a game-time decision against Minnesota.\n\nHis results are fair and quietly useful. Eight points in 20 games, with his goals exactly on his expected total, and Montreal takes 55% of the five-on-five expected goals (the quality of chances) with him on the ice, more than 5 points better than without him. On a team whose results are running ahead of its chances, he's one of the forwards actually winning his minutes. His winner against Boston came in a two-point night last week.\n\nHe doesn't shoot much, 16 shots on goal all season, and our model compares him to penalty-killing centres like Collin Graf and Marat Khusnutdinov. Corey Sznajder's All Three Zones tracking doesn't find a clear strength or weakness, which is about right for a player whose value is not losing. Our talent range has him around 13 goals.",
+ "text": "Jake Evans was a seventh-round pick, 207th overall in 2014, and he has spent his whole NHL career in Montreal. He is the kind of center coaches trust on the penalty kill, and the players who resemble him statistically are killers too.\n\nThis season he has 3 goals and 8 points in 21 games on just 16 shots. That is efficient, maybe too efficient: 18.8% shooting sits above his usual range of about 11 to 17, though his 3 goals almost exactly match his 2.9 expected goals (the quality of his chances). His biggest night was Nov. 12 in Boston, when he had two points including the winner, per CBS Sports.\n\nThe five-on-five numbers are a pleasant surprise. Montreal takes 54.3% of the expected goals with him on the ice, 5 points better than without him. Evolving-Hockey had him around replacement level last season, so that is a change worth tracking.\n\nHis role has grown lately: 16.4 minutes a night over his last ten games, above his season average. Watch whether the bigger minutes keep the team's share of play on his side.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:51:52Z",
- "gp": 20
+ "written": "2026-11-18T22:59:15Z",
+ "gp": 21
 }

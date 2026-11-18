@@ -1,8 +1,8 @@
 {
- "text": "J.T. Miller is the Rangers' captain, back in New York after the Vancouver years, and his first trip back to Rogers Arena on Friday came with all the old storylines, including the Province asking whether anyone still cares about him and Elias Pettersson. The Rangers won 5-1, and Miller had two assists.\n\nHis season is a good example of results lagging play. He has 16 points in 21 games but only four goals on 7.4 expected, and none in his last seven games on 3.3 expected. Worse luck than that: the Rangers have scored 10.4 fewer goals than their chances deserve with him on the ice. With him out there at five on five, they take 62% of the expected goals (the quality of chances), almost 14 points better than without him. That's elite play-driving, and it's the reason the New York Post's complaints about his production should fade.\n\nEvolving-Hockey had a similar story last season: around replacement level by results, but 86th-percentile play-driving and far better by chance quality. Our talent range has him near 62 points. If the shots start going in, the Rangers' best stretch of the season gets better.",
+ "text": "J.T. Miller is the Rangers' captain, and the team's best play runs through him. With Miller on the ice at 5v5, New York gets 63% of the expected goals (the quality of chances), 14.5 points better than without him. He has 17 points in 22 games, mostly as a setup man.\n\nThe goals are the missing piece. He has four on 7.6 expected goals, none in his last eight games despite 3.4 expected in that span, and the Rangers have scored 9.3 fewer goals than their chances deserved with him out there. Our numbers call that due: the looks keep coming, and his shot is still among the hardest in the league (98th percentile by EDGE).\n\nEvolving-Hockey had a similar read on last season: he drove play at an 86th-percentile rate against tough competition, but his goals lagged his chances. Corey Sznajder's All Three Zones tracking had him at 8.6 primary shot assists per 60.\n\nOff the ice, his return to Vancouver last week made headlines again, from The Province asking about Miller against Elias Pettersson to reports of him chirping his old teammate in a Rangers win.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:50:33Z",
- "gp": 21
+ "written": "2026-11-18T22:58:41Z",
+ "gp": 22
 }

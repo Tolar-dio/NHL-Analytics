@@ -1,8 +1,8 @@
 {
- "text": "Alex Newhook has 10 points in 20 games, including two two-goal nights, against Dallas and in the 4-2 win in Toronto. With Ivan Demidov out, he's on Montreal's top line beside Juraj Slafkovsky and Oliver Kapanen, which is a bigger job than the Canadiens drew up for him.\n\nThe goals are fair, 5 on 4.6 expected. The problem is everything else at five on five. Montreal takes only 38% of the expected goals (the quality of chances) with Newhook on the ice, almost 18 points worse than without him, the biggest gap on the team. Our model notes chances against pile up with him on, and Evolving-Hockey had him in the bottom 9% of forwards for creating offense last season. That's a hard profile for a top-line role.\n\nHe brings real things: speed, a clean breakout (59% of exits with possession by Corey Sznajder's All Three Zones tracking), and a Stanley Cup ring from Colorado in 2022. Our talent range has him around 47 points. Watch his five-on-five numbers as long as he's on the first line, because that's where the Habs' results are running ahead of their play.",
+ "text": "Alex Newhook won a Stanley Cup with Colorado in 2022 and is now in his third season in Montreal. On the scoresheet he is doing fine: 5 goals and 10 points in 21 games, 4 of the goals in his last ten, and his shooting matches his chances (5 goals on 4.8 expected goals, the quality of his shots).\n\nThe underlying numbers are harsher. At five on five Montreal takes only 38.6% of the expected goals with him on the ice, 16.2 points worse than the team without him. The players he most resembles statistically share one trait: chances against pile up with them on. Evolving-Hockey had a similar story last season, with his team creating 0.15 fewer expected goals per 60 when he played (bottom 9% of forwards).\n\nHis minutes are already sliding. After four straight games of 17.8 minutes or more, he has played between 12.2 and 15.7 in each of his last six. Against Colorado on Nov. 14 he had a tip waved off as \"too high,\" The Hockey News' Karine Hains posted. For a forward whose goals are keeping him afloat, the five-on-five results are the number to watch.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:51:13Z",
- "gp": 20
+ "written": "2026-11-18T22:59:15Z",
+ "gp": 21
 }

@@ -1,8 +1,8 @@
 {
- "text": "Kevin Stenlund is a defensive centre, a Stanley Cup winner with Florida in 2024, and Utah uses him that way, about 13 and a half minutes a night in a checking role. He has five points in 21 games and none in his last eleven.\n\nUnlike some droughts on this team, this one isn't bad luck. We'd have expected about 3.1 points over those eleven games, and the looks have thinned out. His own shots are worth 0.36 expected goals per 60, lower than last season, and Utah takes 52% of the five-on-five expected goals with him on, almost 6 points worse than without him. Evolving-Hockey had him in the bottom 1% of forwards for creating offense last season, so none of this is new.\n\nThe point of him is elsewhere, in the defensive matchups, and Corey Sznajder's All Three Zones tracking says as much: his value, if it's there, doesn't show at five on five. Our model compares him to Oskar Sundqvist and Jordan Greenway. With Utah's lineup patched together, the question is whether the Mammoth can afford a fourth-line centre who doesn't drive play. Our talent range has him around 7 goals.",
+ "text": "Kevin Stenlund won a Stanley Cup with Florida in 2023-24 as a checking center, and that is still the job in Utah: 13.4 minutes a night and penalty kill work. The offense has gone missing even by those standards. He is pointless in twelve straight games on 3.3 expected points, with 1 goal and 4 assists through 22.\n\nThis isn't simply bad luck. His own chances have thinned out over the last ten games, and at five on five the Mammoth have been about six points worse in expected goal share (chance quality) with him on the ice than without him. Evolving-Hockey had a similar view last season: his team created 0.34 fewer expected goals per 60 with him out there, bottom 1% of forwards.\n\nThere is some bad luck on top of it. Utah has scored 4.9 fewer goals than the chances deserve with him on the ice, which our numbers expect to even out.\n\nHe plays like Jordan Greenway and Oskar Sundqvist: kills penalties, shoots rarely. His value is in the defensive details, and in a losing stretch that's harder to see.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:52:38Z",
- "gp": 21
+ "written": "2026-11-18T22:58:38Z",
+ "gp": 22
 }

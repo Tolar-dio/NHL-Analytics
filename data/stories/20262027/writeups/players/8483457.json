@@ -1,8 +1,8 @@
 {
- "text": "Lane Hutson plays almost 25 minutes a night for Montreal, more than anyone, and the Canadiens take 57% of the five-on-five expected goals (the quality of chances) when he's out there, 11.5 points better than without him. That's the number that tells you who he is. TSN's Montreal 690 called him the best player on the ice recently, and on a team whose results are leaning on its goalie, Hutson is one of the few Habs actually winning his minutes.\n\nThe points are fair: 18 in 20 games, 15 of them assists, with his goals right on his expected total. There's no luck to give back here and no drought to wait out. Our talent range has him around 74 points.\n\nThe Calder winner from 2024-25 was Evolving-Hockey's top defenseman by wins above replacement last season, 1st among 215, with 99th-percentile play-driving and a knack for drawing penalties. Corey Sznajder's All Three Zones tracking had him carrying the puck in on 54% of his entries. Our model's closest comparisons are Charlie McAvoy and Adam Fox. With Mike Matheson hurt, expect his minutes to climb again.",
+ "text": "Lane Hutson won the Calder in 2024-25 and then, by Evolving-Hockey's count, was the most valuable defenseman in the league last season: 4.9 wins, 1st among 215. This season Montreal is leaning on him harder still. He averages 25.1 minutes and played 27 or more in three of his last six games.\n\nHis 19 points (3 goals, 16 assists) carry almost no luck. He has 3 goals on 3.0 expected goals (the quality of his chances), the team's finishing with him on is right at expectation, and his last ten games produced 9 points against the 9.1 we'd expect. All nine were assists.\n\nThe process is the reason. At five on five the Canadiens take 56.4% of the expected goals with him on, 10.4 points better than without him. Corey Sznajder's All Three Zones tracking has him carrying the puck in on 54% of his entries, and carry-ins led to a chance 25% of the time against 8% for dump-ins.\n\nThere is a second Hutson story now: brother Cole leads all NHL rookies in scoring for Washington, per RMNB. Lane remains the one Montreal can't take off the ice.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:50:33Z",
- "gp": 20
+ "written": "2026-11-18T22:59:15Z",
+ "gp": 21
 }

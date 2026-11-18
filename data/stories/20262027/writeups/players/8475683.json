@@ -1,0 +1,8 @@
+{
+ "text": "Sergei Bobrovsky arrived in Toronto as the prize of free agency, a two-time Cup winner signed on July 1 to a reported three-year, $21 million deal. Six weeks into the season, The Hockey Writers headline reads \"Maple Leafs Already Having Buyer's Remorse With Bobrovsky\", and the Leafs have lost seven straight.\n\nOur numbers explain the mood. He is 3-9-2 with an .873 save percentage, and he has allowed 3.9 more goals than his shots usually produce (goals saved above expected, or GSAx, measures a goalie against the quality of shots he faces). His last five starts are worth -7.7. The damage comes from the easy ones: he is stopping 93.5% of low-danger shots against a league 96.3%. On high-danger chances he is above average.\n\nThis did not start in Toronto. Our numbers had him at -13.5 in his final season in Florida, though Evolving-Hockey's model was gentler at -1.8, and two Vezinas and back-to-back Cups are not forgotten. Some of the goals have come off team mistakes, as CBS Sports noted. Still, a goalie bleeding soft goals is the one thing a struggling team cannot hide.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-18T22:58:41Z",
+ "gp": 14
+}
