@@ -1,9 +1,8 @@
 {
- "text": "Simon Holmstrom's month went from a fourth-line demotion to his first NHL hat trick, three goals in a 6-2 win at Anaheim, as Stefen Rosner of NHL.com put it. He is on a four-game point streak with five goals and three assists, and has 15 points in 19 games.\n\nPlenty of this is real. He is playing 18:18 a night, up from 16:44, and he is on the ice for 46% of the Islanders' power-play chances, up from 19% last season. His own chances are up too, 0.97 expected goals per 60 from 0.66. The Islanders control the five-on-five game with him on the ice, at 53% of expected goals.\n\nThe finishing is the part that won't hold. He has nine goals on 5.6 expected, shooting 25% against 19% last season, and his team has scored 4.3 more than expected with him out there. Corey Sznajder's All Three Zones tracking had him carrying the puck in on 57% of his entries last season, the kind of habit that keeps chances coming when the shots stop dropping. Nineteen games is a small sample, and Rosner already has his next contract on the table.",
- "headline": "From the fourth line to a hat trick",
+ "text": "Simon Holmstrom's month has a plot. Yahoo Sports wrote about him showing what he can do after a demotion to the fourth line, and on Nov. 14 in Anaheim he scored his first NHL hat trick and got the Islanders' postgame oar for it. He has a five-game point streak (five goals, four assists) and 16 points in 20 games, after 0.52 points a game last season.\n\nOur breakout check likes the shape of it. He's playing 18:07 a night, up from 16:44, he's on the ice for 46% of the Islanders' power-play chances (19% last season), and his own chances are up to 0.94 expected goals per 60 from 0.66. Evolving-Hockey also had him drawing more penalties than he takes, worth about two goals last season.\n\nThe finishing is the part to discount. Nine goals on 5.7 expected, shooting 25% against 19% last season, and the Islanders have scored 5.8 more goals than expected with him on. He'll cool off. What looks real is the role, and a heavier shot (96th percentile in top speed) getting more chances to fire.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-17T12:46:06Z",
- "gp": 19
+ "written": "2026-11-19T22:53:13Z",
+ "gp": 20
 }

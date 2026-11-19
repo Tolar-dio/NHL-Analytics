@@ -1,9 +1,8 @@
 {
- "text": "Matthew Schaefer won the Calder last season and has somehow found another gear. He's 19, playing 26:59 a night (up from 24:41), and has 21 points in 19 games after 59 in 82 as a rookie. He reached his 100th NHL game in Los Angeles and scored on the power play in it, and Markerzone ran a headline about him tying Bobby Orr in NHL history.\n\nHow much is real? Most of it. With him on the ice at five on five the Islanders take 52.8% of the expected goals, 6.4 points better than without him, and Evolving-Hockey had him driving play at a 99th percentile rate last season. His last ten (13 points) we'd call partly real: the chances are up a little, but finishing is doing most of the work.\n\nThe skating is the thing to watch. His 84 bursts over 20 mph put him at the top of the NHL EDGE percentiles, and Corey Sznajder's All Three Zones tracking had 36% of his shots coming off the rush (typical defenseman: 17%). Nineteen games is a small sample for the scoring. The ice time is not.",
- "headline": "Schaefer, 19, keeps adding minutes and history",
+ "text": "Matthew Schaefer is 19, the reigning Calder winner, and somehow better. He scored a hat trick against Columbus on Tuesday on nine shots, has a six-game point streak and 15 points in his last 10, and is playing 26:48 a night, two minutes more than as a rookie. That's 24 points in 20 games after 59 in 82 last season.\n\nOur form check calls the run earned. His own chances are up to 0.67 expected goals per 60 from 0.49, and his recent shots carry more danger than his usual. Nine goals on 6.0 expected says the shooting will cool some, but the shape of his game doesn't need luck: he's in the top few percent of the league in skating speed and bursts over 20 mph, and last season Corey Sznajder's All Three Zones tracking had 36% of his shots coming off the rush, twice the typical defenseman.\n\nEvolving-Hockey had him driving play at the 99th percentile among defensemen last season while playing with weak teammates. For context, defensemen picked in the top three since 2005 have a median of 0.35 points a game in their first full season. He's at 1.20.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-17T12:47:50Z",
- "gp": 19
+ "written": "2026-11-19T22:52:08Z",
+ "gp": 20
 }

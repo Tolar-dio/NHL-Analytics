@@ -1,9 +1,8 @@
 {
- "text": "Last season Dylan Cozens was one of the most quietly valuable forwards in the league: Evolving-Hockey had him worth 2.0 wins, 53rd among 401 forwards, with most of it coming from defense, and his chances outran his goals. This season the defensive edge hasn't shown up yet. At five on five, Ottawa has had 46.98% of the expected goals with him on, 7.57 points worse than without him.\n\nThe style is intact: fast (speed bursts in the 89th percentile by NHL EDGE), physical with 53 hits, and a rush player, with 53% of his shots coming off the rush in Corey Sznajder's All Three Zones tracking last season. But his own chance rate has dropped from 1.29 expected goals per hour to 0.9, and he's shooting 8.9% against a league norm of 13.3%.\n\nThe last ten games have been better, 4 goals and 9 points on 16.9 minutes a night. At 25, with 4 goals and 12 points through 21 games, this is a player whose underlying game earned more trust than his line shows. Watch the defensive numbers first; they were his calling card.",
- "headline": "Dylan Cozens is waiting on his process",
+ "text": "Dylan Cozens is the Senator whose numbers haven't caught up with his team. Ottawa has won three straight and is a strong bet for the playoffs in our simulations, yet Cozens has 12 points in 22 games, and the Senators have been outchanced when he's on at five on five (49% of the expected goals, six points worse than without him).\n\nSome of that is luck. Ottawa has scored 4.6 fewer goals than its chances with him out there, and he's shooting 8.9% against the 13% we'd expect, so our range has his scoring rate climbing. The bigger change is his own chances, down to 0.90 expected goals per 60 from 1.29 last season, with his ice time down a minute over the last ten.\n\nHe was much better than this a year ago. Evolving-Hockey had him worth 2.0 wins in 2025-26, mostly from defense, taking chances away at a 98th-percentile rate. With William Eklund hurt, Tim Stützle has moved onto his line with Fabian Zetterlund. If anything gets his game going again, a center like that beside him should.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-17T12:47:50Z",
- "gp": 21
+ "written": "2026-11-19T22:53:13Z",
+ "gp": 22
 }

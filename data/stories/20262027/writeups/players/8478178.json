@@ -1,9 +1,8 @@
 {
- "text": "Darren Raddysh grew up in Toronto, went undrafted, and earned his way into the league with Tampa Bay, where last season he scored 22 goals and 70 points. Now he's a Maple Leaf, playing 24 minutes a night, and the first month has been mostly assists: 1 goal and 12 assists in 22 games, 8 of the points on the power play. The goal, his first as a Leaf, didn't come until November 10 against Colorado.\n\nThe shooting is the obvious soft spot. He's at 2% against a league norm of 6.2% for defensemen, but his own chance quality has also halved, from 0.52 expected goals per hour last season to 0.25. Some of last year's finishing was always going to fade without Tampa's teammates around him; Evolving-Hockey noted those teammates ranked in the 95th percentile.\n\nThe bigger picture is grim: Toronto has lost six straight, and at five on five the Leafs have had only 45.88% of the expected goals with Raddysh on. Watch whether he starts getting to the slot again; his 97.9 mph top shot says the tool is still there.",
- "headline": "Darren Raddysh's homecoming needs goals",
+ "text": "Darren Raddysh, a Toronto kid who went undrafted and worked his way up through the AHL, came home this season after 249 games in Tampa and walked straight into a 24-minute role. He's played more than 29 minutes in a game and averages 23:49, and Yahoo Sports ran a piece asking whether even he is surprised by how Jim Hiller has used him.\n\nThe points are fine, 14 in 23 with eight on the power play. The goals aren't: one on 52 shots, 1.9% against the 7% our range expects. Corey Sznajder's All Three Zones tracking had him getting to the slot more than almost any defenseman last season (99th percentile), so a man with a 98 mph shot should not stay stuck at one.\n\nThe harder question is the team around him. Evolving-Hockey had him at 2.6 wins last season, 15th among defensemen, but noted he played with very strong teammates in Tampa. In Toronto, the Leafs have 47% of the expected goals with him on at five on five, about what they manage without him, and they've won one of his last ten games.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-17T12:46:30Z",
- "gp": 22
+ "written": "2026-11-19T22:52:50Z",
+ "gp": 23
 }
