@@ -1,9 +1,9 @@
 {
- "text": "Kaapo Kakko has 13 points in 16 games for Seattle, ten of them assists, and Yahoo Sports wondered this month whether the Rangers regret trading him. The Kraken are about to take him home: NHL.com's Tom Gulitti wrote about his excitement for the Global Series in Helsinki, quoting him: \"I've been waiting the whole season to get there.\"\n\nOn the ice, the passing is genuine. Corey Sznajder's All Three Zones tracking had 19% of his setups coming from behind the net last season, more than double a typical forward, and 67% of his exits leaving the zone with possession. Evolving-Hockey had him worth 1.7 wins above replacement, 73rd among forwards, while playing with weak teammates.\n\nThe points this season are inflated, though. Seattle has scored 7.1 more goals than its chances deserved with him on the ice, and the 5v5 share is just 46% of expected goals. He also shoots rarely (14 shots). His points per 60 are above the top of his usual range, so expect the pace to drift down even if the role stays the same.",
- "headline": "Kakko's assists are real, the bounces less so",
- "gp": 16,
+ "text": "Kaapo Kakko got to play in front of a Finnish crowd last week when Seattle met Carolina twice in the Global Series in Finland. NHL.com called the game special to him \"despite loss,\" and the Kraken lost both. It was a fitting snapshot of his season: a nice story wrapped around a team that's struggling.\n\nHis own line is solid. He has 13 points in 18 games, ten of them assists, in about 14 minutes a night. But the shot volume is strikingly low, 15 shots on goal all season and 1.9 expected goals, and he's turned that into three goals. The Kraken have also scored 7.3 more goals than their chances deserve with him on the ice, and at 5v5 they get only 43% of the expected goals (chance quality) when he's out there.\n\nSome of that is context. Evolving-Hockey had him playing with teammates in the bottom 8% by impact last season, yet still 73rd of 401 forwards by wins above replacement. Corey Sznajder's All Three Zones tracking shows a signature: 19% of his setups come from behind the net, more than double a typical forward. He's a playmaker who needs more shooters around him.",
+ "headline": "Kakko, the passer, after a trip home",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:47:16Z"
+ "written": "2026-11-19T12:49:47Z",
+ "gp": 18
 }

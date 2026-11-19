@@ -1,0 +1,12 @@
+{
+ "text": "Montreal won in Newark on Wednesday night with a rookie goalie stealing it. Thursday it gets the second half of a back-to-back, in Raleigh, against the team that knocked it out of last spring's conference final in five games, with a backup in net and an injury list that keeps growing. Chris Kreider is out until about Jan. 2, Ivan Demidov until about Nov. 25, Mike Matheson and Josh Anderson are out too, and The Hockey News' Karine Hains noted Zachary Bolduc was hurt as well. Bolduc had just moved onto the top power play in Demidov's place.\n\nCarolina is rested, home and very good. The Hurricanes are back from the Global Series in Finland, where they beat Seattle twice, and have won four straight. They lead the league's process numbers that matter most here: 59% of the expected goals (the quality of the chances) at five on five, 62% over the last five, and 0.92 expected goals a game on the power play against a Montreal penalty kill that allows 0.83. Montreal takes 4.8 penalties a game. Jackson Blake has an 11-game point streak, and Sebastian Aho a four-game run. One thing to watch: the North State Journal's Cory Lavalette reported Pyotr Kochetkov (.920, 10.0 goals saved above expected) was held out of practice not feeling 100%. He is still the projected starter.\n\nFor Montreal, Jakub Dobes starts over Jacob Fowler, who has 14 of 22 starts and made 28 saves last night. Dobes has had a rough year, .851 and 5.8 goals below expected, after a strong 2025-26. Juraj Slafkovský is two points from 200 for his career and goalless in 13 on 4.6 expected goals, which reads as due. The Canadiens have earned their 30 points so far, and their playoff chance in our simulations is 68%. Tonight is about getting through it.\n\nOur model has a wide gap, 4.05 to 2.58 in expected goals for Carolina. Our sleeper is Mark Jankowski in his 500th NHL game, a third-liner with 4.0 expected goals in his last 10, 26% to score.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:55:06Z",
+ "headline": "A tired, banged-up Montreal visits Carolina",
+ "goalies": [
+  8482487,
+  8481611
+ ]
+}

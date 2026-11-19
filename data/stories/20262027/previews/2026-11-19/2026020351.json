@@ -1,0 +1,12 @@
+{
+ "text": "Alex Ovechkin is on his farewell tour, and the road has gone quiet. He has gone 14 straight games without a goal, matching the longest drought of his career (Nov. 22 to Dec. 20, 2023), per NHL.com's Tom Gulitti, and he is playing about 13 minutes a night on the fourth line. Tampa gave him cigars on his last visit there Tuesday. Washington lost that game 5-2, its third straight loss.\n\nThe drought is the kind our numbers like to call unlucky. Ovechkin has 4.2 expected goals (the quality of his chances) over those 14 games, 3.5 in the last 10 with eight shots from high-danger spots, which is better than 99% of depth forwards. That makes him our sleeper tonight, 22% to score. Tom Wilson's version is similar: no goals in 15 games on 4.4 expected. Wilson also escaped a suspension for his hit on Florida's Sandis Vilmanis, and teammate Jakob Chychrun's hit on Ottawa's Nick Cousins is still being argued over. The Capitals' slide is otherwise real, 44% of the expected goals during the three losses.\n\nBuffalo is in worse shape. Winless in five (0-4-1), outscored 21-9, and on Tuesday in Philadelphia, as The Athletic's Matthew Fairburn noted, the Sabres had more giveaways (20) than shots on goal (19). The season-long picture is milder: 50% of the chances at five on five, with finishing (8.6 goals short) and goaltending costing them. Ukko-Pekka Luukkonen, projected to start, is at -3.4 this season and was pulled in the 8-3 loss to Tampa last week. Jack Quinn, one assist from 100 for his career, is our point sleeper at 62%. Alex Tuch, now a Capital, gets his old team.\n\nThese two met in October, a 4-3 Washington overtime win that the Capitals deserved 76% of the time. Our model has Washington ahead tonight, 3.52 to 3.02 in expected goals. Somebody's losing streak ends, unless it's a Buffalo overtime loss, which would be very this season.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:54:36Z",
+ "headline": "Ovechkin's drought and two sliding teams",
+ "goalies": [
+  8480045,
+  8480313
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "text": "Connor McDavid has a point in all 23 games this season, 55 of them, and the Oilers have won six straight. Devon Levi, traded from Buffalo, has 10 wins in 11 starts, an Oilers record per the headlines. Edmonton is first in the West and at a 99% playoff chance in our simulations. If you are looking for a crack, it is in how they are winning.\n\nOur numbers are blunt about it: the Oilers have taken 45% of the expected goals (the quality of the chances) during the winning streak, and their goaltending has saved 9.4 goals above expected in that run. Over the season they are plus-31 in goals on a plus-1.3 expected, with finishing 24.2 goals above what their chances usually produce. Some of that is McDavid and Leon Draisaitl, who has a 10-game point streak of his own, and elite shooters do beat the averages. Not by that much, for that long. Mike Babcock has also split his two stars onto separate lines, which Oilersnation is still arguing about. Evan Bouchard has 15 points in 10 games, mostly on bounces by our reading. Ryan Nugent-Hopkins is off the out list and day-to-day.\n\nTampa is the better five-on-five team on paper: 56% of the expected goals this season, the best mark of these two, and 3.46 expected goals for per 60. The Lightning are 3-2-0 in five after a 5-2 win over Washington in which Sam O'Reilly scored his first NHL goal. Brandon Hagel is day-to-day and could return, and John Carlson has 14 points in his last 10, earned with more chances on his own shots. Nikita Kucherov had a hat trick against Buffalo last week, and the trade chatter around him has mostly turned into reports that Tampa won't move him. Andrei Vasilevskiy, at +0.5 this season after +23.2 last year, is projected in net.\n\nOur model has Tampa ahead in expected goals, 3.18 to 2.57, which is what you'd expect when a strong process team hosts a hot one.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:54:06Z",
+ "headline": "The Oilers' streak meets Tampa's process",
+ "goalies": [
+  8482221,
+  8476883
+ ]
+}

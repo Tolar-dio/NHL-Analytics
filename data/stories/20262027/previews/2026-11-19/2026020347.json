@@ -1,0 +1,12 @@
+{
+ "text": "Jim Hiller coached the Kings until March. Thursday he stands behind the other bench, in his first year running the Maple Leafs, winless in seven and outscored 29-12, with the GM's public vote of confidence from Monday already sounding like the kind nobody wants to need. After Tuesday's 6-3 loss in Chicago, Hiller told reporters it \"might be time\" for changes, per The Leafs Nation. Auston Matthews said \"it's on ourselves.\" Toronto's playoff chance in our simulations is under 3%.\n\nOur numbers say the slide is earned. Toronto has had 42% of the expected goals (the quality of the chances) over the last five and didn't win the chance battle in any of them. The lineup is thin too: Kirill Marchenko, with 14 points in 14 games, is on injured reserve until about Nov. 27, and since he went out Dakota Joshua has taken his spot beside Nick Paul and William Nylander while Jack Roslovic moved onto the top power play. Sergei Bobrovsky, projected to start, is at -4.0 goals saved above expected, and his last outing was six goals on 25 shots.\n\nThe Kings are the opposite case: better than their 1-4-0 week. They took 53% of the chances in those five games, and over the season their finishing (6.9 goals short of what their chances usually produce) and goaltending have cost them. Darcy Kuemper, in net again, is at -5.2 for the season but stopped all 29 shots in Boston on Tuesday. Artemi Panarin is off the out list after missing time for family reasons, Kevin Fiala is one assist from 300 nine months after his Olympic injury, and Scott Laughton makes his first trip back to Toronto. Our model gives Los Angeles the edge in expected goals, 3.4 to 2.85.\n\nOur sleepers come from the Kings' side: Corey Perry, the fourth-liner with 3.5 expected goals in his last 10 games (16% to score), and Quinton Byfield, two points from 200 for his career, at 49% for a point. For Toronto, the question is simpler: what changes did Hiller mean?",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:53:35Z",
+ "headline": "Hiller's slumping Leafs meet his old team",
+ "goalies": [
+  8475311,
+  8475683
+ ]
+}

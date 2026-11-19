@@ -1,9 +1,9 @@
 {
- "text": "Mackie Samoskevich won a Stanley Cup with Florida in 2025 and has started his Seattle career with six goals in 15 games, already halfway to last season's total in Florida. The goals have mattered, too: his wins-added number ranks 87th of 515 skaters.\n\nThe shooting is the obvious caution. Six goals on 2.6 expected is a 22% shooting rate, against 7% last season. Our numbers flag him as due to cool, and his points per 60 are well above his usual range.\n\nUnderneath the goals there is a useful player. Evolving-Hockey had his team creating more chances with him on the ice (90th percentile among forwards) and credited him with three goals of value from drawing penalties alone. Corey Sznajder's All Three Zones tracking had 70% of his exits leaving the zone with possession and more than half his shots coming off the rush. Seattle's 5v5 numbers are better with him than without him, even if the team is under water overall.\n\nHe plays about 15 and a half minutes a night. If the goals slow, the transition game is what keeps him in that role.",
- "headline": "Samoskevich is finishing at a rate that won't last",
- "gp": 15,
+ "text": "Mackie Samoskevich won a Stanley Cup with Florida in 2025 and has opened his first Seattle season with six goals and 12 points in 17 games, playing 15:32 a night.\n\nThe finishing is the obvious caution. Six goals on 3.1 expected is a 21% shooting rate, after 7% last season, and the Kraken have scored 4.2 more goals than their chances deserve with him on the ice. His recent chances (1.8 expected goals in ten games) have actually come in below what we'd expect from him, and Seattle has lost its last three.\n\nThere's a real player underneath. Evolving-Hockey had him in the 90th percentile among forwards for driving chances last season, with three goals' worth of value just from drawing penalties, and Corey Sznajder's All Three Zones tracking had 70% of his zone exits leaving with possession and more than half his shots coming off the rush. The goals will slow down. The job of making Seattle better in transition is the part to watch.",
+ "headline": "Samoskevich's hot start in Seattle",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-12T12:48:26Z"
+ "written": "2026-11-19T12:49:12Z",
+ "gp": 17
 }

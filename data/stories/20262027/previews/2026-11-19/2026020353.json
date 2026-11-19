@@ -1,0 +1,12 @@
+{
+ "text": "The Blackhawks beat Toronto 6-3 on Tuesday and lost something bigger than they won. Connor Bedard's right shoulder, the one he hurt last season, came out again, and The Athletic's Mark Lazerus wrote that the team always knew there was a risk of it \"coming back out.\" As of Wednesday Jeff Blashill said Bedard was still being evaluated, per Scott Powers. Bedard had a four-game point streak and is the player our numbers like most on either side, so treat his line in our projections as conditional on a decision Chicago hadn't announced when they were made.\n\nWithout him, Chicago leans on Frank Nazar, who has goals in three straight games (five in all) and eight points in 10, and a top power play of Sam Rinzel, Nazar, Patrick Kane, Roman Kantserov and Tyler Bertuzzi. Kane has gone 17 games without a goal on 4.2 expected goals (the quality of his chances), which reads as a drought, not decline. The bigger worry is the team: 42% of the expected goals at five on five, third-most chances allowed per 60, and Spencer Knight at .858 over his last five starts. Chicago's playoff chance in our simulations is under 1%.\n\nColumbus is in its own hole. Winless in five, outscored 21-8, and Jet Greaves, projected again, had lost six straight starts by last weekend, per The Hockey News. The Blue Jackets' process is mediocre, not awful (48% at five on five), and the loss of Sean Monahan until about Nov. 25 has pushed Kent Johnson up to almost 21 minutes a night. Johnson is our point sleeper at 61%. Zach Werenski's name has started showing up in \"who requests a trade next\" pieces, which tells you how the season is going.\n\nOur model has Columbus ahead in expected goals, 3.24 to 2.74. Our other sleeper is Mathieu Olivier, one goal from 50 for his career, with 3.6 expected goals in his last 10 and none to show for six games.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:55:20Z",
+ "headline": "Chicago waits on Bedard's shoulder",
+ "goalies": [
+  8482982,
+  8481519
+ ]
+}

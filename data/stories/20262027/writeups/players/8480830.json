@@ -1,8 +1,9 @@
 {
- "text": "Andrei Svechnikov closed out a 9-2 rout of Chicago with 12.5 seconds left, and as Cory Lavalette of the North State Journal noted, that tied the franchise record for goals in a game since the move to Carolina. Six days later he scored twice more against Seattle in Helsinki. He has 11 goals and 21 points in 21 games, with a four-game point streak (5 goals, 2 assists).\n\nThis one looks mostly real. His 11 goals come on 9.8 expected, so the finishing is only a little hot, and he is shooting 17.5% against a usual range near 15%. Carolina has scored 4.3 more goals than its chances deserve with him on, which pads the assists more than the goals.\n\nThe puzzle is last season. Evolving-Hockey had him driving play, 94th percentile among forwards in expected goals created, yet worth only 0.4 wins above replacement because his finishing lagged and opponents created a lot against him. So far this year the finishing has caught up.\n\nOur projection has him between 29 and 43 goals, 36 in the middle. What to watch: whether the defensive side holds up as well as the scoring.",
+ "text": "Andrei Svechnikov has 11 goals and 21 points in 21 games, with a four-game point streak that included two goals against Seattle in Helsinki. NDTV Sports has him on pace for a career-best season, and nothing in our numbers says it's a mirage.\n\nHe's getting the chances. His own expected goals sit at 1.59 per 60, and his 11 goals came on 9.8 expected, a modest gap with no luck flag attached. Carolina takes 61% of the five-on-five expected goals with him on the ice. He also has 45 hits, which is part of his game the box score shows clearly.\n\nThe interesting contrast is last season. Evolving-Hockey had him at only 0.4 wins above replacement, but 1.5 expected wins, built from chance quality: the chances were there, the finishing wasn't. This season the finishing has shown up. Evolving-Hockey also noted strong teammates and a defensive cost (opponents got 0.17 more expected goals per 60 with him on). Watch his minutes, 17.6 a night. If Carolina gives him more, our range of 28 to 43 goals has room at the top.",
+ "headline": "Svechnikov is finishing what he starts",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-14T22:54:18Z",
+ "written": "2026-11-19T12:51:40Z",
  "gp": 21
 }

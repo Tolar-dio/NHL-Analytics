@@ -1,0 +1,12 @@
+{
+ "text": "Same building, same teams, two nights later. On Tuesday Vegas led Dallas 3-1, then Mikko Rantanen danced around a defender to set up Nils Lundkvist, Wyatt Johnston got a fortunate bounce at the back door with 1:18 left (The Athletic's Jesse Granger's words), and the Stars won 4-3 in overtime. Thursday they do it again, the last game of a five-game Vegas homestand that has gone 0-1-2 the last three times out.\n\nOur numbers say the Golden Knights' slide is mostly bad luck. They took 54% of the expected goals (the quality of the chances) in those three games and 56% over the last five, and their penalty kill allows only 0.46 expected goals a game. Victor Olofsson has 11 points in 10 games, earned with more chances on his own shots. Mitch Marner is one assist from 600 for his career. Carter Hart, at -0.6 goals saved above expected, is projected in net.\n\nDallas is a good team running a little hot. The Stars have won three straight on 53% of the chances, with their goalies saving 3.9 goals above expected in that run, and Jake Oettinger, back in net, is at 7.7 for the season. They're doing it without Miro Heiskanen, who has missed at least five straight games, and with Tyler Myers and Lian Bichsel out on the blue line. The other good news is a big one: Jamie Benn reached 1,000 career points last week, only the second fifth-round pick ever to do it, per Yardbarker. Johnston has goals in three straight. Dallas does take 4.1 penalties a game, and that is not a habit to bring into a building where the penalty kill is this sharp.\n\nThese two are almost identical at five on five, 52% each, and Tuesday's game was a coin flip on the chances. Our model calls this one close too, 2.96 to 2.76 in expected goals for Vegas.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:56:34Z",
+ "headline": "Stars and Knights, back for a rematch",
+ "goalies": [
+  8479979,
+  8479394
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "text": "Minnesota has a point in 12 straight games, four straight wins, and the best line Nashville's coach has seen this year. \"They might be the best line in the NHL,\" Andrew Brunette said after the Wild beat his Predators 7-3 on Tuesday, per NHL.com's Heather Rule. Kirill Kaprizov has a 12-game point streak, 23 points in it, and Quinn Hughes has one running alongside; Rule noted they are the 11th forward and defenseman pair in NHL history with simultaneous point streaks of 12 games or more. Brock Faber is back after a skull fracture and, per NHL.com, \"didn't miss a beat.\"\n\nThere is plenty that's real here. The Wild take 53% of the expected goals (the quality of the chances) at five on five and run a power play that creates 0.90 expected goals a game. The extra layer is Jesper Wallstedt: .924, 17.5 goals saved above expected this season and 5-0-0 with a .936 in his last five starts. That is the gap between a good team and a plus-32 one, and it's the part to watch for a regression nobody in St. Paul wants. Maxim Shabanov, the free agent from the KHL, has six goals in his last 10, earned with more chances on his own shots. He's our sleeper at 20% to score.\n\nCalgary comes home from a three-game road trip at 3-2-0, with Jonathan Castagna's first NHL goal in San Jose on Tuesday. The bigger news is bad: Kevin Bahl is out for the season, and Connor Zary is out too. Zayne Parekh's breakout on the power play is the bright spot, though the Flames' power play still creates only 0.36 expected goals a game. They hold 46% of the chances at five on five, and Dustin Wolf, in net tonight, is at -4.7 goals saved above expected.\n\nCalgary did win the first meeting, 2-1 in October, a game it deserved 27% of the time. Our model has Minnesota well ahead tonight, 3.66 to 2.41 in expected goals.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-19T12:55:46Z",
+ "headline": "The Wild's streak rolls into Calgary",
+ "goalies": [
+  8482661,
+  8481692
+ ]
+}

@@ -1,8 +1,9 @@
 {
- "text": "Mikael Granlund is 34, on his sixth NHL team, and scoring at a far better rate than last season: 24 points in 20 games after 41 in 58 last season. Eleven of those points came on Anaheim's power play, and 16 came in his last ten games, well above the 10.2 our numbers expected.\n\nHere is the catch. At five on five the Ducks have been outchanced badly with him on the ice, holding just 42.7% of the expected goals (the quality of chances), and they're worse with him than without him. What's keeping his points up is the finishing around him: Anaheim has scored 9.1 more goals than those chances deserve with him on the ice, and his own shooting at 18.9% is above the top of our range for him. On-ice luck like that fades. The playmaking is real, and Evolving-Hockey had him driving chances well last season (90th percentile among forwards), but our range for his scoring rate sits well under where it is now. We'd watch the five-on-five share: it's the part of his game that decides whether this pace is real.",
+ "text": "Mikael Granlund is 34, on his sixth NHL team, and scoring like he did a decade ago. He has 26 points in 21 games for Anaheim, including 12 on the power play, and 18 in his last ten, well above the 10.5 we'd expect at his 21 minutes a night.\n\nOur read is that it's partly real. Anaheim's chances with him on the ice are up a little (17.7 on-ice expected goals in that stretch against 15.4 usual). But finishing is doing most of the work: the Ducks have scored 10.1 more goals than their chances deserve with him out there, and he's shooting 20% against a talent range near 15%.\n\nThe worry is at even strength, where Anaheim gets only 41% of the expected goals (chance quality) when he plays 5v5. That's the number that usually wins out over a season. The veteran craft is real, too: All Three Zones tracking had 62% of his zone exits leaving with possession. Enjoy the run, and watch whether the 5v5 share climbs or the points fall to meet it.",
+ "headline": "Granlund's renaissance comes with a catch",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T22:54:16Z",
- "gp": 20
+ "written": "2026-11-19T12:48:09Z",
+ "gp": 21
 }
