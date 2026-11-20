@@ -1,8 +1,8 @@
 {
- "text": "Oliver Bjorkstrand plays under 12 minutes a night for the Rangers and has seven goals, the same as Tye Kartye and Gabe Perreault in far less ice time. At 31, on his fourth team, he's found a role that fits: third-line minutes, some power-play work, and shots from good places.\n\nThe scoring rate, 2.68 points per 60, is well above his recent seasons, and some of that is running ahead of the chances: 7 goals on 4.5 expected. But his own shot quality is also up, 1.11 expected goals per 60 against 0.86 last season, so this isn't all luck. Our talent range, which leans on his history, sees about 20 goals over the full season.\n\nThe bigger change is defensive. Evolving-Hockey had him in the bottom 10% of forwards for creating offense last season, but this year the Rangers take 55% of the five-on-five expected goals with him on ice, a bit better than without him. Our model compares him to Victor Olofsson, another scoring winger finding a second life in a smaller role. For a team that leans on its top six, a third-liner who scores is a quiet edge.",
+ "text": "Oliver Bjorkstrand landed in New York after a season in Tampa Bay, and the Rangers have found a use for him: 7 goals and 11 points in 22 games on fewer than 12 minutes a night. Three of those points have come on the power play, including the goal NHL.com and CBS Sports logged on Nov. 14.\n\nThe goals are running ahead of the chances, by about two and a half, so we'd expect the scoring rate to cool. His minutes are up more than two a night over the last ten games. The Rangers get about 55% of the expected goals (the quality of chances) with him on at five on five, a bit better than without him.\n\nThat's a turnaround from last season, when Evolving-Hockey had him barely above replacement and his team's chance creation in the bottom 10% of forwards with him on the ice; nearly all his value then came on the power play. Corey Sznajder's All Three Zones tracking had him carrying the puck in on only 35% of his entries. Watch whether the extra ice time holds when the shooting luck runs out.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:51:13Z",
- "gp": 21
+ "written": "2026-11-20T22:51:16Z",
+ "gp": 22
 }
