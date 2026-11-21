@@ -1,0 +1,12 @@
+{
+ "text": "Buffalo left Washington on Thursday with a 6-3 win and the end of a five-game winless run (0-4-1). Jack Quinn scored twice and had three points, Rasmus Dahlin had two, and the coverage in Buffalo was about relief. Now comes the hard part: the Panthers tonight and the Lightning tomorrow, a back-to-back in Florida.\n\nThe Sabres are a little better than their 22 points in 22 games. They've taken 49% of the expected goals at five on five (expected goals measure the quality of chances), but their finishing is 5.9 goals short of what those chances usually produce and their goaltending 2.5 goals worse than expected. Alex Lyon gets the start after three straight losses, with a .898 save rate in three games. Tage Thompson is 41% to score in our numbers, and Quinn, flagged as a breakout, is 30%.\n\nFlorida is waiting. Aleksander Barkov and Brad Marchand are both on injured reserve with knee injuries, and Paul Maurice says their return is \"close,\" per Florida Hockey Now. Without them, Matthew Tkachuk has moved into Barkov's spot beside Sam Reinhart and is on a nine-game point streak (3 goals, 9 assists), and Lars Eller is up to 16:29 a night from 12:14. Anton Lundell has eight points in ten and has earned them. The Panthers have had four days off since a 5-2 loss to Edmonton, and Jacob Markstrom is at 2.0 goals saved above expected after a rough last season.\n\nIt's a division game: Florida sits fifth in the Atlantic, five points ahead of sixth-place Buffalo, and our simulations give the Panthers a 58% playoff chance to the Sabres' 21%. Our numbers have it close in expected goals, 3.33 for Florida to 3.08. Reinhart faces his former team at 40% to score. Josh Norris is one point from 200 for his career, and Florida's Dmitry Kulikov is one assist from 200. Buffalo won the first meeting 5-3 on Oct. 12.",
+ "headline": "Sabres open a Florida weekend with the slump just snapped",
+ "goalies": [
+  8479312,
+  8474593
+ ],
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-21T12:48:37Z"
+}

@@ -1,0 +1,12 @@
+{
+ "text": "Alex Ovechkin passed Nicklas Backstrom this week for the most assists in Capitals history, his 763rd setting up Boone Jenner, and it may be the best news Washington has had all month. The Capitals have lost four straight, outscored 23-11, the latest a 6-3 home loss to Buffalo. CBS Sports' headline on Ovechkin was blunt: \"Struggling to contribute in 2026-27.\"\n\nThe noise around them hasn't helped. Jakob Chychrun's hit on Ottawa's Nick Cousins has dragged on in the headlines for days, and Tom Wilson avoided a suspension for a hit on Florida's Sandis Vilmanis, a ruling Florida Hockey Now called wrong. Wilson has no goals in 16 games on 4.4 expected goals (expected goals measure the quality of chances, and his say more should have gone in). Ryan Leonard has scored in four straight and was fined the maximum for high-sticking New Jersey's Cody Glass.\n\nThe skid is partly real, with 48% of the expected goals during it, but the season-long picture is kinder: Washington takes 53% of the expected goals at five on five, and Logan Thompson's .879 (2.1 goals below expected, after +28 last season) has cost more than the skaters have. Boston is the reverse. The Bruins are +19 on chances worth +3.4, with Jeremy Swayman at 7.0 goals saved above expected doing much of the lifting, and they snapped a three-game skid with a 4-1 win in Detroit on Wednesday. James Hagens is on injured reserve with a back injury (ESPN estimates Nov. 25), and Marat Khusnutdinov has taken his spot beside Elias Lindholm and Casey Mittelstadt.\n\nThat makes Khusnutdinov our Sleeper: his shots have been dangerous lately, and Washington gives up the fifth-most expected goals per 60, so we have him at 17% to score. Our numbers give Boston 3.29 expected goals to Washington's 3.03. It's the first meeting this season after the Bruins won all three last year, and the standings stakes lean Washington's way: our simulations have the Capitals at 37% to make the playoffs and the Bruins at 79%. David Pastrnak is 78% for a point.",
+ "headline": "Ovechkin's record arrives in the middle of a skid",
+ "goalies": [
+  8480313,
+  8480280
+ ],
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-21T12:48:37Z"
+}

@@ -1,0 +1,12 @@
+{
+ "text": "Mike Babcock pulled Connor McDavid and Leon Draisaitl apart this week, and the hockey world hasn't stopped talking about it (The New York Times asked whether it's a quick fix or a long-term need). The Oilers had won six straight before Thursday's 3-1 loss in Tampa, McDavid's point streak ended there too, and they come into Raleigh 4-1-0 over their last five with Devon Levi, the goalie Buffalo traded to them, setting an Oilers record with 10 wins in 11 games.\n\nHere's the part Edmonton fans won't love: the record is ahead of the play. The Oilers are +29 in goal difference on chances worth about +0.5, and they've taken 47% of the expected goals at five on five (expected goals measure the quality of the chances). Their finishing is 22.7 goals better than those chances usually produce. That's a lot of McDavid and Draisaitl, and our numbers flag both as due to cool. So is Evan Bouchard, who Yahoo Sports reports is closing in on Paul Coffey's historic point streak: 14 points in his last ten, with bounces doing some of the work.\n\nCarolina is good the other way. The Hurricanes take 58% of the five-on-five expected goals, they won 4-0-1 over their last five, and the one blemish was Thursday, when Lane Hutson scored both Montreal goals to beat them in overtime. Captain Jordan Staal is back from injured reserve, Sebastian Aho is getting talked about with the league's biggest stars, and Pyotr Kochetkov sits at 11.2 goals saved above expected to Levi's 3.5.\n\nOur numbers give Carolina 3.49 expected goals tonight to Edmonton's 2.36, a real gap for two teams both above 98% to make the playoffs in our simulations. The question is whether the Oilers' rearranged lines can create more than they have against a team that gives up very little. They met on Oct. 22, and Edmonton won 6-5 in a shootout. McDavid is 86% for a point in our numbers, Draisaitl 41% to score.",
+ "headline": "Oilers bring their split stars to Raleigh",
+ "goalies": [
+  8482221,
+  8481611
+ ],
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-21T12:48:37Z"
+}

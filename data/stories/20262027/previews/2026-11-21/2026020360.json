@@ -1,0 +1,12 @@
+{
+ "text": "The Blackhawks' season has narrowed to one question, and it isn't about tonight. Connor Bedard is out with a shoulder injury (ESPN estimates Nov. 27), and he is weighing whether to have surgery; Scott Powers wrote this week that Bedard should put his future ahead of a season that already looks lost. He had 18 points in 15 games. Bowen Byram is on injured reserve too. CBS Sports' preview headline put the rest plainly: \"Blackhawks seek first road win at Flames without Connor Bedard.\"\n\nThe minutes have moved. Anton Frondell took Bedard's spot beside Roman Kantserov and Tyler Bertuzzi, Bertuzzi went to the first power-play unit, and Frank Nazar is up to 22:39 a night from 17:51. Nazar has scored in four straight games, six goals in all, though our numbers say that pace will cool. Sam Rinzel is the more convincing story: 12 points in his last ten, all assists, against about 5.0 we'd expect at his ice time, and his own chances are up too. Patrick Kane has no goals in 18 games on 4.3 expected goals.\n\nCalgary needs a night as well. Kevin Bahl's season-ending injury has dominated the Flames' coverage, Zayne Parekh's breakout is the bright side, and they're 2-3-0 in their last five with an 8.5% playoff chance in our simulations. Neither goalie has helped his team: Dustin Wolf is at .877 and 5.9 goals below expected, Spencer Knight at .886 and .869 over his last five starts. Both teams also finish below their chances, Chicago by 4.9 goals and Calgary by 6.1.\n\nOur numbers have Calgary at 3.15 expected goals to Chicago's 2.83. The Blackhawks allow the third-most expected goals per 60 in the league, which is why both of our Sleepers are Flames: Aydar Suniev, a fourth-liner whose shots have been dangerous, at 15% to score, and Mikael Backlund at 46% for a point against a season pace of 35%.",
+ "headline": "Without Bedard, the Blackhawks look for a road win",
+ "goalies": [
+  8481519,
+  8481692
+ ],
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-21T12:48:37Z"
+}

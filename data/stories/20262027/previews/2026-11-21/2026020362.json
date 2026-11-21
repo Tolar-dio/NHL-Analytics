@@ -1,0 +1,12 @@
+{
+ "text": "Every Penguins game now comes with a second conversation. Pittsburgh is selling, by most accounts, and the names are the ones that defined the last decade: Erik Karlsson (\"likely gone by deadline,\" in a Yardbarker rumors roundup), Evgeni Malkin, Kris Letang. Rickard Rakell used his no-trade list to block a deal to Chicago. And Sidney Crosby, as NHL.com put it, knows the Penguins need a turnaround to keep the veteran core together.\n\nThe hockey isn't changing the subject. Pittsburgh is 2-3-0 in its last five, has 16 points, and sits at 10% to make the playoffs in our simulations. Malkin is out with an upper-body injury (ESPN estimates Nov. 25) and Bryan Rust is on injured reserve (estimated Dec. 5); Ben Kindel has picked up minutes, now 19:05 a night. Arturs Silovs is .847 over his last five starts, 0-4-1. The frustrating part for Penguins fans is that the process is fine: 52% of the expected goals at five on five (expected goals measure the quality of chances), with finishing 8.1 goals below what those chances usually produce.\n\nNashville comes home after a five-game road trip that went 3-2: three wins to stretch a winning streak to seven, then losses in San Jose and Minnesota, the second a 7-3 beating. You could argue Juuse Saros is the reason the Predators are in the race at all: .943 over his last five starts, 9.95 goals saved above expected, and Vezina talk after a season below expected last year. Steven Stamkos has points in four straight and, per The Hockey News, is on pace to demolish a franchise record.\n\nOur numbers give Nashville 3.56 expected goals to Pittsburgh's 3.23, and the Predators a 57% playoff chance. Our Sleeper is Ross Colton, a fourth-liner whose last ten games produced 3.5 expected goals, better than 99% of depth forwards, at 18% to score tonight. Crosby is 59% for a point, Filip Forsberg 71%. Pittsburgh won the first meeting 3-2 in overtime on Oct. 24.",
+ "headline": "The Penguins bring the trade talk to Nashville",
+ "goalies": [
+  8481668,
+  8477424
+ ],
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-21T12:48:37Z"
+}
