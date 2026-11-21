@@ -1,9 +1,8 @@
 {
- "text": "Ross Colton's first weeks in Nashville include one he'll remember: a goal on his former team in his first trip back to Ball Arena on Nov 5, part of a run of goals in three straight games (RotoWire). Evan Rawal of the Denver Gazette called the Colorado shift that led to it \"a disaster in the defensive zone\" that \"ends with Ross Colton scoring on his former team.\" He has 5 goals and 8 points in 20 games on 13.28 minutes a night.\n\nNone of it is luck running hot. Five goals on 4.89 expected goals (the quality of his chances) is honest finishing, and 1.1 expected goals per 60 is a real chance rate for a player in his role. Nashville has 51.8% of the five-on-five expected goals with him on, 5.9 points better than without him. Evolving-Hockey had him driving play last season in Colorado (96th percentile among forwards), with the caveat that his teammates there were among the strongest by impact. He has also thrown 45 hits. He hasn't scored in three games since that hot week, and the chances in those games were thin.",
- "headline": "Ross Colton's goals match his chances in Nashville",
+ "text": "Nashville brought in Ross Colton to do a third-line job, and so far he is doing it: 8 points (5 goals) in 22 games at about 13 minutes a night, with 52 hits, no power-play points and plenty of speed (his top skating speed ranks in the 96th percentile in NHL EDGE tracking).\n\nHis own finishing is about where it should be, five goals on 5.29 expected goals (the quality of his chances). The bad luck sits elsewhere. With him on the ice, the Predators have scored 4.97 fewer goals than their chances deserve, even though they are winning the expected-goals battle at five-on-five (51%). That kind of on-ice shortfall usually swings back, and it has cost him points.\n\nEvolving-Hockey liked his play-driving last season in Colorado (96th percentile among forwards, after adjusting for strong teammates), and the Stanley Cup he won with Tampa Bay in 2021 is a reminder he has filled this role on good teams before. Four of his five goals came in the last ten games. We'd watch whether the assists start to follow the chances.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-15T22:55:45Z",
- "gp": 20
+ "written": "2026-11-21T22:52:48Z",
+ "gp": 22
 }

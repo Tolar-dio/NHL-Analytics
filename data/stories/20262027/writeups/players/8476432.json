@@ -1,9 +1,8 @@
 {
- "text": "Boone Jenner spent 808 games and a long run as captain in Columbus before landing in Washington this season, and at 33 he's doing what he's always done: scoring a few, killing penalties, and showing up on the forecheck. Six goals in 19 games puts him on a decent pace, though the assists (two) are thin.\n\nHis finishing is running slightly ahead of his chances (six goals on 4.25 expected), while the Capitals have scored about four fewer goals than expected with him on the ice, so the two roughly cancel out. At five-on-five Washington breaks even on expected goals with him out there, a little worse than without him. Evolving-Hockey saw more last season, rating him a play driver in the 89th percentile among forwards after adjusting for his teammates in Columbus.\n\nCorey Sznajder's All Three Zones tracking has always caught his style: 62% of his shots came off the rush, and he dumps the puck in rather than carrying it. He ranks 102nd in the league in wins added by goals. A steady veteran on a new team, finding his place.",
- "headline": "Jenner's first season outside Columbus",
+ "text": "After 808 games in Columbus, Boone Jenner is a Washington Capital, and the change has suited his shot. He has 7 goals in 20 games while playing about 15.7 minutes a night, none of them on the power play. One of them carried a bit of history: Tom Gulitti of NHL.com noted that Alex Ovechkin's assist on a Jenner goal was the 763rd of his career, passing Nicklas Backstrom's Capitals record.\n\nThe goals run ahead of the chances. His expected goals (the quality of his shots) come to 5.0, and he is shooting 16.3%, above the top of our range for him, so some cooling would be normal. The assists have been scarce, 2 all season, which keeps his scoring rate below his own norm.\n\nHe is a checking-line forward who kills penalties and plays a dump-and-chase game: Corey Sznajder's All Three Zones tracking had him carrying the puck in on only 25% of his entries last season, with 62% of his shots coming off the rush. Evolving-Hockey had him driving play (89th percentile among forwards). Our range for his season is 33 to 53 points.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T12:50:01Z",
- "gp": 19
+ "written": "2026-11-21T22:52:59Z",
+ "gp": 20
 }

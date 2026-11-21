@@ -1,9 +1,8 @@
 {
- "text": "Kasperi Kapanen is on his fourth NHL team, and in Edmonton he has found real minutes: 18:05 a night, more than many of the Oilers' forwards. He's turned them into 13 points in 23 games, seven of them on the power play, plus seven points in his last ten.\n\nThe question is whether the role fits the player. Evolving-Hockey's read of his 2025-26 wasn't kind on offense (his team created less with him on the ice, bottom 5% of forwards), and this season Edmonton gets 48% of the expected goals at five-on-five with him out there, about even with what it does without him. He's shooting 20% on 30 shots, well above the league's 13.4, with six goals on 4.28 expected. That part will likely cool.\n\nWhat he brings is speed and clean exits: Corey Sznajder's All Three Zones tracking had 80% of his zone exits leaving with possession last season. He also has 49 hits. On a team built around Connor McDavid and Leon Draisaitl, a winger who moves the puck up the ice cleanly can earn a spot. The power-play production is the part to watch.",
- "headline": "Kapanen is playing up the lineup in Edmonton",
+ "text": "Kasperi Kapanen has hit 24.05 mph this season, a top speed in the 100th percentile, and in Edmonton he has turned that into a steady role. Yardbarker ran \"2 Reasons Kasperi Kapanen Has Found a Home with the Oilers,\" and the numbers back the move up the lineup: 18.1 minutes a night, 13 points in 25 games (7 on the power play), against 17 in 41 games last season.\n\nHis scoring rate, 1.72 points per 60, is almost exactly where we'd expect it, so the role is the change, not the talent. The goals run a bit hot: he is shooting 18.8%, above the top of our range for him, and Edmonton has scored 3.6 more goals than its chances deserved with him on.\n\nThe territory is the weak spot. The Oilers take 45.6% of the 5v5 shot attempts with him on, and Evolving-Hockey had him in the bottom 5% of forwards for creating offense last season. Corey Sznajder's All Three Zones tracking gives him one clear strength: 80% of his exits leave the zone with the puck. Our range for his season is 35 to 55 points.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T12:50:01Z",
- "gp": 23
+ "written": "2026-11-21T22:54:10Z",
+ "gp": 25
 }

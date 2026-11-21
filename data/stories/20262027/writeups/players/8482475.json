@@ -1,9 +1,8 @@
 {
- "text": "Egor Chinakhov has been trying to make Pittsburgh his fresh start since coming over from Columbus, and the early return this season is modest: six points in 16 games and a shooting percentage of 10.3, under the league's 13.4. Yahoo Sports put it plainly in a headline last week: he \"needs to trust the process.\"\n\nThe process is decent. He gets to good ice; Corey Sznajder's All Three Zones tracking had him at 6.4 scoring chances per 60 from the home-plate area last season, 83rd percentile, and he carries the puck in on 54% of his entries rather than dumping it. Evolving-Hockey had his competition in the 91st percentile, so he wasn't being sheltered either.\n\nThe concern is five-on-five. Pittsburgh is roughly even on expected goals with him on the ice, but about four points worse than without him. He also ranks near the bottom of the league in wins added by goals. Our talent range still has him scoring at 2.26 points per 60, well above his current 1.48, so the gap between what he's done and what he should do is wide. Ten more games will say which side wins.",
- "headline": "Chinakhov is waiting on the finish",
+ "text": "Yahoo Sports summed up Egor Chinakhov's month in a headline: \"Egor Chinakhov needs to trust the process.\" Six points in 17 games is a quiet start for a winger with a scorer's tools, and his ice time has slipped to about 14:50 over his last ten games.\n\nThe tools are still loud. NHL EDGE puts his top shot speed at 98.9 mph, the hardest-shot percentile at the very top of the league, and his skating speed in the 97th percentile. He's shooting 9.1% against a league norm of 13.4%, and his teammates have scored 3.2 fewer goals than expected with him on the ice, so the point total undersells the work a little.\n\nThe worry is volume. His expected goals (the quality of his chances) sit at 0.99 per 60, fine but not a sniper's rate. Corey Sznajder's All Three Zones tracking liked how often he reached the home-plate area last season (83rd percentile for forwards). Those trips are the thing to watch. Our talent range has his true scoring rate well above where it sits now.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T12:49:05Z",
- "gp": 16
+ "written": "2026-11-21T22:52:47Z",
+ "gp": 17
 }

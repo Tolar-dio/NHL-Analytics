@@ -1,9 +1,8 @@
 {
- "text": "Josh Norris arrived in Buffalo from Ottawa with a reputation as a goal scorer and a long history of shoulder trouble. He played 44 games last season. This year he's healthy, and the points haven't come: seven in 21 games, on 14:13 a night.\n\nOur numbers say be patient. The Sabres have scored 9.9 fewer goals than their chances deserved with him on the ice, one of the bigger gaps in the league, and that kind of luck usually turns. Meanwhile the process is solid: Buffalo takes 53% of the expected goals at five-on-five with him out there, nearly four points better than without him. His own shooting isn't the problem; four goals on 4.35 expected is right on.\n\nEvolving-Hockey had him worth 1.4 wins last season, 110th among forwards, mostly from even-strength offense. A player with 104 goals before turning 27 doesn't usually stay at a third-line scoring pace for long when the underlying numbers look like this. The thing to watch is his ice time, down to 13:29 over the last ten games. If the bounces come, the minutes should too.",
- "headline": "Norris is driving play without the points",
+ "text": "Josh Norris has seven points in 22 games for Buffalo, and his ice time is drifting down: 13.1 minutes over his last ten, almost two fewer than before. That is a modest role for a player who scored 34 points in 44 games last season.\n\nThe numbers say more of this is bad luck than bad play. With Norris on the ice, the Sabres have scored 8.71 fewer goals than their chances deserve. Five-on-five, Buffalo is roughly even with him on (49% of expected goals, the quality of chances), and he still shoots from dangerous spots. His own finishing is fine: four goals on 4.35 expected.\n\nEvolving-Hockey had him at 1.4 wins above replacement last season, nearly all of it from even-strength offense, which is not what a 1.35 points-per-60 player looks like. Our talent range puts his true scoring rate well above where he sits now. The shot volume is the soft spot (24 in 22 games). We'd watch the minutes: they are the one thing working against him.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T12:49:05Z",
- "gp": 21
+ "written": "2026-11-21T22:52:48Z",
+ "gp": 22
 }
