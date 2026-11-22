@@ -1,8 +1,8 @@
 {
- "text": "Eeli Tolvanen is in his first season with the Rangers after his years in Seattle, playing about 12 minutes a night in a depth role, with four goals and six points in 21 games. He hits (36) and blocks shots (19), which is the job.\n\nThe underlying numbers are weaker than the team's. The Rangers take 48% of the five-on-five expected goals (the quality of chances) with him on the ice, more than 6 points worse than without him, and 47% of the shot attempts. The goal results have been kind: New York has scored 5.3 more goals than expected during his shifts. His own finishing is fair, 4 goals on 3.6 expected.\n\nEvolving-Hockey's read on last season adds context: around replacement level and in the bottom 4% of forwards for creating offense, but also stuck with the weakest teammates in the league by their measure, which made his raw numbers look worse than his own effect. Our model compares him to Erik Haula and Jordan Martinook. He has one goal since October. Our talent range has him around 13 for the year. He's a depth piece on a team whose depth has been winning its minutes, and that's the bar.",
+ "text": "Eeli Tolvanen is in his first season with the Rangers after his years in Seattle, playing about 12 minutes a night on the third line. He has four goals and six points in 23 games, and the goals are right on his expected total.\n\nThe Rangers have been leaning on him for energy more than offense: 39 hits and 21 blocked shots. The on-ice numbers are rough. New York gets 47% of the expected goals with him on at five on five, about eight points worse than when he sits, and Evolving-Hockey had a similar story last season, though he played with some of the weakest teammates in the league.\n\nThe shot is still the tool. NHL Edge has his hardest at the 88th percentile among forwards, and he's scoring on 16.7% of his shots, above his range, so the goals may slow before they speed up.\n\nWhat to watch: whether he can push into a bigger role. His ice time has swung between about 6 and 13 minutes over the last ten games, which is the coaching staff telling you it's still deciding.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:53:24Z",
- "gp": 21
+ "written": "2026-11-22T22:54:43+00:00",
+ "gp": 23
 }
