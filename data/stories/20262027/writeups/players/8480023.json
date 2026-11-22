@@ -1,8 +1,8 @@
 {
- "text": "Robert Thomas had his best night in a while on Tuesday against Anaheim, a goal off a rebound and two assists. It was his third goal in 10 games, and he has 17 points in 21 on the season, a step below his usual pace (3.15 points per 60 last season, 2.40 now).\n\nThe Blues have actually been better with him than his points suggest in one way and worse in another. St. Louis takes 54% of the expected goals at five on five with him on, which is good. But the team has also scored 5.6 more goals than the chances deserve with him out there, so even this modest total has had some help. His own shot volume has never been his game (27 shots on goal in 21 games).\n\nHe's a playmaker first. Corey Sznajder's All Three Zones tracking had him in the 94th percentile among forwards for primary shot assists last season and breaking the puck out with possession 79% of the time, and Evolving-Hockey ranked him 20th of 401 forwards at 2.8 wins above replacement. That's the player in there; the scoring rate hasn't caught up to it yet.",
+ "text": "Robert Thomas is the engine of a St. Louis team that has started scoring in bunches: 8-6 over Anaheim, 9-6 over New Jersey. The Blues captain has 23 points in 23 games, 14 of them in his last ten, and moved into third in assists in franchise history this week.\n\nHe is a passer first. Only 31 shots and 5 goals, but Corey Sznajder's All Three Zones tracking had him at 10.1 primary shot assists per 60 last season (94th percentile among forwards) and leaving the zone with possession on 79% of his exits. Evolving-Hockey had him as the 20th most valuable forward in 2025-26.\n\nThe flag is a big one: the Blues have scored 11.2 more goals than their chances deserve with him on the ice, and that is padding his assist total. The chances themselves are fine, 54.3% of the 5v5 expected goals with him out there, so the point pace should settle rather than collapse. Our range has him at 71 to 97 points.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T22:53:23Z",
- "gp": 21
+ "written": "2026-11-22T12:47:45+00:00",
+ "gp": 23
 }

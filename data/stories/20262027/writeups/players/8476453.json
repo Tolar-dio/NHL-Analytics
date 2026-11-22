@@ -1,9 +1,8 @@
 {
- "text": "Nikita Kucherov has 30 points in 21 games, and the headlines around him this month have been as much about his future in Tampa as his play, with Bolavip reporting the Lightning remain reluctant to trade him. Whatever that chatter amounts to, he answered on the ice with a hat trick against Buffalo on Nov. 11.\n\nOur read is mixed. Tampa has scored 7.9 more goals than the chances deserve with him on the ice, which pads the assist column. His own shooting, though, is running cold at 12.1%, below the 15.4% we'd expect from him. Those two things pull in opposite directions, and the net is a player producing about what he should.\n\nEvolving-Hockey had him second among all forwards last season at 4.3 wins above replacement, with a large share from even-strength offense, along with a real defensive cost (bottom 11% of forwards in expected goals allowed). Corey Sznajder's All Three Zones tracking shows the shape of it: elite setup passing and plenty of shots off royal-road feeds, the pass across the slot that goes in about 25% of the time. Watch the goal total. If the shooting comes back, the points climb.",
- "headline": "Kucherov's points are louder than his shot",
+ "text": "Nikita Kucherov asked the Lightning for a trade around Halloween, and said publicly that it came from what he called disrespect and a lack of communication. Then he went out and put up 16 points in his next ten games. The reigning Hart Trophy winner has 31 points (9 goals, 22 assists) in 22 games and played his 900th NHL game against Washington on Nov. 17, all in a Tampa Bay sweater.\n\nThe play behind it is as good as ever. Tampa Bay controls 60.8% of the expected goals (the quality of chances) at 5v5 with him on the ice, and Corey Sznajder's All Three Zones tracking had him at 10.6 primary shot assists per 60 last season, 96th percentile among forwards. Evolving-Hockey rated him the second-most valuable forward in the league in 2025-26.\n\nOne caution: his teammates have scored 9.0 more goals than their chances deserve with him out there, which pads the assist column. His own scoring rate actually sits a touch below our talent estimate (4.02 points per 60 against 4.4), so our season range of 111 to 145 points holds up even if the bounces cool. The bigger question is which sweater he wears for them.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T12:51:40Z",
- "gp": 21
+ "written": "2026-11-22T12:47:19+00:00",
+ "gp": 22
 }

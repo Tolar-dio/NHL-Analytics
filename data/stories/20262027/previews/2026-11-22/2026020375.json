@@ -1,0 +1,12 @@
+{
+ "text": "Edmonton has the West's most puzzling record. The Oilers are plus-26 in goal difference while losing the expected-goals count (chance quality) by 2.1, which means their shooters have scored 25.3 more goals than their chances usually produce. Mike Babcock split Connor McDavid and Leon Draisaitl onto separate lines this month, the points kept coming, and Devon Levi, acquired from Buffalo, won 10 of his first 11 games. Then the week turned: Tampa ended a six-game winning streak on Thursday, and Carolina came from two down to beat them 7-4 on Saturday, with Edmonton getting just 26% of the expected goals.\n\nNow it's the second night of a back-to-back, and so it is for St. Louis, which beat New Jersey 9-6 at home last night for a third straight win. That one was a track meet, and the Blues won it on 38% of the expected goals. Joel Hofer has been the steadier part of their story, a .923 save percentage and 10.4 goals saved above expected in 16 games, and he projects to start here. Tristan Jarry, at .909 and plus-3.3 over ten games, is projected for the Edmonton net.\n\nThere are milestones and old friends on the ice. Draisaitl is one point from 1,100 for his career. Dylan Holloway, drafted 14th overall by the Oilers in 2020, has points in four straight for St. Louis. Jimmy Snuggerud is on what The Hockey News called a pace to be the first Blues 40-goal scorer since Vladimir Tarasenko, and Logan Mailloux has seven points in six games from the back end.\n\nEdmonton is still without Ryan Nugent-Hopkins, and Vasily Podkolzin has taken his spot on the top power play, with a four-game point streak to show for it. St. Louis is missing Connor McMichael. Our numbers lean slightly to the home side, 3.12 expected goals to Edmonton's 2.78, but the bigger split is in the race: the Oilers make the playoffs in 97% of our simulations, the Blues in 44%.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-22T12:47:17+00:00",
+ "headline": "Oilers' finishing meets a hot Blues team, both tired",
+ "goalies": [
+  8477465,
+  8480981
+ ]
+}

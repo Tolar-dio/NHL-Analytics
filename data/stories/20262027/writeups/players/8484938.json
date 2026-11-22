@@ -1,8 +1,8 @@
 {
- "text": "Arttu Hyry might be the quietly useful find of Dallas's season. The undrafted Finn, 25, came over from Liiga and had five points in 20 games last season. This season he has five goals in 19, playing 15 minutes a night, and he scored again in the loss to Winnipeg on Nov. 12.\n\nNothing about it looks fluky. He's shooting 13.5%, right on his expected rate, and his chance rate jumped from 0.86 to 1.11 individual expected goals per 60, which is strong for a bottom-six forward. The Stars are even with him at five on five. Our range for the rest of his season runs from 15 to 28 goals, which tells you both how good the shooting has been and how small the sample still is.\n\nThe tools fit the numbers: a 95 mph shot (98th percentile), good speed, and a penalty-killing role. He plays like Drew O'Connor and Parker Kelly, finishers who don't create much for others. He had three shots and 0.67 expected goals in Saturday's shutout of Buffalo. If the chances keep coming like that, so will the minutes.",
+ "text": "Arttu Hyry is the kind of story that gets written about: an undrafted Finn from Oulu, on an $875,000 contract, studying engineering while he plays about 15 minutes a night in Dallas. The Dallas News called him \"a breakout Star on the ice,\" and the numbers mostly agree.\n\nFive goals in 22 games is fine. What's better is how he gets them. He has 5.77 expected goals (1.07 per 60, up from 0.86 last season), and he has actually scored a little below that. Over the last 10 games he generated 3.4 expected goals on his own. His shot is a weapon, 95 mph at the top end (98th percentile), and the Stars take 53% of the expected goals at five on five with him on.\n\nThe caveats are about sample. Last season was 236 minutes, and Corey Sznajder's All Three Zones tracking has only eight of his games, so nothing there stands out yet. But a player whose chances run ahead of his goals is a player whose goals tend to catch up. Our range has him around 19 goals by season's end.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-15T12:47:16Z",
- "gp": 19
+ "written": "2026-11-22T12:48:01+00:00",
+ "gp": 22
 }

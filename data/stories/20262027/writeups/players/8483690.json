@@ -1,8 +1,8 @@
 {
- "text": "Noah Laba hasn't scored in 21 games, and the New York Post has written about the second-year forward trying to focus on the positives. A fourth-round pick in 2022 out of Colorado College, he's playing almost 15 minutes a night in a checking role, and the goals are the least of the concerns.\n\nHe has 0 goals on 2.5 expected, which is unlucky but not dramatically so. The bigger issue is the territory: the Rangers take 45% of the five-on-five expected goals (the quality of chances) with Laba on the ice, 11 points worse than without him, and 44% of the shot attempts. That's the profile of a young centre being asked to absorb tough minutes and not yet winning them. Our model compares him to defensive forwards like Ben Meyers and Blake Lizotte.\n\nHis value last season came mostly on the penalty kill, by Evolving-Hockey's count, and that's where he'll keep earning his ice time. Our talent range expects around 8 goals over the full season, so the first one shouldn't be far off. The thing to watch is his five-on-five share. If it doesn't rise, his minutes will probably shrink once the Rangers are healthy.",
+ "text": "Noah Laba is 22 games into his second season with the Rangers and still looking for his first goal. The New York Post wrote that he's \"focusing on the positives of goalless Rangers campaign,\" and there are some to focus on. He has six assists, four of them in his last 10 games, and three expected goals, so he keeps getting the looks. Goals tend to follow chances.\n\nThe harder part is the five-on-five picture. New York takes just 43% of the shot attempts and 44% of the expected goals with him on the ice, nearly 12 points worse than without him. His chance rate has slipped from last season too (0.55 expected goals per 60, down from 0.75). He has been lucky on the other end: the Rangers have scored 3.1 more goals than their chances with him out there.\n\nHis value has never been mainly offense. Evolving-Hockey had most of his 0.7 wins above replacement last season coming from the penalty kill, and he's quick (89th percentile top speed). The 2022 fourth-round pick has a role; the question beyond the first goal is whether the five-on-five numbers improve.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:51:52Z",
- "gp": 21
+ "written": "2026-11-22T12:48:02+00:00",
+ "gp": 22
 }

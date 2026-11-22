@@ -1,8 +1,8 @@
 {
- "text": "Cam Fowler is 34, past 1,100 NHL games, and in a rough patch: no points in 13 games, and his ice time down almost two minutes a night over the last ten. He has four assists in 20 games after 30 points last season.\n\nIt's some of each. The Blues have had a few fewer chances with him on the ice lately, and they've scored 5.3 fewer goals than those chances deserve during his shifts, which has cost him assists and usually swings back. For the season, St. Louis takes 50% of the five-on-five expected goals (the quality of chances) with him on, about the same as without him. That's not a defenseman hurting his team, but it's not one driving play either.\n\nCorey Sznajder's All Three Zones tracking still shows the puck-mover St. Louis traded for: 56% of his exits leave the zone with possession, and he carries the puck in on 42% of his entries. Evolving-Hockey had him around replacement level last season, with chances against a concern. Our model compares him to Zeev Buium and Drew Doughty. Our talent range has him around 24 points. A couple of bounces would change the look of this stretch quickly.",
+ "text": "Cam Fowler is 34, more than 1,100 games into a career that started in Anaheim, and in his second full season as a Blue that role is narrowing. His ice time is down 2.2 minutes over his last ten games, to about 19.5, and he has no goals and six assists in 23 games after scoring 30 points last season.\n\nThe underlying picture is middling rather than alarming. St. Louis gets about half of the expected goals (the quality of chances) at five on five with him on the ice, close to the team rate. Our range expects about 25 points.\n\nHe still does the things that made him a first-round pick in 2010. Corey Sznajder's All Three Zones tracking had him exiting with possession 56% of the time last season and carrying the puck in on 42% of his entries; carry-ins produced a chance 25% of the time in tracked games, dump-ins 8%. The cost, per Evolving-Hockey, was defense: opponents got noticeably more with him on the ice, bottom 6% of defensemen, and they had him around replacement level overall. The Blues have won six of their last ten, with him in a quieter role.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-16T12:56:22Z",
- "gp": 20
+ "written": "2026-11-22T12:49:06+00:00",
+ "gp": 23
 }

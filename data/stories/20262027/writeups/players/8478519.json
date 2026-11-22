@@ -1,9 +1,8 @@
 {
- "text": "Anthony Cirelli missed the Lightning's games on Nov. 12 and Nov. 14 with an injury, out alongside Erik Cernak and Yanni Gourde according to several reports. He came back Tuesday against Washington and scored in a 5-2 win, his sixth goal of the season.\n\nThat's a good sign for Tampa, because Cirelli has been one of their best players at 5v5. The Lightning get 61% of the expected goals (the quality of chances) with him on the ice, and Evolving-Hockey had him in the 95th percentile among forwards for driving chances last season, though with top-1% teammates flattering his raw numbers. His scoring is fine too: 15 points in 19 games, ten in his last ten.\n\nThe odd part is that his own goals have run hot (six on 4.2 expected) while the team's have run cold around him: Tampa has scored 6.4 fewer goals than its chances deserve with him on the ice. Those usually even out. Corey Sznajder's All Three Zones tracking flags a signature worth watching: 20% of his setups go across the royal road, the side-to-side pass that moves a goalie, against 7% for a typical forward.",
- "headline": "Cirelli is back, and still unlucky",
+ "text": "Anthony Cirelli was a game-time call on Nov. 17 after missing two games, played, and added an empty-net goal against Washington. He is Tampa Bay's matchup center: 15 points in 20 games on 17 minutes a night, and steady value while the Kucherov trade talk takes up the oxygen.\n\nThe Lightning control 62.1% of the 5v5 expected goals with him on the ice, 6.8 points better than without him. Corey Sznajder's All Three Zones tracking found a signature last season: 20% of his setups come across the royal road (the pass across the slot that moves a goalie side to side), against 7% for a typical forward.\n\nThe numbers pull both ways. His teammates have been unlucky with him on the ice, 4.5 fewer goals than their chances deserve, which should swing back into assists. His own shooting runs the other way, 20% on just 30 shots. Evolving-Hockey notes he plays with very strong teammates (99th percentile), which flatters his on-ice numbers. Our range has him at 48 to 71 points.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T12:49:12Z",
- "gp": 19
+ "written": "2026-11-22T12:47:20+00:00",
+ "gp": 20
 }

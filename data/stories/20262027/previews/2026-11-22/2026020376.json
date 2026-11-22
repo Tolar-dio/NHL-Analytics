@@ -1,0 +1,12 @@
+{
+ "text": "Every day seems to bring a new Penguins headline, and almost none of them are about a game. Pittsburgh has 16 points in 22 games and a 7% chance at the playoffs in our simulations, and the talk has moved to what comes next: Erik Karlsson and Rickard Rakell ranked by tradability, Elliotte Friedman reporting on a blocked Rakell deal, Evgeni Malkin's future, and even Sidney Crosby, whose agent Pat Brisson stirred up a week of speculation (Ottawa's Drake Batherson offered Crosby his house). None of it changes tonight's lineup, but it hangs over every loss.\n\nAnd there have been losses. The Penguins are winless in three, outscored 13-6, and this slump is earned: 43% of the expected goals, the share of chance quality, in those games. Last night they led Nashville by two and lost 4-3, so this is the second night of a back-to-back. Malkin (upper body) and Bryan Rust are both out, Tommy Novak has been skating beside Crosby and Rakell, and Arturs Silovs starts after allowing 3.0 goals more than his shots deserved this season.\n\nDallas has won four straight, but the chances only half back it: 48% of the expected goals in the run, with the goaltending saving 5.3 goals above expected. Jake Oettinger, at plus-9.2 on the season, is a big part of that. The week had its moments, too: Jamie Benn reached 1,000 career points, Miro Heiskanen scored an overtime winner in his return, and Wyatt Johnston has goals in four straight games. Jason Robertson, whom the Penguins were reportedly \"very close\" to trading for, per NHL Trade Rumors, gets a look at the team that wanted him.\n\nOur numbers give Dallas 3.62 expected goals to Pittsburgh's 2.78. Two Stars made our Sleepers: Arttu Hyry, a third-liner whose shots have been dangerous (1.38 expected goals per 60 over ten games), at 19% to score, and Thomas Harley, projected for 27:05 of ice time, at 53% for a point. The Penguins did win the first meeting, 2-1 in a shootout on Oct 10.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-22T12:47:39+00:00",
+ "headline": "The Penguins' rumor mill rolls into Dallas",
+ "goalies": [
+  8481668,
+  8479979
+ ]
+}

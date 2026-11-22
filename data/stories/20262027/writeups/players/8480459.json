@@ -1,8 +1,8 @@
 {
- "text": "Pius Suter has four goals in 17 games for St. Louis, including a late one that spoiled a shutout bid against the Rangers, and he's become a useful penalty-killing depth forward in his second season with the Blues.\n\nThe goals are slightly ahead of the chances (four on 2.5 expected, the quality of his chances), and the recent stretch has been thin: two points in his last ten games and ice time down a minute. St. Louis has 46% of the five-on-five expected goals with him on the ice, a little worse than without him.\n\nLast season was better than the box score said. Evolving-Hockey had his team creating noticeably more with him on the ice (87th percentile among forwards), with most of his value coming on the penalty kill, and Corey Sznajder's All Three Zones tracking had him getting 2.1 shots per 60 off passes across the slot or from behind the net. He's undrafted, out of Zurich's ZSC Lions. Our projection sees about 15 goals.",
+ "text": "Pius Suter does the quiet jobs for the Blues, and he's doing them well enough to chip in: 5 goals and 10 points in 23 games on 13:40 a night, with no power-play time to pad it. Undrafted out of Zurich, he's on his fourth NHL team and in his second season in St. Louis.\n\nHis finishing is running a little hot at 17.2%, above the top of our range for him, but the on-ice picture runs the other way: the Blues have scored about 4 fewer goals than expected with him out there. Taken together, his point total looks about right for what he does.\n\nWhat he does, per Evolving-Hockey last season, is kill penalties (most of his value came on the PK) and push play forward: his team created more chances with him on, 87th percentile among forwards once linemates and zone starts are accounted for. Corey Sznajder's All Three Zones tracking had him on the end of 2.1 shots per 60 off passes across the slot or from behind the net, which is how a slow skater (9th percentile in top speed) scores. Our projection: 28 to 44 points.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-10T22:58:11Z",
- "gp": 17
+ "written": "2026-11-22T12:48:13+00:00",
+ "gp": 23
 }

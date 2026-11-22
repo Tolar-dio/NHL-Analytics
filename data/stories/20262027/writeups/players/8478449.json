@@ -1,8 +1,8 @@
 {
- "text": "Roope Hintz is scoring like the Stars hoped he would when he was healthy. He has 21 points in 21 games, a five-game point streak, and two assists in Tuesday's comeback win in Vegas. That's well above the pace we'd expect to hold, after a 2025-26 in which he played 53 games.\n\nSome of it is shooting: eight goals on 6.6 expected (the quality of his chances), at 21.6%, and Dallas has scored 3.3 more goals than expected with him on the ice. But the underlying play is sound. The Stars take 54% of the expected goals at five on five when he plays, and Evolving-Hockey rated him a strong defensive forward last season, with opponents creating fewer chances against him than against almost anyone (99th percentile), though they also flagged that his results ran ahead of his chances.\n\nHe's fast, with lots of bursts over 20 mph by NHL Edge, and Corey Sznajder's All Three Zones tracking says he carries the puck in on 63% of his entries. Watch the goal pace settle; the all-around game should hold.",
+ "text": "Roope Hintz is the quiet one on a Dallas forward group full of louder names, and he is quietly having a very efficient season. He has 21 points (8 goals) in 22 games on 16.5 minutes a night, which works out to 3.47 points per 60, above our talent range for him (2.43 to 3.37).\n\nThe skating is the tell. Hintz has 92 bursts over 20 mph by NHL Edge tracking, 99th percentile in the league, and Corey Sznajder's All Three Zones tracking had him carrying the puck in on 63% of his entries last season, with 55% of his shots coming off the rush. Dallas controls 54% of the 5v5 expected goals with him on the ice.\n\nTwo things to keep an eye on. He is shooting 20.5% on just 39 shots, and is without a goal in his last four games while still picking up four assists. And Evolving-Hockey noted that his 2025-26 results ran ahead of his chances, even as it rated his defensive play in the 99th percentile. Our season range is 58 to 83 points, the middle at 69.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T22:53:16Z",
- "gp": 21
+ "written": "2026-11-22T12:47:45+00:00",
+ "gp": 22
 }

@@ -1,9 +1,8 @@
 {
- "text": "Yahoo Sports said it this week: Ville Koivunen's play is beginning to impress. The 23-year-old Finn has 7 points in 15 games for Pittsburgh, matching his total from 39 games last season, and he's playing a bit more lately.\n\nAmong forwards picked 41st to 61st since 2005 with four-plus seasons, the median first full season was 0.30 points a game, and only 64 of 188 reached 200 NHL games. Koivunen is at 0.47. That's a meaningful start for a second-round pick Carolina took in 2021 and Pittsburgh brought over.\n\nThe underlying numbers back it modestly. The Penguins take 53% of the expected goals (the quality of chances) with him on the ice at five on five. Evolving-Hockey's small sample from last season had him in the 92nd percentile at taking chances away, and Corey Sznajder's All Three Zones tracking (nine games) credits him with clean exits, 63% with possession. He shoots rarely and lacks speed (19th percentile in bursts), so he wins with his head. He played just 8:54 against Boston, then bounced back. We project about 31 points.",
- "headline": "Koivunen is beginning to impress",
+ "text": "Ville Koivunen came to Pittsburgh as one of the prospects in the Jake Guentzel trade, and in his second NHL season he is holding his own. Seven points in 18 games at about 14 minutes a night matches his entire total from 39 games last season, and he is a little ahead of where forwards drafted in his range usually start (0.39 points a game against a median of 0.30).\n\nHe isn't a shooter. Fourteen shots in 18 games, no hits at all, and a game built on moving the puck: Corey Sznajder's All Three Zones tracking had him exiting with possession 63% of the time last season, in a small sample. Evolving-Hockey, also on limited minutes, had opponents getting fewer chances with him on the ice.\n\nThere is a little luck in the results. Pittsburgh has scored 2.7 more goals than its chances deserved with him on, and his own finishing is right on his expected goals. His last ten games produced three points, in line with his chances. Our range sees about 28 points by season's end. For a 23-year-old on a losing team, regular minutes and staying even in them is a decent start.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-08T22:58:12Z",
- "gp": 15
+ "written": "2026-11-22T12:49:06+00:00",
+ "gp": 18
 }
