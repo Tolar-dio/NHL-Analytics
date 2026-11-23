@@ -1,8 +1,8 @@
 {
- "text": "Jonas Brodin has played 934 NHL games, all for Minnesota, and he's playing 22 and a half minutes a night for the best team in the West by record, at 12-3-4. He has no goals and seven assists in 19 games, six of them in his last ten.\n\nHe's a defensive defenseman, and the numbers fit. Evolving-Hockey had him 17th among 215 defensemen in wins above replacement last season, with opponents getting fewer chances against him than almost anyone (99th percentile). The Wild have 53% of the five-on-five expected goals (the quality of chances) with him on the ice this season, and they've scored 4.9 fewer goals than those chances deserve, which has cost him points.\n\nThe weakness, per Corey Sznajder's All Three Zones tracking: only 28% of his exits keep possession, so he clears the puck more than he carries it out. He's 33, the 10th pick in 2011, and his ice time is up over a minute lately. Our projection sees about 30 points.",
+ "text": "Jonas Brodin is having a quiet season in the box score, eight assists in 25 games and no goals, and that has never been the point of him. Evolving-Hockey had him 17th among 215 defensemen last season and in the 99th percentile at taking chances away, which is about as good as defense gets in their model.\n\nThis season is more ordinary. Minnesota is about even on five-on-five expected goals with him on (expected goals measure the quality of chances), four points worse than without him, and the Wild have scored about 3.6 fewer goals than their chances with him out there. Corey Sznajder's All Three Zones tracking flags the weakness: only 28% of his exits keep possession. Now his role grows. With Quinn Hughes out, Brock Faber moved in beside him and played more than 29 minutes in the first game. He has played 940 games, all for the Wild. The next few weeks will lean on him.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-10T22:58:11Z",
- "gp": 19
+ "written": "2026-11-23T22:59:04Z",
+ "gp": 25
 }
