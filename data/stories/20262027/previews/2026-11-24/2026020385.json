@@ -1,0 +1,12 @@
+{
+ "text": "Vegas has spent two weeks losing games it controlled. Edmonton has spent most of the season winning games it didn't. Tonight they meet at Rogers Place, and you can make a case that each team's record is lying about it in the opposite direction.\n\nThe Golden Knights are 1-1-3 in their last five, outscored 21-16, yet they had more of the expected goals (the quality of chances) in all five, 56% on average. Three of those games went past regulation and two ended in shootouts, including Saturday's 5-4 shootout win in Winnipeg that snapped a four-game winless run. They trailed in the third period of that one, and Jesse Granger of The Athletic noted the third period \"continues to be a struggle.\" Carter Hart starts in net at .886 and -1.1 saves above expected; for the second start in a row, Granger pointed out, the first shot of the game beat him.\n\nThe Oilers are the mirror image. A +26 goal difference sits on roughly even expected goals, 50% of the chances, with finishing 25.9 goals above what their looks usually produce. That finishing has an obvious address: Connor McDavid and Leon Draisaitl, both flagged by our numbers as due to cool. They are winless in three (0-2-1), and Saturday in St. Louis the Blues came back from three goals down to win in a shootout, on a night Draisaitl reached 1,100 career points. Their five-on-five share is 46%, and they take 4.1 penalties a game.\n\nDevon Levi, acquired from Buffalo, gets the start; he had his 10th win by Nov. 18 and sits at .891 and +0.4 saves above expected. Zach Hyman and Ryan Nugent-Hopkins are both listed day-to-day and could return. On the other side, Mitch Marner is one assist from 600, Jack Eichel has a four-game point streak, and Victor Olofsson, now the Golden Knights' franchise points leader at 418, has 10 points in his last 10.\n\nOur numbers give Vegas 3.13 expected goals to Edmonton's 2.85, and our playoff model has them in a dead heat for the Pacific: 48.5% to 47.8%.",
+ "headline": "Two contenders, two very different kinds of slump",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-24T12:54:08Z",
+ "goalies": [
+  8479394,
+  8482221
+ ]
+}
