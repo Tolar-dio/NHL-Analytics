@@ -1,8 +1,9 @@
 {
- "text": "The Ducks captain has been piling up points without much fuss. Mikael Granlund has 26 points in 22 games, 12 on the power play, and Yahoo Sports wrote that he is \"on Pace to Reach Triple Digit Point Total.\" The last ten games alone brought 17 points, where we'd expect about 10 at his ice time.\n\nSome of it is real. He plays 20.6 minutes, runs the top power play, and the chances with him on are up a little on his usual. Evolving-Hockey had him driving play last season (90th percentile among forwards once teammates and opponents are accounted for).\n\nBut a lot of it is finishing that tends to fade. He is shooting 19.5%, above the top of our range for him, and Anaheim has scored 8.4 more goals than its chances deserved with him on. At 5v5 the Ducks get only 40.2% of the expected goals (the quality of chances) with him on the ice, worse than without him. Our season range is 68 to 93 points, middle 80: a fine year, just short of the hundred the headline hopes for.",
+ "text": "Mikael Granlund, 34 and wearing the Anaheim captaincy, has 26 points in 24 games and 13 in his last ten. The Hockey News called him \"on pace to reach triple digit point total.\" That is a lovely headline for a player who has bounced through six NHL teams. Our numbers are more conservative, seeing him finish somewhere between 66 and 90.\n\nThe gap is luck. The Ducks have scored 8.3 more goals than their chances deserve with him on the ice, and at five on five they take just 40% of the expected goals (the quality of chances) when he plays, well below their rate without him. His plays-like comparisons all share the same note: chances against pile up with him on. He is still playing big minutes, 20:42 a night and climbing over the last ten, with 12 power-play points, and his own shooting is close to his normal range. Last season Evolving-Hockey had his team creating chances at a 90th percentile rate when he played. The question for Anaheim, losing lately and missing Leo Carlsson, is whether the captain's production holds once the bounces even out.",
+ "headline": "Granlund's captaincy season is real, mostly",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-21T22:52:29Z",
- "gp": 22
+ "written": "2026-11-24T22:52:48Z",
+ "gp": 24
 }
