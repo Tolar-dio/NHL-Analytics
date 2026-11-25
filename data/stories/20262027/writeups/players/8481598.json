@@ -1,8 +1,8 @@
 {
- "text": "Philip Broberg has taken over a much bigger job in St. Louis. He's playing 24:37 a night, up from 23:21, and he's on the ice for 54% of the team's power-play chances after 28% last season. With that role has come 17 points in 23 games, 0.74 a game against 0.42 a year ago. He's also at the very top of the league in top skating speed (24.3 mph).\n\nSome of this is a real breakout. His own chances are up to 0.40 expected goals per 60 from 0.24, and Corey Sznajder's All Three Zones tracking had him getting to the home-plate area more than 95% of defensemen last season. Some of it isn't. He's shooting 13% where our range says a true rate nearer 7%, and the Blues have scored 12.4 more goals than expected with him on the ice.\n\nThe thing we'd watch is five-on-five: St. Louis gets only 46.7% of the expected goals when he's out there, worse than without him. Our projection still has him between 41 and 60 points.",
+ "text": "Philip Broberg is the fastest skater we have data for (100th percentile in top speed), and this season the Blues have handed him the keys: 26 minutes a night over his last ten games, and a spot on the ice for 54% of their power-play time, up from 28% last season. He's answered with 7 goals and 18 points in 24 games, including a three-point night against New Jersey and goals in three of his last four as St. Louis won six of seven.\n\nThat's a real breakout in role. The scoring rate is not all real. He's shooting 14% against a likely 6 to 10%, and St. Louis has scored 12.8 more goals than its chances deserve with him on the ice, the biggest cushion in this group of players. At 5v5 the Blues take 47% of the expected goals with him out there, five points worse than without him.\n\nEvolving-Hockey had him 20th among defensemen last season, and Corey Sznajder's All Three Zones tracking put him 95th percentile for slot chances, so the talent isn't in doubt. Expect the points to settle nearer 1.3 per 60 than the 1.8 he's at now.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-22T12:48:39+00:00",
- "gp": 23
+ "written": "2026-11-25T12:47:18Z",
+ "gp": 24
 }

@@ -1,8 +1,8 @@
 {
- "text": "Dylan Strome is doing what he usually does, setting people up, and getting less than usual for it at the other end. He has 16 points in 19 games, 13 of them assists, with three goals on 6.0 expected. That gap is one of the bigger ones on the Capitals, and his own shot quality is up from last season (1.09 expected goals per 60 after 0.78). Goals tend to follow chances like that.\n\nHis teammates haven't been finishing with him either: Washington has scored 4.7 fewer goals than expected with Strome on the ice. Put both together and his points are, if anything, a little light. The Capitals have dropped three straight, and his last goals came in a two-goal night against Buffalo on Oct. 24.\n\nCorey Sznajder's All Three Zones tracking had him in the 98th percentile among forwards for primary shot assists last season, one of the best passers in the league by that measure. Evolving-Hockey flagged the cost: opponents created more with him on (bottom 4% of forwards). That trade-off is the player.",
+ "text": "Dylan Strome finally scored on Saturday in Boston, snapping a 10-game goal drought (NHL.com's Tom Gulitti had the count), and it says something about his season that the drought is the headline. He has 18 points in 21 games, 14 of them assists, and his scoring rate of 3.0 points per 60 sits above our range for him. The assists have been fine. The goals are the problem.\n\nThat problem looks like luck. He has four goals on 6.5 expected, shooting 8.7% against a league norm of 13.5, and Washington has scored 5.5 fewer goals than its chances deserved with him on the ice. His minutes have slipped a little, under 16 in three of his last four games, while the Capitals lost six of their last seven.\n\nCorey Sznajder's All Three Zones tracking had his shot assists in the 98th percentile last season. Evolving-Hockey noted the trade-off that comes with him: opponents got more chances with him on, bottom 4% of forwards. Watch the shooting percentage. It should climb, and the goal against Boston might be the first sign.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T22:53:23Z",
- "gp": 19
+ "written": "2026-11-25T12:47:53Z",
+ "gp": 21
 }

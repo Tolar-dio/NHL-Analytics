@@ -1,8 +1,8 @@
 {
- "text": "A Stanley Cup ring from Florida came with Mackie Samoskevich to Seattle, and his first 18 games as a Kraken have gone well: 6 goals and 13 points at about 15 and a half minutes a night, with 9 of those points in his last ten games.\n\nNot all of it will hold. He has 6 goals on 3.5 expected goals (the quality of his chances), shooting 18.8% against a league norm of 13.4%, and his teammates have scored 4.7 more goals than expected with him on the ice. Our talent range has his true scoring rate around 2.0 points per 60, below the 2.78 he's posting.\n\nThe game underneath is real, though. Evolving-Hockey had his play-driving impact in the 90th percentile of forwards last season, and he draws more penalties than he takes. Corey Sznajder's All Three Zones tracking had 70% of his exits leaving with possession and 53% of his shots coming off the rush. Watch him in the first seconds after Seattle wins the puck back: that's where his offense lives.",
+ "text": "Mackie Samoskevich came to Seattle with a Stanley Cup ring from Florida and has quietly become one of the Kraken's more useful forwards: 6 goals and 15 points in 20 games, nine of them in his last ten, on about 16 minutes a night.\n\nThe interesting split is between his shot share and his chance share. At 5v5 Seattle gets only 45% of the shot attempts with him on the ice but 50% of the expected goals, more than six points better than without him. He's not winning possession; he's winning the quality battle, which fits Corey Sznajder's All Three Zones tracking from last season: 53% of his shots came off the rush and 70% of his exits left the zone with the puck. Evolving-Hockey had his teams creating 0.19 more expected goals per 60 with him out there (90th percentile among forwards).\n\nSome regression is due. He's shooting 15.8% against a likely range of 10 to 14%, and his points rate (2.9 per 60) sits well above the 2.0 we'd expect. The rush game is real; the finishing is running hot.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-21T22:53:28Z",
- "gp": 18
+ "written": "2026-11-25T12:47:18Z",
+ "gp": 20
 }

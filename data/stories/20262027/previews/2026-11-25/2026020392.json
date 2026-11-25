@@ -1,0 +1,12 @@
+{
+ "text": "No team has had a louder November off the ice than Philadelphia. There were bench arguments caught on camera, reports that Matvei Michkov is frustrated with his usage (the Flyers have told teams he isn't available), and reports, led by Daily Faceoff, that the club may ask Travis Konecny to waive his no-movement clause. Konecny and Rick Tocchet have both pushed back on talk of a divided room. Then the Flyers went out and won three straight, the last on Noah Cates's goal with 31 seconds left in Montreal.\n\nOur numbers are less impressed than the standings. Philadelphia scored 14 goals on 7.7 expected during the streak, and for the season it takes just 44% of five-on-five expected goals (the quality of chances each side gets). Dan Vladar has been part of the problem, .850 and 4.1 goals worse than expected over his last five starts. The bright spots are young: Denver Barkey has eight points in ten games, and it's earned. Owen Tippett, the subject of plenty of trade calls, is our depth sleeper at 21% to score after 2.6 expected goals in his last ten.\n\nWashington is the mirror image: a decent process and a miserable run. The Capitals are winless in five, outscored 30-16, including Saturday's 7-5 loss in Boston where Elias Lindholm scored four. They take 53% of the five-on-five expected goals, and for the season they're dead even on chances (+0.2 expected) while sitting at -11 in actual goals. Logan Thompson, a +28.2 goalie last year, is at -2.1 this year with a .879 save rate. That's the slump in a sentence.\n\nAlex Ovechkin became the franchise's all-time assists leader this month, but he has no goals in 16 games on 4.5 expected, which our numbers call due. Ryan Leonard has a five-game point streak and Alex Tuch has goals in three straight. Jordan Kyrou is still out. Washington won the first meeting 5-2 on Oct. 28. The Capitals are at 35% to make the playoffs, the Flyers at 11%.",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-25T12:48:22Z",
+ "headline": "Flyers winning through the noise, Capitals losing past it",
+ "goalies": [
+  8478435,
+  8480313
+ ]
+}

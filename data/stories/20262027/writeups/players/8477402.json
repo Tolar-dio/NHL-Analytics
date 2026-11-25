@@ -1,8 +1,8 @@
 {
- "text": "Pavel Buchnevich's ice time is slipping in St. Louis. Over his last ten games he has averaged about a minute less than before, and the production has followed: 3 points in that stretch, 9 in 21 games overall, below his scoring rate from last season.\n\nThe case for patience is in the process. The Blues control play with him on, 54.2% of the 5v5 expected goals (the quality of chances), 4.4 points better than without him, and the luck around him is neutral: his team has scored almost exactly what its chances deserved with him on. His own shooting, 11.1%, sits at the very bottom of our range for him, so a few more of his looks going in would not be a surprise.\n\nEvolving-Hockey had him around replacement level last season, which is the other side of the argument. Corey Sznajder's All Three Zones tracking gives him a signature worth watching: 19% of his setups come from behind the net, against 8% for a typical forward. Our range for his season is 33 to 51 points; what we'd watch is whether the minutes come back.",
+ "text": "Pavel Buchnevich is riding a four-game point streak (3 goals, 1 assist) as the Blues have turned into one of the league's loudest offenses, scoring 8 against Anaheim and 9 against New Jersey in the last week.\n\nThrough 23 games he has 6 goals and 11 points, and his finishing matches his chances almost exactly (6 goals on 5.84 expected). St. Louis outplays opponents slightly with him on the ice at 5-on-5, about 52% of shot attempts and expected goals. That's solid, and close to the 20-goal player he was last season.\n\nWhat's missing is assists, 5 so far. Corey Sznajder's All Three Zones tracking gives him a real signature there: 19% of his setups come from behind the net, more than double a typical forward. Evolving-Hockey had him near replacement level last season, so his value this year depends on the playmaking coming back. Our range puts him at 35 to 54 points.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-21T22:53:28Z",
- "gp": 21
+ "written": "2026-11-25T12:46:56Z",
+ "gp": 23
 }
