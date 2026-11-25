@@ -1,8 +1,8 @@
 {
- "text": "Jamie Drysdale is playing like the defenseman Philadelphia hoped it was getting from Anaheim. He scored and added an assist in Tuesday's 4-3 win over Buffalo, has nine points in his last 10 games against the 5.2 we'd expect, and logs 23 minutes a night. Charlie O'Connor has had him explaining what has changed as the Flyers' play has improved, and the Flyers are 3-1-1 in their last five.\n\nSome of the recent run is the puck going in around him rather than anything new he's doing: his own chances are steady (0.26 expected goals per 60, close to last year's 0.23), and his points per 60 are just above our talent range. The bigger concern is the defense. Philadelphia gets 41.7% of the five-on-five expected goals with him on the ice, worse than when he sits. NHL Edge puts his speed bursts in the 96th percentile, which shows in how he moves the puck, but Corey Sznajder's All Three Zones tracking had him carrying it in only 38% of the time last season. He's 24, a sixth overall pick from 2020, with room to grow into the minutes.",
+ "text": "Jamie Drysdale is finally becoming the defenseman the Flyers envisioned, as one headline put it this month. He scored the late goal that capped a comeback from three down, has been on what another outlet called a heater, and plays 23 minutes a night. He has 15 points in 26 games.\n\nSome of it is the puck going in around him. His point rate (1.51 per 60) sits above his talent range, and Philadelphia has scored 3.9 more goals than its chances deserve with him on the ice. His own finishing is normal, three goals on 2.5 expected. The five-on-five numbers are the worry: the Flyers take 42% of the expected goals with him on, 3.7 points worse than without him, on a team that already loses the chance battle. He blocks a lot of shots (46), which is partly a sign of how much time he spends defending. Our numbers say he plays like Shea Theodore. Our range projects 35 to 52 points. The offense is real; the defending is the next step.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-19T22:52:42Z",
- "gp": 24
+ "written": "2026-11-25T22:56:01Z",
+ "gp": 26
 }
