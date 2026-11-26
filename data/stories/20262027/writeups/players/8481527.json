@@ -1,8 +1,9 @@
 {
- "text": "Kaedan Korczak has 11 points in 22 games for Pittsburgh, and every one of them is an assist. That is already close to the 16 points he managed in 78 games for Vegas last season, and six of them came in his last ten.\n\nDon't build too much on the points. His own chances are slight (1.25 expected goals), his on-ice shooting luck is close to neutral, and our range expects his scoring rate to come back toward what he has always been, with about 30 points by season's end. He has also earned some attention the other way: a Markerzone headline this month called Macklin Celebrini's \"heated jabs at Kaedan Korczak\" a rare sight.\n\nThe real case for him is defense. Evolving-Hockey had him 41st among 215 defensemen last season, with opponents getting 0.23 fewer expected goals per 60 when he played (97th percentile). Pittsburgh does almost five points better in expected goal share with him on the ice. The weak spot is moving the puck: Corey Sznajder's All Three Zones tracking had him keeping possession on only 29% of exits, so watch for clears off the glass.",
+ "text": "Kaedan Korczak came to Pittsburgh from Vegas with a reputation built on defending, and the twist is that his points have arrived first. He has 12 assists in 24 games, already most of last season's 16 in 78, on 18 minutes a night, and he still hasn't scored.\n\nSome of that is real. The Penguins win 55.6% of the expected goals (chance quality) at five on five with him out there, nearly five points better than without him. Evolving-Hockey had him 41st of 215 defensemen last season at 1.6 wins above replacement, almost all of it from even-strength defense, with opponents' chances shrinking at a 97th-percentile rate when he was on.\n\nSome of it won't hold. His 1.66 points per 60 sit well above our talent range of 0.82 to 1.32, and Corey Sznajder's All Three Zones tracking flags the weakness: only 29% of his exits keep the puck, so expect clears off the glass. Pittsburgh has won two of its last ten. Korczak isn't the problem. He's the defenseman to watch when the forecheck comes.",
+ "headline": "Korczak's assists outrun his game",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-22T12:49:06+00:00",
- "gp": 22
+ "written": "2026-11-26T22:52:08Z",
+ "gp": 24
 }
