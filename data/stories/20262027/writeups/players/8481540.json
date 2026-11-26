@@ -1,8 +1,9 @@
 {
- "text": "Cole Caufield scored 51 goals last season and has 12 in 24 games this season on 79 shots. His goals are fine; they sit only a little above his expected goals (the quality of his chances), and Corey Sznajder's All Three Zones tracking still has him in the 97th percentile for chances from in front of the net.\n\nThe warning is everything around the goals. Montreal has scored about 5.1 more goals than its chances with him on the ice, and at five on five the team takes only 49% of the expected goals when he plays, worse than without him. That is padding his 20 points, and on-ice luck fades. Our range has him around 42 goals and 77 points. He also won the Lady Byng last season and has spent November in a public argument with officiating. Dylan Larkin's arrival may change who he plays with, and his five-on-five line is the thing to watch.",
+ "text": "Cole Caufield scored 51 goals last season and won the Lady Byng, and 12 goals in 26 games says the shot hasn't gone anywhere. What has gone quiet is the last three weeks: one goal and five points in his last ten games, against about 8.6 we'd expect at his ice time, while Montreal dropped three straight.\n\nThe finishing isn't the problem. He's shooting 14.6%, a little under our talent range for him (14 to 18%), and his chances have dipped only slightly. The bigger issue is what happens with him on the ice at five on five: Montreal takes just 47% of the expected goals (the quality of chances) in his minutes, five points worse than when he sits. Last season Evolving-Hockey had him 93rd percentile at driving offense against the toughest competition in the league, so this is out of character.\n\nCorey Sznajder's All Three Zones tracking had him 97th percentile at getting to the home-plate area in front of the net. Watch the shot count; six against Carolina on Nov. 19 is the version Montreal needs.",
+ "headline": "Caufield's shot is fine, his minutes are not",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-23T22:54:07Z",
- "gp": 24
+ "written": "2026-11-26T12:48:26Z",
+ "gp": 26
 }

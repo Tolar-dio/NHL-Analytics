@@ -1,8 +1,9 @@
 {
- "text": "After 808 games in Columbus, Boone Jenner is a Washington Capital, and the change has suited his shot. He has 7 goals in 20 games while playing about 15.7 minutes a night, none of them on the power play. One of them carried a bit of history: Tom Gulitti of NHL.com noted that Alex Ovechkin's assist on a Jenner goal was the 763rd of his career, passing Nicklas Backstrom's Capitals record.\n\nThe goals run ahead of the chances. His expected goals (the quality of his shots) come to 5.0, and he is shooting 16.3%, above the top of our range for him, so some cooling would be normal. The assists have been scarce, 2 all season, which keeps his scoring rate below his own norm.\n\nHe is a checking-line forward who kills penalties and plays a dump-and-chase game: Corey Sznajder's All Three Zones tracking had him carrying the puck in on only 25% of his entries last season, with 62% of his shots coming off the rush. Evolving-Hockey had him driving play (89th percentile among forwards). Our range for his season is 33 to 53 points.",
+ "text": "For 808 games Boone Jenner was a Blue Jacket. Now, at 33, he is a Washington Capital, and the early returns look a lot like the old Jenner: 8 goals and 12 points in 22 games, 34 hits, 20 blocked shots, 15.6 minutes a night. His scoring rate sits exactly at league average.\n\nThe goals run a little ahead of the chances (8 on 5.5 expected, a 16.7% shooting rate against 12.8% for our estimate of his true rate), but the Capitals have scored 3.8 fewer goals than expected with him on the ice, so his linemates are under-finishing even as he converts. Washington gets 53% of the 5v5 expected goals when he plays.\n\nThe team around him is the worry. The Capitals lost five straight before beating Philadelphia on Nov. 25, when Jenner had a goal and an assist. Corey Sznajder's All Three Zones tracking had 62% of his shots coming off the rush last season and only 25% of his entries as carries, so his line wins by forechecking and attacking in transition. Evolving-Hockey had him driving play at the 89th percentile. That should travel.",
+ "headline": "Jenner's first season outside Columbus",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-21T22:52:59Z",
- "gp": 20
+ "written": "2026-11-26T12:47:35Z",
+ "gp": 22
 }

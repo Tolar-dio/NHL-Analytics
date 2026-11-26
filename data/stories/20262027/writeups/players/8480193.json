@@ -1,8 +1,9 @@
 {
- "text": "Daniil Tarasov has been the best goalie in the league per minute this season by our numbers, and he has a 3-3-2 record to show for it.\n\nHe has saved 9.6 goals more than the shots he faced usually allow (goals saved above expected), the top rate among goalies with 150 shots, on a .931 save percentage. Only one goalie has added more wins with his saves. Two shutouts tell part of it, Montreal on Oct. 10 and Tampa Bay on Nov. 14; after the second, Prashanth Iyer of Expected By Whom posted that he \"Kept the Wings in it until they picked up their game in the 2nd period.\" The rest is the hard stuff: .821 on high-danger shots against a league .685.\n\nNow the caution. Nine games is a small sample for a goalie, and our talent range still puts his true save rate near league average. Last season we had him 2.8 goals below expected in 33 games, though Evolving-Hockey's model was far kinder (plus 12.1 on their scale). Watch the workload: every start that looks like this makes Detroit's crease harder to take from him.",
+ "text": "Daniil Tarasov has handed Todd McLellan a goalie decision, as one Yahoo Sports headline put it, and the numbers say he has earned the argument. Through 11 games he has allowed 19 goals on shots that would usually produce 30.6, which makes him the best goalie in the league per 60 minutes by goals saved above expected (the gap between goals allowed and what the shots usually yield). His .930 save percentage comes with a 4-4-2 record, which tells you how little help he gets some nights.\n\nHe's been good everywhere: .979 on low-danger shots, .800 on high-danger ones against a league .685. Detroit kept him in net for the centennial game against Boston, and The Hockey News quoted the room's view in a headline: \"Dani's Provided That.\"\n\nNow the honest part. Last season he finished minus-2.8 by our model over 33 games, and our talent range puts his true save rate near league average. Ten starts don't overturn that. The question is how long the run lasts, not whether it's real right now.",
+ "headline": "Tarasov has made Detroit's net his argument",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-18T23:00:14Z",
- "gp": 9
+ "written": "2026-11-26T12:46:56Z",
+ "gp": 11
 }

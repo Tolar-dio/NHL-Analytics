@@ -1,8 +1,9 @@
 {
- "text": "Mika Zibanejad passed 1,000 NHL games last season and keeps climbing the Rangers' record books; Newsday wrote this month that he's turning into one of the franchise's all-time greats. At 33 he has 20 points in 23 games, six goals on 5.6 expected, which is about exactly what his chances deserve.\n\nThe concern is the other end of the ice. At five on five the Rangers get only 44% of the shot attempts with him on, and they're a little worse with him than without. His line with Alexis Lafrenière and Gabe Perreault wins the quality battle (55% of the expected goals) while losing the volume one, which is a fine line to walk.\n\nThe shot is still elite: NHL Edge puts his hardest at the 97th percentile among forwards. Evolving-Hockey had most of his value last season coming on the power play, and that's still where he does his best work.\n\nWhat to watch: he scored the Rangers' first goal against Carolina on a tip, his ninth point in ten games. The production is fine. Whether the line can tilt the ice is the question.",
+ "text": "Mika Zibanejad has 20 points in 24 games, which looks like business as usual for a center with 818 career points before this season. Look underneath and the engine is running a little differently. Last year he scored 34 goals; this year his own chance quality is down to 0.7 expected goals per 60 minutes, from 1.02. He's finishing at a normal rate (six goals on 5.7 expected), so nothing here is luck in either direction. He's just getting to fewer good spots.\n\nThe five-on-five picture is the worry. The Rangers take under 44% of shot attempts with him on the ice, and their share of expected goals (the quality of chances) is about even only because the shots against tend to be weaker. The power play, five points so far, still carries a lot of his value, as it did last season by Evolving-Hockey's count.\n\nWhat to watch: whether the shot volume comes back. His shot is still one of the league's hardest (96th percentile on NHL EDGE), and our range has him around 71 points if his chance rate drifts toward normal.",
+ "headline": "Zibanejad is producing on fewer chances",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-22T22:52:20+00:00",
- "gp": 23
+ "written": "2026-11-26T12:46:38Z",
+ "gp": 24
 }

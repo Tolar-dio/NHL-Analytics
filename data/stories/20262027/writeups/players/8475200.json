@@ -1,8 +1,9 @@
 {
- "text": "Dmitry Orlov is 35 and playing some of the best offensive hockey of his career. He has 11 points in his last ten games, including three assists against Seattle on Saturday, and 17 on the season with ten on the power play. He is one assist from 300. San Jose Hockey Now wrote that he and Mason Marchment are finding their games, and the numbers agree: he is getting a little more of his own chances too, even with his ice time down two minutes a night.\n\nThe caution is five on five. The Sharks take 41% of the expected goals with him on (expected goals measure the quality of chances), worse than without him, so most of this is power-play value, which is also what Evolving-Hockey saw last season. Corey Sznajder's All Three Zones tracking does credit him at his own line, where he stops 15% of the entries aimed at him against 11% for a typical defenseman. A Stanley Cup winner with Washington in 2018, he quarterbacks PP1 for a young team. Our range has him around 40 points.",
+ "text": "Dmitry Orlov is 35, a Stanley Cup winner from the 2018 Capitals, and right now the man who runs San Jose's power play from the point. Ten of his 17 points have come with the extra man, which is the whole shape of his season: a heavy shot (85th percentile by top speed) and a passer's eye on the one unit where the Sharks get room to breathe.\n\nAt five on five it's harder going. San Jose takes about 43% of the expected goals (the quality of chances) with him on the ice, and his relative number is in the red. Our talent range has his true scoring rate well below the 2.15 points per 60 he's running at, and his 11.5% shooting is nearly double his usual, so expect the pace to cool even if the role holds.\n\nWhat still works: Corey Sznajder's All Three Zones tracking had him stopping 15% of entries aimed at him last season against a typical 11%. Watch whether opponents keep dumping the puck away from his side.",
+ "headline": "Orlov's season runs through the power play",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-23T22:55:43Z",
- "gp": 25
+ "written": "2026-11-26T12:46:08Z",
+ "gp": 27
 }
