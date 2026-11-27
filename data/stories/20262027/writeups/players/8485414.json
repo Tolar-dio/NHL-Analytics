@@ -1,8 +1,8 @@
 {
- "text": "Ben Kindel is 19, playing almost 18 minutes a night for a Penguins team that has lost eight of his last ten games, and the scoresheet hasn't been kind to him. He has 4 goals and 10 points in 20 games, and just four points in the last ten.\n\nMost of the gap is bad luck. Pittsburgh has scored 11.3 fewer goals than its chances deserve with him on the ice, one of the biggest shortfalls we track this season, and that has cost him assists in particular. His own chances add up to 5.6 expected goals against his four.\n\nThe honest concern is territory. At 5v5 the Penguins take 48% of the expected goals with him out there, about six points worse than without him, which is normal for a teenage center getting thrown into a top-nine role and not something to ignore either. Corey Sznajder's All Three Zones tracking had him carrying the puck in on 56% of his entries last season, the habit you want from a young forward. Among forwards picked 6th to 16th since 2005, the median first full season was 0.37 points a game; he's at 0.50. The luck should turn before the territory does.",
+ "text": "Ben Kindel is 19, in his second NHL season, and already playing 17:43 a night for a Penguins team that has lost eight of its last ten. The early-career numbers say he belongs: 11 points in 21 games is 0.52 a game, well above the 0.37 that forwards picked in his draft range have typically managed in their first full seasons.\n\nThe points could be better, and not because of him. Pittsburgh has scored 11.5 fewer goals than its chances deserve with Kindel on the ice, one of the biggest shortfalls in the league, and his own shooting is at 9.3%. He has one goal in his last ten games on 2.8 expected goals (the quality of chances). That gap tends to close.\n\nThe worry is at the other end: the Penguins get 48% of the expected goals with him on at five on five, 5.2 points worse than without him. That's a teenager taking real minutes on a struggling team. Corey Sznajder's All Three Zones tracking liked his zone entries last season (carry-ins on 56%). We'd watch whether the ice time keeps climbing through the losing.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-25T12:47:02Z",
- "gp": 20
+ "written": "2026-11-27T22:50:48Z",
+ "gp": 21
 }
