@@ -1,0 +1,12 @@
+{
+ "text": "The Rangers' injury list is the story, and it keeps getting longer. Pavel Dorofeyev is on injured reserve, Gabe Perreault joined him with an estimated return of Dec. 31, and headlines last week had Oliver Bjorkstrand and Smits out two to three months. The response has been to shuffle and trade: Max Sasson came over from Vancouver, Taylor Raddysh jumped from under eight minutes to nearly 16 beside Alexis Lafrenière and Mika Zibanejad, and Tye Kartye moved onto the first power-play unit.\n\nWhat makes it maddening for New York is that the hockey has mostly been good. Last night in Chicago the Rangers had 69% of the expected goals (the quality of chances) and outshot the Blackhawks 26-9 deep into the third period, per The Athletic's Scott Powers, and still lost 2-1. Across the last five they had 54% of the chances and went 2-3. That is three straight losses on a team that has been outplaying people, and our standings simulations still give them a 57% playoff chance. Joonas Korpisalo starts over Dylan Garand, who has 16 of the 25 starts.\n\nCalgary is in a different kind of trouble. The Flames have 46% of five-on-five expected goals this season, the weakest power play in this matchup at 0.39 expected goals a game, and a 6% playoff chance by our numbers. Dustin Wolf has been 6.1 goals below expected this season. Last night in Newark the Flames led early only because their goalie was \"standing on his head,\" as Mike Fink put it, before the Devils came back to win 5-3. Martin Pospisil and Kevin Bahl are out. The bright spot is Jonathan Castagna, who scored in Pittsburgh after a staredown with his childhood idol Sidney Crosby, and whose recent points are backed by real chances. Brennan Othmann plays his first game in New York since leaving the Rangers.\n\nBoth teams played last night. The Rangers beat Calgary 3-1 on Nov. 11. Lafrenière, whom Mike Sullivan has been defending through a scoring dry spell, is still on the top power play, and Kartye has gone five straight without a point on 2.9 expected goals.",
+ "headline": "The battered Rangers keep outplaying people and losing",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-28T12:48:14Z",
+ "goalies": [
+  8481692,
+  8476914
+ ]
+}

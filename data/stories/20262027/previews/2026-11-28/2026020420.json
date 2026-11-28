@@ -1,0 +1,12 @@
+{
+ "text": "Look at the headlines around this game and you would think it was the trade deadline. Toronto has 23 points and a 5% playoff chance by our simulations; Pittsburgh has 18 points and 7%. So the rumours are everywhere: the Rangers preparing a pitch for Auston Matthews if he wants out, Penguins beat reporter Josh Yohe saying Erik Karlsson and Rickard Rakell are about to be traded, Ottawa's general manager spotted scouting Pittsburgh, the Wild linked to Evgeni Malkin after missing on Dylan Larkin, and Sidney Crosby's future a running question as a contract decision looms. None of that has happened yet. All of it hangs over tonight.\n\nToronto's own week has been tense from the inside. William Nylander was dropped to the second power-play unit and one headline quoted him plainly: \"I didn't agree with it.\" Jim Hiller has also drawn questions for benching Gavin McKenna after the rookie scored a game-winner. The Leafs did win 3-1 in Boston last night behind two goals from Morgan Rielly, the second his 100th career goal. Sergei Bobrovsky, the projected starter on the back half of the back-to-back, is the worry: 0-5-0 with an .827 save rate and 7.6 goals worse than expected over his last five starts, and Kirill Marchenko did not mince words about him during the slump, according to one headline. Jack Roslovic, with 23 points in 24 games, is out, along with Chris Tanev and Dakota Joshua.\n\nPittsburgh also won last night, 6-3 in Buffalo, which snapped a five-game winless run (0-5-0). The Penguins have the better five-on-five numbers of the two teams, 52% of expected goals (the quality of chances) to Toronto's 47%, but the weakest power play here at 0.43 expected goals a game. Bryan Rust is on injured reserve until early December, so Tommy Novak has been skating with Crosby and Rakell. Ben Kindel plays his 100th game.\n\nArturs Silovs starts for Pittsburgh, and his numbers mirror Bobrovsky's almost exactly: .873, four goals below expected. Both teams played last night. With this many names in the rumour mill, it is hard not to watch every shift as an audition.",
+ "headline": "Two proud franchises, one long trade-rumour column",
+ "by": "session",
+ "model": "claude-session",
+ "v": 2,
+ "written": "2026-11-28T12:48:36Z",
+ "goalies": [
+  8475683,
+  8481668
+ ]
+}

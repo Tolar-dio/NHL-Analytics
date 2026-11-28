@@ -1,8 +1,8 @@
 {
- "text": "Pius Suter does the quiet jobs for the Blues, and he's doing them well enough to chip in: 5 goals and 10 points in 23 games on 13:40 a night, with no power-play time to pad it. Undrafted out of Zurich, he's on his fourth NHL team and in his second season in St. Louis.\n\nHis finishing is running a little hot at 17.2%, above the top of our range for him, but the on-ice picture runs the other way: the Blues have scored about 4 fewer goals than expected with him out there. Taken together, his point total looks about right for what he does.\n\nWhat he does, per Evolving-Hockey last season, is kill penalties (most of his value came on the PK) and push play forward: his team created more chances with him on, 87th percentile among forwards once linemates and zone starts are accounted for. Corey Sznajder's All Three Zones tracking had him on the end of 2.1 shots per 60 off passes across the slot or from behind the net, which is how a slow skater (9th percentile in top speed) scores. Our projection: 28 to 44 points.",
+ "text": "Pius Suter is the sort of middle-six forward every contender wants and nobody builds a marketing campaign around. Undrafted out of Zurich, he's played for Chicago, Detroit and Vancouver before landing in St. Louis, and he scores roughly what his chances say he should: five goals on 4.3 expected through 26 games.\n\nThe quiet part is the recent month. Two points in his last ten, even as the Blues won seven of those games, and his ice time has drifted up to almost 15 minutes a night. His line has been outshot at five on five (46.8% of attempts), and his relative numbers are negative. Some of that is bad luck, since St. Louis has scored 4.5 fewer goals than its chances deserved with him on the ice.\n\nLast season Evolving-Hockey had his value coming mostly from the penalty kill, with an adjusted offensive impact in the 87th percentile among forwards. Corey Sznajder's All Three Zones tracking found him on the end of passes across the slot more than most, which suits a player who finishes rather than creates. Watch whether the Blues' surge pulls his points back up toward his range of about 35 for the season.",
  "by": "session",
  "model": "claude-session",
  "v": 2,
- "written": "2026-11-22T12:48:13+00:00",
- "gp": 23
+ "written": "2026-11-28T12:47:17Z",
+ "gp": 26
 }
